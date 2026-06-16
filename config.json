@@ -1,5 +1,6 @@
 {
   "appId": "cli_aaa6494879a2dbfb",
   "appSecret": "bKTkvWPiJiyPnNYOP4q44g6BVQXV1hXW",
-  "bitableAppToken": "QyNzbqPGvalF5Fs6qIjcaSu0nFh"
+  "bitableAppToken": "QyNzbqPGvalF5Fs6qIjcaSu0nFh",
+  "redirectUri": "https://quality-inspection-271006-5-1443845282.sh.run.tcloudbase.com/auth/callback"
 }
