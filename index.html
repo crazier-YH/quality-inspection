@@ -14,9 +14,9 @@
     .topbar { background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 100; }
     .topbar h1 { font-size: 20px; font-weight: 700; }
     .topbar .sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
-    .topbar-back { display: none; cursor: pointer; font-size: 20px; margin-right: 10px; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; }
-    .topbar-back:hover { background: rgba(255,255,255,0.15); }
-    .topbar-back:active { background: rgba(255,255,255,0.25); }
+    .topbar-back { display: none; cursor: pointer; font-size: 22px; margin-right: 8px; padding: 6px 10px; border-radius: 8px; transition: background 0.15s; background: rgba(255,255,255,0.1); font-weight: 700; min-width: 36px; text-align: center; }
+    .topbar-back:hover { background: rgba(255,255,255,0.2); }
+    .topbar-back:active { background: rgba(255,255,255,0.3); }
     .topbar .topbar-row { display: flex; align-items: center; }
     .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; border-top: 1px solid #e8e8e8; z-index: 100; height: 60px; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 10px; transition: color 0.2s; }
@@ -280,7 +280,7 @@
 <div id="mainApp" style="display:none;">
 <div class="topbar">
   <div class="topbar-row">
-    <span class="topbar-back" id="backBtn" onclick="goBack()">‹</span>
+    <span class="topbar-back" id="backBtn" onclick="goBack()">←</span>
     <h1 id="pageTitle">工程质量管理</h1>
   </div>
   <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
@@ -1166,6 +1166,12 @@ function viewAssessDetail(recordId) {
   html += '质检员：'+(f['质检员']||'--')+' · 施工员：'+(f['施工员']||'--')+' · 材料员：'+(f['材料员']||'--');
   html += '</div></div>';
 
+  // 导出按钮
+  html += '<div style="display:flex;gap:10px;margin-bottom:12px;">';
+  html += '<button class="btn-outline" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="exportAssessScore(\''+recordId+'\')"><span style="font-size:16px;">📊</span> 评分表导出</button>';
+  html += '<button class="btn-primary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="exportAssessReport(\''+recordId+'\')"><span style="font-size:16px;">📄</span> 考核报告导出</button>';
+  html += '</div>';
+
   if(f['问题清单']) {
     html += '<div class="section-card" style="margin-bottom:12px;">';
     html += '<div class="section-title" style="color:#e74c3c;">⚠️ 扣分项</div>';
@@ -1318,6 +1324,245 @@ async function loadRecordList(type) {
 // ===== 同步/导出 =====
 async function syncAll(){showToast('🔄 正在同步...');await API.initFields();showToast('✅ 同步完成');}
 function exportAllData(){var data={profile:profile,project:project,todos:todos,exportTime:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='工程质量管理_数据导出_'+new Date().toLocaleDateString('zh-CN').replace(/\//g,'')+'.json';a.click();}
+
+// ===== 考核导出功能 =====
+function exportAssessScore(recordId) {
+  var record = assessRecordsCache.find(function(r){return r.record_id===recordId;});
+  if(!record){showToast('未找到记录');return;}
+  var f = record.fields;
+  var detail = {};
+  try { detail = JSON.parse(f['评分详情']||'{}'); } catch(e){}
+
+  // 构建评分表HTML
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>考核评分表 - '+(f['项目名称']||'')+'</title>';
+  html += '<style>body{font-family:"Microsoft YaHei",sans-serif;padding:30px;color:#333;}';
+  html += 'h1{text-align:center;font-size:20px;margin-bottom:4px;}';
+  html += '.meta{text-align:center;font-size:13px;color:#666;margin-bottom:16px;line-height:1.8;}';
+  html += 'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;}';
+  html += 'th,td{border:1px solid #333;padding:8px 10px;text-align:left;vertical-align:top;}';
+  html += 'th{background:#1a73e8;color:#fff;text-align:center;font-weight:600;}';
+  html += 'td{text-align:center;}';
+  html += '.cat-row td{background:#e8f0fe;font-weight:700;text-align:left;}';
+  html += '.total-row td{background:#f0f2f5;font-weight:700;font-size:15px;}';
+  html += '.deduct{color:#e74c3c;font-weight:600;}';
+  html += '.got{color:#1a73e8;font-weight:600;}';
+  html += '@media print{body{padding:10px;}h1{font-size:16px;}th,td{padding:5px 6px;font-size:11px;}}';
+  html += '</style></head><body>';
+  html += '<h1>项目部质量管理考核评分表</h1>';
+  html += '<div class="meta">';
+  html += '项目名称：'+(f['项目名称']||'--')+'&nbsp;&nbsp;&nbsp;';
+  html += '考核日期：'+(f['考核日期']||'--')+'<br>';
+  html += '考核人：'+(f['考核人']||'--')+'&nbsp;&nbsp;&nbsp;';
+  html += '项目经理：'+(f['项目经理']||'--')+'&nbsp;&nbsp;&nbsp;';
+  html += '质检员：'+(f['质检员']||'--')+'&nbsp;&nbsp;&nbsp;';
+  html += '施工员：'+(f['施工员']||'--')+'&nbsp;&nbsp;&nbsp;';
+  html += '材料员：'+(f['材料员']||'--');
+  html += '</div>';
+
+  html += '<table><tr><th style="width:40px;">序号</th><th>检查项目</th><th style="width:60px;">标准分</th><th style="width:60px;">扣分</th><th style="width:60px;">得分</th><th>备注</th></tr>';
+
+  var idx = 0;
+  var totalGot = 0, totalStd = 0;
+  checklistData.forEach(function(cat) {
+    html += '<tr class="cat-row"><td></td><td colspan="5">'+cat.icon+' '+cat.name+'（'+cat.total+'分）</td></tr>';
+    var catGot = 0;
+    cat.items.forEach(function(item) {
+      idx++;
+      if(item.type === 'formula-group') {
+        var d = detail[item.id];
+        var fScore = d ? d.formulaScore : item.formulaTotal;
+        catGot += fScore;
+        html += '<tr><td>'+idx+'</td><td style="text-align:left;font-weight:600;">'+item.name+'</td><td>'+item.formulaTotal+'</td><td class="deduct">'+(item.formulaTotal-fScore).toFixed(1)+'</td><td class="got">'+fScore.toFixed(1)+'</td><td>'+(d&&d.remark?d.remark:'')+'</td></tr>';
+        // 子项
+        if(d && d.subGroups) {
+          Object.keys(d.subGroups).forEach(function(sgId) {
+            var sg = d.subGroups[sgId];
+            Object.keys(sg.items).forEach(function(siId) {
+              var si = sg.items[siId];
+              html += '<tr><td></td><td style="text-align:left;padding-left:20px;color:#666;">'+sg.name+(sg.included===false?' (不含)':'')+' - '+si.name+'</td><td>'+si.score+'</td><td class="deduct">'+(si.deduct||0)+'</td><td class="got">'+si.got+'</td><td>'+(si.remark||'')+'</td></tr>';
+            });
+          });
+        }
+      } else {
+        var d = detail[item.id];
+        var got = d ? d.got : item.score;
+        var deduct = d ? d.deduct : 0;
+        var remark = d ? (d.remark||'') : '';
+        catGot += got;
+        html += '<tr><td>'+idx+'</td><td style="text-align:left;">'+item.name+'</td><td>'+item.score+'</td><td class="deduct">'+(deduct>0?'-'+deduct:'')+'</td><td class="got">'+got+'</td><td>'+remark+'</td></tr>';
+      }
+    });
+    totalGot += catGot;
+    totalStd += cat.total;
+    html += '<tr style="background:#f8f9fb;font-weight:600;"><td></td><td style="text-align:right;">小计</td><td>'+cat.total+'</td><td class="deduct">'+(cat.total-catGot).toFixed(1)+'</td><td class="got">'+catGot.toFixed(1)+'</td><td></td></tr>';
+  });
+
+  html += '<tr class="total-row"><td></td><td style="text-align:right;">合计</td><td>'+totalStd+'</td><td class="deduct">'+(totalStd-totalGot).toFixed(1)+'</td><td class="got" style="font-size:18px;">'+totalGot.toFixed(1)+'</td><td></td></tr>';
+  html += '</table>';
+
+  html += '<div style="margin-top:20px;font-size:12px;color:#999;text-align:center;">导出时间：'+new Date().toLocaleString('zh-CN')+'</div>';
+  html += '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '考核评分表_'+(f['项目名称']||'')+'_'+(f['考核日期']||'')+'.html';
+  a.click();
+  showToast('✅ 评分表已导出');
+}
+
+function exportAssessReport(recordId) {
+  var record = assessRecordsCache.find(function(r){return r.record_id===recordId;});
+  if(!record){showToast('未找到记录');return;}
+  var f = record.fields;
+  var detail = {};
+  try { detail = JSON.parse(f['评分详情']||'{}'); } catch(e){}
+  var photoSummary = {};
+  try { photoSummary = JSON.parse(f['照片汇总']||'{}'); } catch(e){}
+
+  // 构建考核报告HTML
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>考核报告 - '+(f['项目名称']||'')+'</title>';
+  html += '<style>body{font-family:"Microsoft YaHei",sans-serif;padding:40px;color:#333;max-width:800px;margin:0 auto;}';
+  html += '.cover{text-align:center;padding:80px 0 40px;border-bottom:2px solid #1a73e8;margin-bottom:30px;}';
+  html += '.cover h1{font-size:28px;color:#1a73e8;margin-bottom:10px;letter-spacing:2px;}';
+  html += '.cover h2{font-size:18px;color:#666;font-weight:400;margin-bottom:30px;}';
+  html += '.cover .info{font-size:14px;color:#888;line-height:2;}';
+  html += 'h3{font-size:16px;color:#1a73e8;border-left:4px solid #1a73e8;padding-left:10px;margin:24px 0 12px;}';
+  html += '.score-summary{display:flex;justify-content:center;gap:40px;margin:20px 0 30px;}';
+  html += '.score-big{text-align:center;}';
+  html += '.score-big .num{font-size:48px;font-weight:800;color:#1a73e8;}';
+  html += '.score-big .label{font-size:13px;color:#888;margin-top:4px;}';
+  html += '.score-big .level{font-size:16px;font-weight:600;margin-top:6px;padding:4px 14px;border-radius:20px;display:inline-block;}';
+  html += '.level-good{background:#e8f5e9;color:#34a853;}';
+  html += '.level-mid{background:#fff3e0;color:#f57c00;}';
+  html += '.level-bad{background:#fce8e6;color:#e74c3c;}';
+  html += 'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}';
+  html += 'th,td{border:1px solid #ddd;padding:8px 10px;text-align:left;vertical-align:top;}';
+  html += 'th{background:#f0f4ff;color:#1a73e8;font-weight:600;text-align:center;}';
+  html += '.cat-row td{background:#f8f9fb;font-weight:700;}';
+  html += '.issue-box{background:#fff3e0;border-radius:8px;padding:14px;margin:8px 0;font-size:13px;line-height:1.8;}';
+  html += '.issue-box .item{margin:4px 0;}';
+  html += '.section-content{font-size:13px;line-height:1.8;color:#444;margin-bottom:16px;}';
+  html += '@media print{body{padding:10px;}.cover{padding:30px 0 20px;}.cover h1{font-size:20px;}.score-big .num{font-size:36px;}th,td{padding:5px 6px;font-size:11px;}}';
+  html += '</style></head><body>';
+
+  // 封面
+  html += '<div class="cover">';
+  html += '<h1>工程质量考核报告</h1>';
+  html += '<h2>'+(f['项目名称']||'--')+'</h2>';
+  html += '<div class="info">';
+  html += '考核日期：'+(f['考核日期']||'--')+'<br>';
+  html += '考核人：'+(f['考核人']||'--')+'<br>';
+  html += '项目经理：'+(f['项目经理']||'--')+' · 质检员：'+(f['质检员']||'--')+'<br>';
+  html += '施工员：'+(f['施工员']||'--')+' · 材料员：'+(f['材料员']||'--');
+  html += '</div></div>';
+
+  // 一、考核评分概况
+  var totalScore = f['总分'] !== undefined ? f['总分'] : 0;
+  var level = totalScore >= 90 ? '优秀' : (totalScore >= 80 ? '良好' : (totalScore >= 60 ? '一般' : '待整改'));
+  var levelClass = totalScore >= 80 ? 'level-good' : (totalScore >= 60 ? 'level-mid' : 'level-bad');
+
+  html += '<h3>一、考核评分概况</h3>';
+  html += '<div class="score-summary">';
+  html += '<div class="score-big"><div class="num">'+totalScore+'</div><div class="label">总得分（满分100）</div><div class="level '+levelClass+'">'+level+'</div></div>';
+  html += '</div>';
+
+  // 各大类得分表
+  html += '<table><tr><th>考核类别</th><th>标准分</th><th>实得分</th><th>得分率</th></tr>';
+  checklistData.forEach(function(cat) {
+    var catGot = 0;
+    cat.items.forEach(function(item) {
+      if(item.type==='formula-group') {
+        var d = detail[item.id];
+        catGot += d ? d.formulaScore : item.formulaTotal;
+      } else {
+        var d = detail[item.id];
+        catGot += d ? d.got : item.score;
+      }
+    });
+    var rate = cat.total > 0 ? (catGot/cat.total*100).toFixed(1)+'%' : '--';
+    html += '<tr><td>'+cat.icon+' '+cat.name+'</td><td style="text-align:center;">'+cat.total+'</td><td style="text-align:center;font-weight:600;color:#1a73e8;">'+catGot.toFixed(1)+'</td><td style="text-align:center;">'+rate+'</td></tr>';
+  });
+  html += '</table>';
+
+  // 二、扣分项明细
+  html += '<h3>二、扣分项明细</h3>';
+  var hasDeduct = false;
+  checklistData.forEach(function(cat) {
+    cat.items.forEach(function(item) {
+      if(item.type === 'formula-group') {
+        var d = detail[item.id];
+        if(d && d.subGroups) {
+          Object.keys(d.subGroups).forEach(function(sgId) {
+            var sg = d.subGroups[sgId];
+            Object.keys(sg.items).forEach(function(siId) {
+              var si = sg.items[siId];
+              if(si.deduct > 0) {
+                if(!hasDeduct) { html += '<div class="issue-box">'; hasDeduct = true; }
+                html += '<div class="item">🔴 <strong>'+cat.name+' · '+sg.name+' - '+si.name+'</strong>：扣'+si.deduct+'分'+(si.remark?'（'+si.remark+'）':'')+'</div>';
+              }
+            });
+          });
+        }
+        var fScore = d ? d.formulaScore : item.formulaTotal;
+        if(item.formulaTotal - fScore > 0.05 && !d) {
+          // formula group deduct without subgroup detail
+        }
+      } else {
+        var d = detail[item.id];
+        var deduct = d ? d.deduct : 0;
+        if(deduct > 0) {
+          if(!hasDeduct) { html += '<div class="issue-box">'; hasDeduct = true; }
+          html += '<div class="item">🔴 <strong>'+cat.name+' · '+item.name+'</strong>：扣'+deduct+'分'+(d.remark?'（'+d.remark+'）':'')+'</div>';
+        }
+      }
+    });
+  });
+  if(hasDeduct) { html += '</div>'; }
+  else { html += '<div class="section-content">本次考核无扣分项，各项均达标。</div>'; }
+
+  // 三、问题清单
+  if(f['问题清单']) {
+    html += '<h3>三、问题清单</h3>';
+    html += '<div class="issue-box">';
+    var issues = f['问题清单'].split('；');
+    issues.forEach(function(iss, i) {
+      html += '<div class="item">'+(i+1)+'. '+iss+'</div>';
+    });
+    html += '</div>';
+  }
+
+  // 四、整改建议
+  html += '<h3>四、整改建议</h3>';
+  html += '<div class="section-content">';
+  if(totalScore >= 90) {
+    html += '本项目部质量管理整体水平优秀，各项制度执行到位。建议继续保持，持续改进细节。';
+  } else if(totalScore >= 80) {
+    html += '本项目部质量管理整体良好，部分检查项目存在扣分。建议针对上述扣分项制定整改计划，限期完成整改。';
+  } else if(totalScore >= 60) {
+    html += '本项目部质量管理存在较多问题，需重点关注扣分项。建议立即制定专项整改方案，明确责任人和整改时限，并报公司备案。';
+  } else {
+    html += '本项目部质量管理不达标，存在严重问题。建议立即停工整改，由公司组织专项检查，整改合格后方可复工。';
+  }
+  html += '</div>';
+
+  // 签名区域
+  html += '<div style="margin-top:50px;display:flex;justify-content:space-between;font-size:13px;">';
+  html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>考核人签字</div>';
+  html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>项目经理签字</div>';
+  html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>日期</div>';
+  html += '</div>';
+
+  html += '<div style="margin-top:30px;font-size:11px;color:#999;text-align:center;">报告生成时间：'+new Date().toLocaleString('zh-CN')+'</div>';
+  html += '</body></html>';
+
+  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '考核报告_'+(f['项目名称']||'')+'_'+(f['考核日期']||'')+'.html';
+  a.click();
+  showToast('✅ 考核报告已导出');
+}
 
 // ===== 初始化 =====
 document.getElementById('entryName').addEventListener('input', checkEntryReady);
