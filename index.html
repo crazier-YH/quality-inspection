@@ -9,24 +9,19 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; padding-bottom: 64px; }
-
     .sync-bar { background: #fff3e0; color: #f57c00; font-size: 12px; padding: 6px 16px; text-align: center; display: none; }
     .sync-bar.online { background: #e8f5e9; color: #4caf50; }
-
     .topbar { background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 100; }
     .topbar h1 { font-size: 20px; font-weight: 700; }
     .topbar .sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
     .topbar-back { display: none; cursor: pointer; font-size: 18px; margin-right: 8px; }
     .topbar .topbar-row { display: flex; align-items: center; }
-
     .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; border-top: 1px solid #e8e8e8; z-index: 100; height: 60px; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 10px; transition: color 0.2s; }
     .nav-item.active { color: #1a73e8; }
     .nav-icon { font-size: 24px; margin-bottom: 2px; }
-
     .page { display: none; }
     .page.active { display: block; }
-
     .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; background: #fff; margin: 12px; border-radius: 14px; padding: 20px 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .grid-item { display: flex; flex-direction: column; align-items: center; padding: 12px 4px; cursor: pointer; border-radius: 12px; transition: background 0.15s; }
     .grid-item:active { background: #f0f4ff; }
@@ -40,12 +35,10 @@
     .icon-protect { background: #f3e5f5; }
     .icon-testing { background: #fff3e0; }
     .icon-profile { background: #e0e0e0; }
-
     .info-bar { margin: 0 12px; background: #fff; border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .info-bar .info-project { font-size: 15px; font-weight: 600; color: #333; }
     .info-bar .info-hint { font-size: 12px; color: #999; }
     .info-bar .info-set { font-size: 12px; color: #1a73e8; cursor: pointer; }
-
     .todo-input-row { display: flex; gap: 8px; padding: 16px; background: #fff; margin-bottom: 2px; }
     .todo-input-row input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
     .todo-input-row input:focus { border-color: #1a73e8; }
@@ -57,11 +50,9 @@
     .todo-text { flex: 1; font-size: 14px; }
     .todo-text.done { text-decoration: line-through; color: #bbb; }
     .todo-del { color: #ccc; cursor: pointer; font-size: 16px; padding: 4px; }
-
     .section { padding: 16px; }
     .section-card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .section-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-
     .field { margin-bottom: 12px; }
     .field label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
     .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; background: #fff; }
@@ -70,32 +61,27 @@
     .field-row { display: flex; gap: 10px; }
     .field-row .field { flex: 1; }
     .field-readonly input { background: #f5f7fa; color: #666; }
-
     .record-item { background: #f8f9fb; border-radius: 10px; padding: 14px; margin-bottom: 8px; cursor: pointer; }
     .record-item:active { background: #eef1f6; }
     .record-item .ri-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .record-item .ri-title { font-size: 14px; font-weight: 500; }
-    .record-item .ri-date { font-size: 11px; color: #999; }
     .record-item .ri-info { font-size: 12px; color: #666; }
     .record-item .ri-status { font-size: 11px; padding: 2px 8px; border-radius: 10px; }
     .status-pass { background: #e8f5e9; color: #4caf50; }
     .status-fail { background: #fce8e6; color: #e74c3c; }
     .status-pending { background: #fff3e0; color: #f57c00; }
-
     .btn-primary { background: #1a73e8; color: #fff; border: none; border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
     .btn-primary:active { background: #1557b0; }
     .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
     .btn-green { background: #34a853; }
     .btn-green:active { background: #2d8e47; }
     .btn-outline { background: #fff; color: #1a73e8; border: 1px solid #1a73e8; border-radius: 8px; padding: 10px 16px; font-size: 13px; cursor: pointer; }
-
     .modal-mask { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-end; justify-content: center; }
     .modal-mask.show { display: flex; }
     .modal { background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 20px; animation: slideUp 0.3s; }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
     .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
     .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
-
     .profile-header { background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff; text-align: center; padding: 30px 20px 20px; }
     .profile-avatar { width: 64px; height: 64px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 10px; }
     .profile-name { font-size: 18px; font-weight: 600; }
@@ -106,129 +92,118 @@
     .profile-menu-item .pmi-icon { font-size: 22px; }
     .profile-menu-item .pmi-text { font-size: 14px; }
     .profile-menu-item .pmi-arrow { color: #ccc; font-size: 14px; }
-
     .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px; }
     .stat-card { background: #fff; border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .stat-num { font-size: 24px; font-weight: 700; color: #1a73e8; }
     .stat-label { font-size: 11px; color: #999; margin-top: 2px; }
-
     .empty { text-align: center; padding: 40px 20px; color: #bbb; }
     .empty .empty-icon { font-size: 48px; margin-bottom: 8px; }
     .empty p { font-size: 14px; }
-
     .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: #fff; padding: 10px 24px; border-radius: 20px; font-size: 14px; z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
     .toast.show { opacity: 1; }
-
     .loading { text-align: center; padding: 20px; color: #999; font-size: 13px; }
 
     /* ===== 考核检查表 ===== */
-    .cat-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 16px; background: #fff; border-radius: 12px;
-      margin-bottom: 2px; cursor: pointer; user-select: none;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: background 0.15s;
-    }
-    .cat-header:active { background: #f0f4ff; }
-    .cat-header-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-    .cat-header-left .cat-icon { font-size: 20px; }
-    .cat-header-left .cat-name { font-size: 15px; font-weight: 600; color: #333; }
-    .cat-header-left .cat-score { font-size: 12px; color: #1a73e8; font-weight: 600; margin-left: 4px; }
-    .cat-arrow { font-size: 14px; color: #999; transition: transform 0.25s; }
-    .cat-header.expanded .cat-arrow { transform: rotate(90deg); }
-    .cat-body { display: none; padding: 0 0 8px 0; }
-    .cat-body.open { display: block; }
+    .cat-header { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; background:#fff; border-radius:12px; margin-bottom:2px; cursor:pointer; user-select:none; box-shadow:0 1px 3px rgba(0,0,0,0.04); transition:background 0.15s; }
+    .cat-header:active { background:#f0f4ff; }
+    .cat-header-left { display:flex; align-items:center; gap:10px; flex:1; }
+    .cat-header-left .cat-icon { font-size:20px; }
+    .cat-header-left .cat-name { font-size:15px; font-weight:600; color:#333; }
+    .cat-header-left .cat-score { font-size:12px; color:#1a73e8; font-weight:600; margin-left:4px; }
+    .cat-arrow { font-size:14px; color:#999; transition:transform 0.25s; }
+    .cat-header.expanded .cat-arrow { transform:rotate(90deg); }
+    .cat-body { display:none; padding:0 0 8px 0; }
+    .cat-body.open { display:block; }
+    .check-item { background:#fff; border-radius:10px; margin:6px 0; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+    .check-item-head { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:8px; }
+    .check-item-name { font-size:14px; font-weight:600; color:#333; flex:1; line-height:1.4; }
+    .check-item-std { font-size:13px; color:#1a73e8; font-weight:600; white-space:nowrap; }
+    .check-item-content { font-size:12px; color:#666; line-height:1.6; background:#f8f9fb; border-radius:8px; padding:10px 12px; margin-bottom:10px; white-space:pre-line; }
+    .check-item-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .check-item-row label { font-size:12px; color:#888; white-space:nowrap; }
+    .check-item-row input[type=number] { width:60px; padding:6px 8px; border:1px solid #e0e0e0; border-radius:6px; font-size:14px; text-align:center; outline:none; }
+    .check-item-row input[type=number]:focus { border-color:#1a73e8; }
+    .check-item-row .score-display { font-size:14px; font-weight:600; color:#1a73e8; }
+    .check-item-row .deduct-label { color:#e74c3c; }
+    .check-item-remark { margin-bottom:8px; }
+    .check-item-remark textarea { width:100%; padding:8px 10px; border:1px solid #e0e0e0; border-radius:6px; font-size:12px; resize:vertical; min-height:36px; outline:none; font-family:inherit; }
+    .check-item-remark textarea:focus { border-color:#1a73e8; }
+    .item-photo-area { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+    .item-photo-add { width:56px; height:56px; border:2px dashed #d0d5dd; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:10px; color:#999; position:relative; overflow:hidden; }
+    .item-photo-add .add-icon { font-size:18px; line-height:1; }
+    .item-photo-add input[type=file] { position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; }
+    .item-photo-thumb { position:relative; width:56px; height:56px; }
+    .item-photo-thumb img { width:100%; height:100%; object-fit:cover; border-radius:8px; }
+    .item-photo-thumb .photo-del { position:absolute; top:-5px; right:-5px; background:#e74c3c; color:#fff; border:none; border-radius:50%; width:16px; height:16px; font-size:9px; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; }
+    .assess-total-bar { position:sticky; bottom:60px; background:#fff; padding:14px 16px; border-top:1px solid #e8e8e8; display:flex; justify-content:space-between; align-items:center; z-index:50; }
+    .assess-total-bar .atb-label { font-size:14px; color:#666; }
+    .assess-total-bar .atb-score { font-size:22px; font-weight:700; color:#1a73e8; }
+    .cat-subtotal { text-align:right; font-size:13px; color:#666; padding:8px 16px 4px; font-weight:500; }
+    .cat-subtotal span { color:#1a73e8; font-weight:700; }
 
-    .check-item {
-      background: #fff; border-radius: 10px; margin: 6px 0;
-      padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .check-item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-    .check-item-name { font-size: 14px; font-weight: 600; color: #333; flex: 1; line-height: 1.4; }
-    .check-item-std { font-size: 13px; color: #1a73e8; font-weight: 600; white-space: nowrap; }
-    .check-item-content { font-size: 12px; color: #666; line-height: 1.6; background: #f8f9fb; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; white-space: pre-line; }
-    .check-item-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .check-item-row label { font-size: 12px; color: #888; white-space: nowrap; }
-    .check-item-row input[type=number] { width: 60px; padding: 6px 8px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; text-align: center; outline: none; }
-    .check-item-row input[type=number]:focus { border-color: #1a73e8; }
-    .check-item-row .score-display { font-size: 14px; font-weight: 600; color: #1a73e8; }
-    .check-item-row .deduct-label { color: #e74c3c; }
-    .check-item-remark { margin-bottom: 8px; }
-    .check-item-remark textarea { width: 100%; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 12px; resize: vertical; min-height: 36px; outline: none; font-family: inherit; }
-    .check-item-remark textarea:focus { border-color: #1a73e8; }
-
-    .item-photo-area { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .item-photo-add {
-      width: 56px; height: 56px; border: 2px dashed #d0d5dd; border-radius: 8px;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      cursor: pointer; font-size: 10px; color: #999; position: relative; overflow: hidden;
-    }
-    .item-photo-add .add-icon { font-size: 18px; line-height: 1; }
-    .item-photo-add input[type=file] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-    .item-photo-thumb { position: relative; width: 56px; height: 56px; }
-    .item-photo-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    .item-photo-thumb .photo-del {
-      position: absolute; top: -5px; right: -5px;
-      background: #e74c3c; color: #fff; border: none; border-radius: 50%;
-      width: 16px; height: 16px; font-size: 9px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; line-height: 1;
-    }
-
-    .assess-total-bar {
-      position: sticky; bottom: 60px; background: #fff;
-      padding: 14px 16px; border-top: 1px solid #e8e8e8;
-      display: flex; justify-content: space-between; align-items: center; z-index: 50;
-    }
-    .assess-total-bar .atb-label { font-size: 14px; color: #666; }
-    .assess-total-bar .atb-score { font-size: 22px; font-weight: 700; color: #1a73e8; }
-
-    .cat-subtotal { text-align: right; font-size: 13px; color: #666; padding: 8px 16px 4px; font-weight: 500; }
-    .cat-subtotal span { color: #1a73e8; font-weight: 700; }
+    /* ===== 幕墙子分组 ===== */
+    .subgroup-header { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#f0f4ff; border-radius:8px; margin:6px 0 2px; cursor:pointer; user-select:none; }
+    .subgroup-header:active { background:#e0e8f7; }
+    .subgroup-left { display:flex; align-items:center; gap:8px; flex:1; }
+    .subgroup-left .sg-name { font-size:13px; font-weight:600; color:#333; }
+    .subgroup-left .sg-score { font-size:11px; color:#1a73e8; font-weight:600; }
+    .subgroup-toggle { display:flex; align-items:center; gap:6px; }
+    .sg-included { font-size:11px; color:#34a853; cursor:pointer; padding:2px 6px; border:1px solid #34a853; border-radius:4px; background:#fff; }
+    .sg-excluded { font-size:11px; color:#999; cursor:pointer; padding:2px 6px; border:1px solid #ddd; border-radius:4px; background:#f5f5f5; text-decoration:line-through; }
+    .sg-arrow { font-size:12px; color:#999; transition:transform 0.2s; }
+    .subgroup-header.expanded .sg-arrow { transform:rotate(90deg); }
+    .subgroup-body { display:none; padding:4px 0 4px 8px; }
+    .subgroup-body.open { display:block; }
+    .subgroup-body .check-item { margin:4px 0; padding:10px 12px; }
+    .formula-item { background:#fff; border-radius:10px; margin:6px 0; padding:14px; box-shadow:0 1px 2px rgba(0,0,0,0.03); border-left:3px solid #1a73e8; }
+    .formula-item .fi-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+    .formula-item .fi-name { font-size:14px; font-weight:700; color:#1a73e8; }
+    .formula-item .fi-total { font-size:12px; color:#666; }
+    .formula-item .fi-formula { font-size:11px; color:#888; background:#f8f9fb; border-radius:6px; padding:6px 8px; margin-bottom:8px; line-height:1.5; }
+    .formula-item .fi-result { font-size:16px; font-weight:700; color:#1a73e8; text-align:right; padding:4px 0; }
+    .sub-check { background:#fff; border-radius:8px; margin:3px 0; padding:10px 12px; box-shadow:0 1px 1px rgba(0,0,0,0.02); }
+    .sub-check .sc-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .sub-check .sc-name { font-size:12px; font-weight:600; color:#444; flex:1; line-height:1.4; }
+    .sub-check .sc-std { font-size:11px; color:#1a73e8; white-space:nowrap; margin-left:4px; }
+    .sub-check .sc-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
+    .sub-check .sc-row label { font-size:11px; color:#888; white-space:nowrap; }
+    .sub-check .sc-row input { width:50px; padding:4px 6px; border:1px solid #e0e0e0; border-radius:4px; font-size:13px; text-align:center; outline:none; }
+    .sub-check .sc-row input:focus { border-color:#1a73e8; }
+    .sub-check .sc-content { font-size:11px; color:#777; line-height:1.5; margin-top:4px; white-space:pre-line; background:#fafbfc; border-radius:4px; padding:6px 8px; display:none; }
+    .sub-check .sc-content.open { display:block; }
+    .sub-check .sc-toggle { font-size:10px; color:#1a73e8; cursor:pointer; margin-top:2px; }
 
     /* ===== 考核详情页 ===== */
-    .detail-header-card {
-      background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff;
-      border-radius: 14px; padding: 20px; margin-bottom: 12px;
-    }
-    .detail-header-card .dh-project { font-size: 18px; font-weight: 700; }
-    .detail-header-card .dh-score { font-size: 32px; font-weight: 800; margin: 8px 0 4px; }
-    .detail-header-card .dh-score small { font-size: 14px; font-weight: 400; opacity: 0.7; }
-    .detail-header-card .dh-meta { font-size: 12px; opacity: 0.8; line-height: 1.6; }
-
-    .detail-cat-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 14px; background: #fff; border-radius: 10px;
-      margin-bottom: 2px; cursor: pointer; user-select: none;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .detail-cat-header-left { display: flex; align-items: center; gap: 8px; flex: 1; }
-    .detail-cat-header-left .dc-icon { font-size: 18px; }
-    .detail-cat-header-left .dc-name { font-size: 14px; font-weight: 600; }
-    .detail-cat-header-left .dc-score { font-size: 12px; color: #1a73e8; font-weight: 600; }
-
-    .detail-item {
-      background: #fff; border-radius: 8px; margin: 4px 0;
-      padding: 12px; box-shadow: 0 1px 1px rgba(0,0,0,0.02);
-    }
-    .detail-item .di-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-    .detail-item .di-name { font-size: 13px; font-weight: 600; color: #333; }
-    .detail-item .di-scores { font-size: 12px; white-space: nowrap; }
-    .detail-item .di-scores .di-deduct { color: #e74c3c; }
-    .detail-item .di-scores .di-got { color: #1a73e8; font-weight: 700; }
-    .detail-item .di-remark { font-size: 12px; color: #888; margin-top: 4px; padding: 6px 8px; background: #f8f9fb; border-radius: 6px; }
-    .detail-item .di-content { font-size: 11px; color: #999; line-height: 1.5; margin-top: 4px; white-space: pre-line; max-height: 0; overflow: hidden; transition: max-height 0.3s; }
-    .detail-item .di-content.open { max-height: 600px; }
-    .detail-item .di-toggle { font-size: 11px; color: #1a73e8; cursor: pointer; margin-top: 4px; }
-
-    .detail-issue-list { margin-top: 12px; }
-    .detail-issue-item { background: #fff3e0; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; font-size: 13px; }
-    .detail-issue-item .di-name { font-weight: 600; color: #e65100; }
+    .detail-header-card { background:linear-gradient(135deg,#1a73e8,#4a9af5); color:#fff; border-radius:14px; padding:20px; margin-bottom:12px; }
+    .detail-header-card .dh-project { font-size:18px; font-weight:700; }
+    .detail-header-card .dh-score { font-size:32px; font-weight:800; margin:8px 0 4px; }
+    .detail-header-card .dh-score small { font-size:14px; font-weight:400; opacity:0.7; }
+    .detail-header-card .dh-meta { font-size:12px; opacity:0.8; line-height:1.6; }
+    .detail-cat-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; background:#fff; border-radius:10px; margin-bottom:2px; cursor:pointer; user-select:none; box-shadow:0 1px 2px rgba(0,0,0,0.03); }
+    .detail-cat-header-left { display:flex; align-items:center; gap:8px; flex:1; }
+    .detail-cat-header-left .dc-icon { font-size:18px; }
+    .detail-cat-header-left .dc-name { font-size:14px; font-weight:600; }
+    .detail-cat-header-left .dc-score { font-size:12px; color:#1a73e8; font-weight:600; }
+    .detail-item { background:#fff; border-radius:8px; margin:4px 0; padding:12px; box-shadow:0 1px 1px rgba(0,0,0,0.02); }
+    .detail-item .di-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .detail-item .di-name { font-size:13px; font-weight:600; color:#333; }
+    .detail-item .di-scores { font-size:12px; white-space:nowrap; }
+    .detail-item .di-scores .di-deduct { color:#e74c3c; }
+    .detail-item .di-scores .di-got { color:#1a73e8; font-weight:700; }
+    .detail-item .di-remark { font-size:12px; color:#888; margin-top:4px; padding:6px 8px; background:#f8f9fb; border-radius:6px; }
+    .detail-item .di-content { font-size:11px; color:#999; line-height:1.5; margin-top:4px; white-space:pre-line; max-height:0; overflow:hidden; transition:max-height 0.3s; }
+    .detail-item .di-content.open { max-height:600px; }
+    .detail-item .di-toggle { font-size:11px; color:#1a73e8; cursor:pointer; margin-top:4px; }
+    .detail-issue-list { margin-top:12px; }
+    .detail-issue-item { background:#fff3e0; border-radius:8px; padding:10px 12px; margin-bottom:6px; font-size:13px; }
+    .detail-issue-item .di-name { font-weight:600; color:#e65100; }
+    .detail-subgroup { margin:4px 0 4px 12px; padding:8px; background:#f8f9fb; border-radius:6px; }
+    .detail-subgroup .dsg-name { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; }
   </style>
 </head>
 <body>
-
 <div class="toast" id="toast"></div>
 <div class="sync-bar" id="syncBar">正在连接服务器...</div>
-
 <div class="topbar">
   <div class="topbar-row">
     <span class="topbar-back" id="backBtn" onclick="goBack()">←</span>
@@ -236,14 +211,9 @@
   </div>
   <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
 </div>
-
-<!-- 首页 -->
 <div class="page active" id="page-home">
   <div class="info-bar" id="homeInfoBar">
-    <div>
-      <div class="info-project" id="homeProjectName">未设置项目</div>
-      <div class="info-hint" id="homeProjectHint">点击右侧设置项目信息</div>
-    </div>
+    <div><div class="info-project" id="homeProjectName">未设置项目</div><div class="info-hint" id="homeProjectHint">点击右侧设置项目信息</div></div>
     <span class="info-set" onclick="openPage('profile-edit')">设置 →</span>
   </div>
   <div class="stats-row">
@@ -262,24 +232,13 @@
     <div class="grid-item" onclick="openPage('profile')"><div class="grid-icon icon-profile">👤</div><span class="grid-label">个人中心</span></div>
   </div>
 </div>
-
-<!-- 待办 -->
 <div class="page" id="page-todo">
-  <div class="todo-input-row">
-    <input id="todoInput" placeholder="添加待办事项..." onkeydown="if(event.key==='Enter')addTodo()" />
-    <button class="todo-add" onclick="addTodo()">添加</button>
-  </div>
+  <div class="todo-input-row"><input id="todoInput" placeholder="添加待办事项..." onkeydown="if(event.key==='Enter')addTodo()" /><button class="todo-add" onclick="addTodo()">添加</button></div>
   <div class="todo-list" id="todoList"></div>
   <div class="empty" id="todoEmpty"><div class="empty-icon">📝</div><p>暂无待办，点击上方添加</p></div>
 </div>
-
-<!-- 个人中心 -->
 <div class="page" id="page-profile">
-  <div class="profile-header">
-    <div class="profile-avatar">👷</div>
-    <div class="profile-name" id="profileDisplayName">未设置</div>
-    <div class="profile-role">工程质量管理</div>
-  </div>
+  <div class="profile-header"><div class="profile-avatar">👷</div><div class="profile-name" id="profileDisplayName">未设置</div><div class="profile-role">工程质量管理</div></div>
   <div class="profile-menu">
     <div class="profile-menu-item" onclick="openPage('profile-edit')"><div class="pmi-left"><span class="pmi-icon">📝</span><span class="pmi-text">编辑个人信息</span></div><span class="pmi-arrow">›</span></div>
     <div class="profile-menu-item" onclick="openPage('profile-project')"><div class="pmi-left"><span class="pmi-icon">🏗️</span><span class="pmi-text">项目信息设置</span></div><span class="pmi-arrow">›</span></div>
@@ -287,114 +246,42 @@
     <div class="profile-menu-item" onclick="exportAllData()"><div class="pmi-left"><span class="pmi-icon">💾</span><span class="pmi-text">导出所有数据</span></div><span class="pmi-arrow">›</span></div>
   </div>
 </div>
-
-<div class="page" id="page-profile-edit">
-  <div class="section"><div class="section-card">
-    <div class="section-title">📝 个人信息</div>
-    <div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div>
-    <div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div>
-    <div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div>
-    <div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div>
-  </div></div>
-</div>
-
-<div class="page" id="page-profile-project">
-  <div class="section"><div class="section-card">
-    <div class="section-title">🏗️ 项目信息</div>
-    <div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div>
-    <div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div>
-    <div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div>
-    <div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div>
-    <div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div>
-    <div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div>
-  </div>
-  <div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div>
-</div>
-
-<!-- 考核记录列表 -->
-<div class="page" id="page-assess">
-  <div class="section">
-    <div class="section-card">
-      <div class="section-title"><span>📊</span>历史考核记录</div>
-      <div id="assessRecordList"><div class="loading">加载中...</div></div>
-    </div>
-    <button class="btn-outline" style="width:100%" onclick="openPage('assess-form')">+ 新增考核</button>
-  </div>
-</div>
-
-<!-- 考核检查表（新增） -->
+<div class="page" id="page-profile-edit"><div class="section"><div class="section-card"><div class="section-title">📝 个人信息</div><div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div><div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div><div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div><div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div></div></div></div>
+<div class="page" id="page-profile-project"><div class="section"><div class="section-card"><div class="section-title">🏗️ 项目信息</div><div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div><div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div><div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div><div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div><div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div><div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div></div><div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div></div>
+<div class="page" id="page-assess"><div class="section"><div class="section-card"><div class="section-title"><span>📊</span>历史考核记录</div><div id="assessRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="openPage('assess-form')">+ 新增考核</button></div></div>
 <div class="page" id="page-assess-form">
   <div class="section" style="padding-bottom:0;">
     <div class="section-card" style="margin-bottom:8px;">
       <div class="field field-readonly"><label>项目名称</label><input id="a_project" readonly /></div>
-      <div class="field-row">
-        <div class="field"><label>考核日期</label><input id="a_date" type="date" /></div>
-        <div class="field"><label>考核人</label><input id="a_person" placeholder="姓名" /></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>项目经理</label><input id="a_mgr" placeholder="项目经理" /></div>
-        <div class="field"><label>质检员</label><input id="a_qc" placeholder="质检员" /></div>
-      </div>
-      <div class="field-row">
-        <div class="field"><label>施工员</label><input id="a_builder" placeholder="施工员" /></div>
-        <div class="field"><label>材料员</label><input id="a_material" placeholder="材料员" /></div>
-      </div>
+      <div class="field-row"><div class="field"><label>考核日期</label><input id="a_date" type="date" /></div><div class="field"><label>考核人</label><input id="a_person" placeholder="姓名" /></div></div>
+      <div class="field-row"><div class="field"><label>项目经理</label><input id="a_mgr" placeholder="项目经理" /></div><div class="field"><label>质检员</label><input id="a_qc" placeholder="质检员" /></div></div>
+      <div class="field-row"><div class="field"><label>施工员</label><input id="a_builder" placeholder="施工员" /></div><div class="field"><label>材料员</label><input id="a_material" placeholder="材料员" /></div></div>
     </div>
   </div>
   <div class="section" style="padding-top:0;" id="checklistContainer"></div>
   <div class="assess-total-bar">
-    <div class="atb-label">考核总分</div>
-    <div class="atb-score"><span id="totalScore">0</span> / 200</div>
+    <div class="atb-label">综合得分（满分100）</div>
+    <div class="atb-score"><span id="totalScore">0</span></div>
   </div>
-  <div class="section" style="padding-top:0;">
-    <button class="btn-primary btn-green" onclick="saveAssess()" id="assessSaveBtn">💾 提交考核记录</button>
-  </div>
+  <div class="section" style="padding-top:0;"><button class="btn-primary btn-green" onclick="saveAssess()" id="assessSaveBtn">💾 提交考核记录</button></div>
 </div>
-
-<!-- 考核详情页（查看明细） -->
-<div class="page" id="page-assess-detail">
-  <div class="section" id="assessDetailContent"></div>
-</div>
-
-<!-- 材料验收 -->
-<div class="page" id="page-material">
-  <div class="section"><div class="section-card"><div class="section-title"><span>📦</span>历史验收记录</div><div id="materialRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('material')">+ 新增验收</button></div>
-</div>
-<div class="page" id="page-process">
-  <div class="section"><div class="section-card"><div class="section-title"><span>🔧</span>历史自检记录</div><div id="processRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('process')">+ 新增自检</button></div>
-</div>
-<div class="page" id="page-signboard">
-  <div class="section"><div class="section-card"><div class="section-title"><span>🪧</span>历史验收记录</div><div id="signboardRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('signboard')">+ 新增验收</button></div>
-</div>
-<div class="page" id="page-waterproof">
-  <div class="section"><div class="section-card"><div class="section-title"><span>💧</span>历史检查记录</div><div id="waterproofRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('waterproof')">+ 新增检查</button></div>
-</div>
-<div class="page" id="page-protect">
-  <div class="section"><div class="section-card"><div class="section-title"><span>🛡️</span>历史检查记录</div><div id="protectRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('protect')">+ 新增检查</button></div>
-</div>
-<div class="page" id="page-testing">
-  <div class="section"><div class="section-card"><div class="section-title"><span>🧪</span>历史送检记录</div><div id="testingRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('testing')">+ 新增送检</button></div>
-</div>
-
-<!-- 通用表单弹窗 -->
-<div class="modal-mask" id="formModal">
-  <div class="modal">
-    <div class="modal-title" id="formTitle">新增记录 <button class="modal-close" onclick="closeModal('formModal')">✕</button></div>
-    <div id="formBody"></div>
-    <button class="btn-primary btn-green" id="formSaveBtn" onclick="saveCurrentForm()">💾 保存记录</button>
-  </div>
-</div>
-
+<div class="page" id="page-assess-detail"><div class="section" id="assessDetailContent"></div></div>
+<div class="page" id="page-material"><div class="section"><div class="section-card"><div class="section-title"><span>📦</span>历史验收记录</div><div id="materialRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('material')">+ 新增验收</button></div></div>
+<div class="page" id="page-process"><div class="section"><div class="section-card"><div class="section-title"><span>🔧</span>历史自检记录</div><div id="processRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('process')">+ 新增自检</button></div></div>
+<div class="page" id="page-signboard"><div class="section"><div class="section-card"><div class="section-title"><span>🪧</span>历史验收记录</div><div id="signboardRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('signboard')">+ 新增验收</button></div></div>
+<div class="page" id="page-waterproof"><div class="section"><div class="section-card"><div class="section-title"><span>💧</span>历史检查记录</div><div id="waterproofRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('waterproof')">+ 新增检查</button></div></div>
+<div class="page" id="page-protect"><div class="section"><div class="section-card"><div class="section-title"><span>🛡️</span>历史检查记录</div><div id="protectRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('protect')">+ 新增检查</button></div></div>
+<div class="page" id="page-testing"><div class="section"><div class="section-card"><div class="section-title"><span>🧪</span>历史送检记录</div><div id="testingRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('testing')">+ 新增送检</button></div></div>
+<div class="modal-mask" id="formModal"><div class="modal"><div class="modal-title" id="formTitle">新增记录 <button class="modal-close" onclick="closeModal('formModal')">✕</button></div><div id="formBody"></div><button class="btn-primary btn-green" id="formSaveBtn" onclick="saveCurrentForm()">💾 保存记录</button></div></div>
 <div class="navbar">
   <div class="nav-item active" onclick="switchTab('home',this)"><span class="nav-icon">🏠</span><span>首页</span></div>
   <div class="nav-item" onclick="switchTab('todo',this)"><span class="nav-icon">📝</span><span>待办</span></div>
   <div class="nav-item" onclick="switchTab('profile',this)"><span class="nav-icon">👤</span><span>我的</span></div>
 </div>
-
 <script>
 // ===== 考核检查表数据 =====
 var checklistData = [
-  { id:'cat1', icon:'🏗️', name:'一、标准化建设及周检', total:18,
+  { id:'cat1', icon:'📋', name:'一、标准化建设及周检', total:18,
     items: [
       { id:'c1i1', name:'办公室标准化建设及项目质量管理知识储备', score:2, content:'办公区是否按公司现场管理标准化要求悬挂有关图、牌：组织机构图、岗位职责牌、质量安全方针、晴雨表、形象进度图、项目质量目标。（每缺少一项扣1分）\n项目部需配备基础测量工具（卡尺、2m靠尺、镀锌层测厚仪），每缺少一项扣1分' },
       { id:'c1i2', name:'档案资料管理', score:5, content:'资料入盒存放，档案盒摆放整齐（未装盒/不整齐扣2分，未装盒但整齐且查找方便扣1分）\n资料台账清晰（无台账或不清晰扣2分，有但不清晰扣1分）含：材料进场台账、隐蔽验收台账、签证变更台账、材料封样台账、品牌报审台账\n收发文记录齐全（无记录扣2分，有但与台账不符扣1分）' },
@@ -417,13 +304,14 @@ var checklistData = [
       { id:'c2i10', name:'测量放线、控制点移交', score:1, content:'施工前完成测量放线、结构误差复测；每层板块安装需复核标高并留数据记录；板块安装前复核支座标高和进出位，有偏差及时报设计出方案。不符合扣1分' },
       { id:'c2i11', name:'材料进场验收', score:5, content:'材料进场必须自检，未自检发现批量不合格扣5分；有自检但未举牌扣3分；有自检有举牌，核实进场材料少一类型扣2分' },
       { id:'c2i12', name:'进场材料报审', score:10, content:'抽查每种进场材料最近三次报审记录，与现场材料对比，缺少一种材料未报审扣2分，其余单位问题扣分减半' },
-      { id:'c2i13', name:'技术交底', score:3, content:'设计交底文件（无交底扣2分，有但施工员/质检员未知扣1分）；特殊位置节点需反馈设计出方案(未发现扣1分）\n项目质量技术交底（每月更新，每缺一项扣1分；需注重现场实操交底，仅有纸质版扣1分）；需使用质量统表交底（24版GD-C1-3210）' },
-      { id:'c2i14', name:'隐蔽工程验收记录', score:5, content:'隐蔽工程应验收后方可进入下道工序，验收报审应与施工进度一致；抽查最近三次隐蔽验收，报审后未及时签回扣2分，缺举牌照片扣3分，未及时报审扣5分' },
-      { id:'c2i15', name:'检验批划分方案', score:5, content:'未做扣5分，已开始但未完成扣4分，已报至监理未签回扣3分，已完成但缺项每缺一项扣2分；未将施工电梯口和塔吊单独划分扣3分' },
-      { id:'c2i16', name:'检验批验收记录', score:2, content:'根据施工进度完成检验批验收，记录完整，否则每缺1检验批扣1分。缺举牌照片扣2分' },
-      { id:'c2i17', name:'质监站、监理、业主检查整改回复', score:2, content:'对监理通知、业主、质监站提出的问题是否及时整改回复。未回复扣2分' },
-      { id:'c2i18', name:'施工日志', score:3, content:'是否与工程进展同步且记录内容齐全，不同步一项扣1分，填写差3天扣1分' },
-      { id:'c2i19', name:'其他资料', score:2, content:'拉索幕墙张拉记录、结构胶现场剥离检测记录、淋水记录、防雷电阻测试记录、幕墙子分部验收记录、验收纪要、室内环境检测报告、消防验收回执、竣工报告。工序到了未开始编制每缺一项扣1分' }
+      { id:'c2i13', name:'设计交底', score:2, content:'设计交底文件（无交底扣2分，有但施工员/质检员未知扣1分）；特殊位置节点需反馈设计出方案(未发现扣1分）' },
+      { id:'c2i14', name:'项目质量技术交底', score:3, content:'每月更新交底；根据现场实际工序完成情况进行检查，每缺一项扣1分；需注重现场实操交底，交底仅有纸质版扣1分；需使用质量统表交底（24版GD-C1-3210）' },
+      { id:'c2i15', name:'隐蔽工程验收记录', score:5, content:'隐蔽工程应验收后方可进入下道工序，验收报审应与施工进度一致；抽查最近三次隐蔽验收，报审后未及时签回扣2分，缺举牌照片扣3分，未及时报审扣5分' },
+      { id:'c2i16', name:'检验批划分方案', score:5, content:'未做扣5分，已开始但未完成扣4分，已报至监理未签回扣3分，已完成但缺项每缺一项扣2分；未将施工电梯口和塔吊单独划分扣3分' },
+      { id:'c2i17', name:'检验批验收记录', score:2, content:'根据施工进度完成检验批验收，记录完整，否则每缺1检验批扣1分。缺举牌照片扣2分' },
+      { id:'c2i18', name:'质监站、监理、业主检查整改回复', score:2, content:'对监理通知、业主、质监站提出的问题是否及时整改回复。未回复扣2分' },
+      { id:'c2i19', name:'施工日志', score:3, content:'是否与工程进展同步且记录内容齐全，不同步一项扣1分，填写差3天扣1分' },
+      { id:'c2i20', name:'其他资料', score:2, content:'拉索幕墙张拉记录、结构胶现场剥离检测记录、淋水记录、防雷电阻测试记录、幕墙子分部验收记录、验收纪要、室内环境检测报告、消防验收回执、竣工报告。工序到了未开始编制每缺一项扣1分' }
     ]
   },
   { id:'cat3', icon:'🔬', name:'三、检验检测', total:25,
@@ -437,26 +325,149 @@ var checklistData = [
     ]
   },
   { id:'cat4', icon:'🏗️', name:'四、实体质量管理', total:70,
+    formula:'cat4',
     items: [
-      { id:'c4i1', name:'样板引路', score:10, content:'框架幕墙（焊接样板、骨架安装样板、装饰条打胶防水样板、玻璃安装样板、开启扇安装样板、玻璃打胶样板、装饰条安装样板等），缺少一项扣1分\n单元式幕墙（钢支座焊接、铝支座安装、起底横梁安装、板块安装、打胶防水样板），缺少一项扣1分\n门窗系统（窗框安装、塞缝、涂料打胶、门扇窗扇安装、推拉门/提升推拉门/电动开启扇功能样板），缺少一项扣1分\n其他类型（拉锁、全玻、金属/石材、吊顶、栏杆、钢结构、防火/防雷）参照执行\n得分=10-扣分总数/(项目包含的幕墙类型×5)×10' },
-      { id:'c4i2', name:'工序自检（举牌验收）', score:8, content:'需编制表格或打印平面图如实填写自查结果。工序完成进入下道工序前（尤其是隐蔽前），应进行举牌验收并记录。无举牌验收且质量问题较多（≥3个）扣8分，无记录但质量较好（<3个）扣6分。自检记录与现场实际不符扣4分' },
+      { id:'c4i1', name:'样板引路', type:'formula-group', formulaTotal:10, formulaType:'sample',
+        formulaDesc:'得分=10-x(扣分总数)÷{n(包含幕墙类型数)×5}×10\n无该种幕墙形式不计分，等比例转换分数',
+        subGroups:[
+          {id:'yb_kj',name:'框架幕墙',items:[
+            {id:'yb_kj_1',name:'焊接样板',maxDeduct:1},
+            {id:'yb_kj_2',name:'钢骨架/型材骨架安装样板',maxDeduct:1},
+            {id:'yb_kj_3',name:'与立柱连通的装饰条打胶防水样板',maxDeduct:1},
+            {id:'yb_kj_4',name:'玻璃安装样板',maxDeduct:1},
+            {id:'yb_kj_5',name:'开启扇安装样板',maxDeduct:1},
+            {id:'yb_kj_6',name:'玻璃打胶样板',maxDeduct:1},
+            {id:'yb_kj_7',name:'装饰条安装样板',maxDeduct:1}
+          ]},
+          {id:'yb_dy',name:'单元式幕墙',items:[
+            {id:'yb_dy_1',name:'钢支座焊接样板',maxDeduct:1},
+            {id:'yb_dy_2',name:'铝支座安装样板',maxDeduct:1},
+            {id:'yb_dy_3',name:'起底横梁安装样板',maxDeduct:1},
+            {id:'yb_dy_4',name:'板块安装样板',maxDeduct:1},
+            {id:'yb_dy_5',name:'打胶防水样板',maxDeduct:1}
+          ]},
+          {id:'yb_mc',name:'门窗系统',items:[
+            {id:'yb_mc_1',name:'窗框安装样板',maxDeduct:1},
+            {id:'yb_mc_2',name:'塞缝样板',maxDeduct:1},
+            {id:'yb_mc_3',name:'涂料涂刷/打胶样板',maxDeduct:1},
+            {id:'yb_mc_4',name:'门扇/窗扇/玻璃安装样板',maxDeduct:1},
+            {id:'yb_mc_5',name:'平开门安装样板',maxDeduct:1},
+            {id:'yb_mc_6',name:'普通推拉门安装样板',maxDeduct:1},
+            {id:'yb_mc_7',name:'提升推拉门安装样板',maxDeduct:1},
+            {id:'yb_mc_8',name:'电动开启扇功能样板',maxDeduct:1}
+          ]},
+          {id:'yb_ls',name:'拉锁幕墙',items:[
+            {id:'yb_ls_1',name:'耳板焊接样板',maxDeduct:1},
+            {id:'yb_ls_2',name:'拉锁安装样板',maxDeduct:1},
+            {id:'yb_ls_3',name:'玻璃安装样板',maxDeduct:1},
+            {id:'yb_ls_4',name:'打胶样板',maxDeduct:1}
+          ]},
+          {id:'yb_qp',name:'全玻幕墙',items:[
+            {id:'yb_qp_1',name:'钢架安装样板',maxDeduct:1},
+            {id:'yb_qp_2',name:'玻璃钢槽安装样板',maxDeduct:1},
+            {id:'yb_qp_3',name:'玻璃肋安装样板',maxDeduct:1},
+            {id:'yb_qp_4',name:'大面玻璃安装样板',maxDeduct:1},
+            {id:'yb_qp_5',name:'打胶样板',maxDeduct:1}
+          ]},
+          {id:'yb_js',name:'金属幕墙/石材幕墙',items:[
+            {id:'yb_js_1',name:'幕墙骨架安装样板',maxDeduct:1},
+            {id:'yb_js_2',name:'面板安装样板',maxDeduct:1},
+            {id:'yb_js_3',name:'打胶样板',maxDeduct:1}
+          ]},
+          {id:'yb_dd',name:'吊顶',items:[
+            {id:'yb_dd_1',name:'骨架安装样板',maxDeduct:1},
+            {id:'yb_dd_2',name:'面板安装样板',maxDeduct:1},
+            {id:'yb_dd_3',name:'打胶样板',maxDeduct:1}
+          ]},
+          {id:'yb_lg',name:'栏杆',items:[
+            {id:'yb_lg_1',name:'立柱安装样板',maxDeduct:1},
+            {id:'yb_lg_2',name:'面板安装/打胶样板',maxDeduct:1}
+          ]},
+          {id:'yb_gg',name:'钢结构',items:[
+            {id:'yb_gg_1',name:'钢结构焊接样板',maxDeduct:1},
+            {id:'yb_gg_2',name:'防火/防腐涂刷样板',maxDeduct:1}
+          ]},
+          {id:'yb_fh',name:'防火/防雷',items:[
+            {id:'yb_fh_1',name:'防火棉填塞、防火板安装、防火胶施打',maxDeduct:1},
+            {id:'yb_fh_2',name:'均压环安装、铜/铝导线安装',maxDeduct:1}
+          ]}
+        ]
+      },
+      { id:'c4i2', name:'工序自检（举牌验收）', score:4, maxDeduct:8, content:'需编制表格或打印平面图如实填写自查结果。工序完成进入下道工序施工前（尤其是隐蔽前），应进行举牌验收并记录。无举牌验收且质量问题较多（≥3个）扣8分，无记录但质量较好（<3个）扣6分。自检记录与现场实际不符扣4分' },
       { id:'c4i3', name:'焊工/打胶工/塞砂浆工/刷防水涂料工考核', score:2, content:'需进行入场考核，考核人数不符少一人扣1分，未考核扣2分' },
-      { id:'c4i4', name:'不合格控制', score:6, content:'是否每月开具不合格报告/整改通知并妥善整改关闭。不开具扣6分，未关闭/关闭不彻底扣3分；考核检查中渗漏隐患和结构受力风险未见管理痕迹扣6分' },
+      { id:'c4i4', name:'不合格控制', score:4, maxDeduct:6, content:'是否每月开具不合格报告/整改通知并妥善整改关闭。不开具扣6分，未关闭/关闭不彻底扣3分；考核检查中渗漏隐患和结构受力风险未见管理痕迹扣6分' },
       { id:'c4i5', name:'预埋件及后置埋件安装质量', score:4, content:'检查预埋件埋设质量及受力情况，后置埋件螺栓埋设深度、位置、露丝不足等。抽查10处不合格超三处扣2分，超五处扣4分' },
       { id:'c4i6', name:'焊接质量', score:3, content:'检查漏焊、焊缝厚度长度外观质量等，抽查10处，超三处扣2分，超五处扣3分。主受力构件焊接问题扣3分' },
       { id:'c4i7', name:'防腐质量', score:3, content:'检查防腐是否到位；是否两道防腐漆，钢铝连接有无防腐垫片。抽查10处，超三处扣2分，超五处扣3分' },
-      { id:'c4i8', name:'构件及面板安装固定质量', score:20, content:'单元板块：支座挂件固定、板块安装平齐、防跳钉限位钉、披水胶皮海绵、开启扇灵活、装饰条固定\n金属幕墙/吊顶：面板牢固、平整度、拼缝均匀、扣条安装\n石材幕墙：面板牢固、安装顺直、拼缝均匀、挂件垫片、附件安装\n门窗系统：塞缝饱满、防水涂料打胶、对角线偏差、玻璃安装、五金安装\n全玻幕墙：玻璃错台、入槽深度、玻璃肋均匀\n栏杆：立柱牢固、垂直度偏差、附件安装\n拉锁幕墙：张拉记录、面板平整度、拼缝均匀\n框架幕墙：垫块数量、压块固定、胶条安装、立柱插芯、扣盖固定、装饰条固定、开启扇\n得分=20-扣分总数/(包含的类型检查内容数量×5)×20' },
-      { id:'c4i9', name:'拉网板、格栅、遮阳板等构件安装固定', score:2, content:'外部构件是否固定牢固可靠，有无坠落隐患，核对图纸节点是否一致，否则扣2分' },
-      { id:'c4i10', name:'观感质量、色差', score:4, content:'检查已安装材料是否存在色差、观感质量差等情况，存在一处扣2分，面积较多（连续出现）扣4分。有色差但已走不合格报告扣分减半' },
-      { id:'c4i11', name:'打胶质量', score:3, content:'检查外露胶缝观感及颜色。起鼓、开裂、镂空、不连续扣2分，数量较多扣3分' },
-      { id:'c4i12', name:'材料及成品保护', score:10, content:'已完成安装材料：是否做好成品保护，型材铝板玻璃是否存在污染划伤烫伤，设备未做成品保护发现一处扣2分，材料污染划伤烫伤2处以内扣1分，3-5处扣3分，5处以上扣5分\n材料堆放：堆放是否整齐，堆放不符合一处扣2分，整体混乱扣5分' },
-      { id:'c4i13', name:'防火层', score:3, content:'防火棉填充是否密实、是否正确使用；防火钢板铁皮是否固定，打钉间距是否在300mm以内；防火胶有无开裂、打钉处有无打胶，与立柱交接有无漏打胶；每项扣1分' },
-      { id:'c4i14', name:'防雷', score:2, content:'焊缝长度质量防腐符合要求，防雷系统上下贯通，分格满足规范；导电片接触位置涂层清理干净。门窗、室外栏杆、铝板等有独立接地。否则每项扣2分' }
+      { id:'c4i8', name:'构件及面板安装固定质量', type:'formula-group', formulaTotal:20, formulaType:'panel',
+        formulaDesc:'得分=20-y(扣分总数)÷{z(包含的类型检查内容数量)×5}×20\n无该种幕墙形式不计分，等比例转换分数',
+        subGroups:[
+          {id:'gj_dy',name:'单元板块',items:[
+            {id:'gj_dy_1',name:'单元板块支座、挂件固定',score:5,content:'固定是否牢固、锯齿垫片安装是否对正、支座型号是否使用正确、支座有无切割（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_dy_2',name:'单元板块安装',score:5,content:'板块上下口是否平齐、板缝是否均匀符合设计要求、上下板块插入深度是否满足设计要求（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_dy_3',name:'防跳钉、限位钉安装',score:5,content:'单元板块安装就位后防跳钉、限位钉是否安装，板块调节螺杆是否到位（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_dy_4',name:'板块披水胶皮安装',score:5,content:'有无安装，密孔海绵、疏孔海绵有无安装，铝支座有无安装防腐垫片；十字拼缝有无打胶封堵（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_dy_5',name:'单元板块开启扇（开启器）',score:5,content:'开启是否灵活、顺畅、关闭是否严密。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分），如果属于工厂、外协、供应商问题，检查不合格报告，有报告扣分减半'},
+            {id:'gj_dy_6',name:'装饰条、限位钉等安装',score:5,content:'装饰条是否按设计要求固定；限位钉是否安装；定位插销是否安装；封口板安装是否牢固；安装是否牢固、有无异响；存在一项扣5分，安装是否存在错台、进出位相差过大，不顺直情况（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'}
+          ]},
+          {id:'gj_js',name:'金属幕墙/吊顶',items:[
+            {id:'gj_js_1',name:'金属面板、挂件固定',score:5,content:'金属面板是否牢固，挂件是否按设计要求固定，有无缺少龙骨，是否有漏钉，锯齿垫片是否对齿。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_js_2',name:'金属面板、骨架安装顺直',score:5,content:'金属面板、骨架安装是否顺直，平整度有无问题（公司内控：金属面板平面度≤1.5mm，竖缝直线度≤1.5mm，横缝直线度≤1.5mm）（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_js_3',name:'金属面板拼缝均匀',score:5,content:'金属面板拼缝是否均匀（拼缝宽度与设计比较±2mm），抽查五个分隔，一个分隔不合格扣1分，2个分隔不合格扣3分，3个分隔不合格扣5分'},
+            {id:'gj_js_4',name:'金属板缝间小扣条安装',score:5,content:'金属板缝间小扣条是否安装牢固，是否按设计要求固定（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'}
+          ]},
+          {id:'gj_sc',name:'石材幕墙',items:[
+            {id:'gj_sc_1',name:'石材面板牢固',score:5,content:'石材面板是否牢固，有无缺少龙骨，挂接点是否牢固（抽查10处，三处以内不符合扣1分，超过三处不符合扣3分，超过五处不合格扣5分）'},
+            {id:'gj_sc_2',name:'石材面板安装顺直',score:5,content:'石材面板安装是否顺直，平面度有无问题，是否有错台（公司内控：平面度≤2.5mm，竖缝直线度≤2.5mm，横缝直线度≤2.5mm）抽查10处，超过三处不符合要求扣3分，超过五处不符合要求扣5分'},
+            {id:'gj_sc_3',name:'石材面板拼缝均匀',score:5,content:'石材面板拼缝是否均匀（拼缝宽度与设计比较±2mm），拼缝调节需使用软质材料，不得损坏石材边角。抽查五个分隔，一个不合格扣1分，2个不合格扣3分，3个不合格扣5分'},
+            {id:'gj_sc_4',name:'石材挂件可调节锯齿垫片',score:5,content:'石材挂件可调节锯齿垫片是否对齿，安装是否牢固，抽查10处，超过三处未安装扣3分，超过五处不合格扣5分'},
+            {id:'gj_sc_5',name:'石材幕墙附件安装',score:5,content:'石材幕墙附件安装情况，挂槽位置打胶是否按图施工，胶条安装是否遗漏。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'}
+          ]},
+          {id:'gj_mc',name:'门窗系统',items:[
+            {id:'gj_mc_1',name:'门窗塞缝',score:5,content:'门窗塞缝是否饱满，有无镂空、开裂、塞缝处漏撕保护膜、室内外塞缝不同步等问题（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_mc_2',name:'防水涂料涂刷、打胶',score:5,content:'防水涂料涂刷、打胶是否符合设计要求，防水涂料涂刷两遍（垂直方向），涂膜需压过窗框5mm，压过外墙50mm。涂刷位置是否漏撕保护膜。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）；防水涂料与型材间漏打胶扣5分'},
+            {id:'gj_mc_3',name:'窗框、门框对角线偏差',score:5,content:'窗框、门框对角线偏差≤2mm，门框垂直度、水平度需保证在2mm内，提升推拉门垂直度、水平度需保证在1mm内。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_mc_4',name:'门窗固定玻璃安装',score:5,content:'门窗固定玻璃安装是否按设计要求填塞垫块，胶条安装是否牢固，室外侧有无打胶，压线安装是否牢固，有无变形。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_mc_5',name:'门窗五金安装',score:5,content:'检查门窗五金安装情况，执手是否松动，合叶、铰链、风撑等是否安装正常。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）如果属于工厂、外协、供应商问题，检查不合格报告，有报告扣分减半'}
+          ]},
+          {id:'gj_qp',name:'全玻幕墙',items:[
+            {id:'gj_qp_1',name:'玻璃安装错台',score:5,content:'玻璃安装是否出现错台，平面度≤2.5mm，抽查5个分隔，1处错台超标准扣1分，2处错台超标准扣3分，超过2处扣5分'},
+            {id:'gj_qp_2',name:'玻璃入槽深度',score:5,content:'玻璃入槽深度是否符合设计要求，玻璃夹具固定是否牢固，大螺栓安装是否紧固到位。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_qp_3',name:'玻璃肋安装',score:5,content:'玻璃肋安装是否均匀，玻璃肋需位于相邻玻璃板缝中间，左右误差≤2.5mm，抽查五处玻璃肋，一处不合格扣1分，2处不合格扣3分，3处不合格扣5分'}
+          ]},
+          {id:'gj_lg',name:'栏杆',items:[
+            {id:'gj_lg_1',name:'栏杆立柱安装',score:5,content:'栏杆立柱安装是否牢固，连接节点是否按图施工，栏杆玻璃安装是否按图施加垫片，栏杆高度是否符合设计要求。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_lg_2',name:'栏杆垂直度及缝隙偏差',score:5,content:'栏杆立柱垂直度偏差、栏杆扶手缝隙偏差、立柱分隔偏差≤2mm。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_lg_3',name:'附件安装',score:5,content:'附件安装情况，硬质垫块安装、防腐垫片安装，是否存在玻璃与栏杆间硬碰硬情况。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'}
+          ]},
+          {id:'gj_lk',name:'拉锁幕墙',items:[
+            {id:'gj_lk_1',name:'张拉记录',score:5,content:'检查张拉记录，张拉力需满足设计要求，无张拉记录或张拉值有不符合设计要求的情况扣5分'},
+            {id:'gj_lk_2',name:'面板平整度、垂直度',score:5,content:'面板平整度、垂直度是否符合要求（公司内控：平面度≤2.5mm，竖缝直线度≤2.5mm，横缝直线度≤2.5mm）抽查10处（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_lk_3',name:'横梁立柱拼缝',score:5,content:'横梁立柱拼缝是否均匀（拼缝要求≤2mm），立柱垂直度、横梁水平度≤2mm，相邻横梁高低差≤1mm。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'}
+          ]},
+          {id:'gj_kj',name:'框架幕墙',items:[
+            {id:'gj_kj_1',name:'明框/半隐框幕墙垫块',score:5,content:'明框（半隐框）幕墙垫块数量及长度不足（每块玻璃下应设置数量不少于2个，长度不小于10cm的硬质垫块）具体情况以设计图纸为准。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_kj_2',name:'压块/压板固定',score:5,content:'压块数量或压板固定点数量不足，压块间距不小于300mm，距离边部不大于100mm。抽查10处（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_kj_3',name:'胶条安装',score:5,content:'胶条安装情况是否过短、不牢固（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分），降噪垫片安装情况（有安装，但外露扣3分,未安装扣5分）'},
+            {id:'gj_kj_4',name:'立柱钢插芯及铝插芯',score:5,content:'立柱钢插芯及相邻立柱铝插芯是否满足设计要求，立柱钢插芯深度大于200mm，上下立柱铝插芯预留缝隙应大于15mm，上下立柱打胶是否饱满，有无漏胶。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_kj_5',name:'扣盖固定',score:5,content:'扣盖是否按设计要求固定，安装是否牢固，有无打胶或打钉加固处理（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分）'},
+            {id:'gj_kj_6',name:'装饰条固定',score:5,content:'装饰条是否按设计要求固定；限位钉是否安装；定位插销是否安装；封口板安装是否牢固；有无异响；存在一项扣5分'},
+            {id:'gj_kj_7',name:'框架幕墙开启扇',score:5,content:'框架幕墙开启扇执手是否松动，合叶、铰链、风撑等是否安装正常；开启是否灵活、顺畅、关闭是否严密。（抽查10处,1-2处不合格扣1分，3-4处不合格扣2分，≥5处不合格扣5分），如果属于工厂、外协、供应商问题，检查不合格报告，有报告扣分减半'}
+          ]}
+        ]
+      },
+      { id:'c4i9', name:'拉网板、格栅、遮阳板等构件安装固定', score:2, content:'拉网板、格栅、遮阳等幕墙外部构件是否固定牢固可靠，有无坠落隐患，核对图纸节点是否一致，否则扣2分' },
+      { id:'c4i10', name:'观感质量、色差', score:4, content:'检查已安装材料是否存在色差、观感质量差等情况（如铝板、石材、不锈钢、玻璃等），存在一处扣2分。面积较多（连续出现）扣4分。有色差但已走不合格报告扣分减半' },
+      { id:'c4i11', name:'打胶质量', score:3, content:'检查外露胶缝观感及颜色。出现起鼓、开裂、镂空、不连续等现象扣2分，数量较多扣3分。刮胶顺序需按视觉方向；泡沫棒填充不能有空隙（易导致起泡）；铝板宽幅大于3m后需及时更换速干胶' },
+      { id:'c4i12', name:'材料及成品保护（已完成安装材料）', score:4, content:'完成安装后的材料是否做好成品保护，型材、铝板、玻璃是否存在污染、划伤、烫伤，安装设备是否有做成品保护措施。安装设备未做成品保护措施发现一处扣2分，材料存在污染、划伤、烫伤现象2处以内扣1分，3-5处扣3分，5处以上扣5分' },
+      { id:'c4i13', name:'材料及成品保护（材料堆放）', score:4, content:'堆场材料堆放是否整齐，型材、铝板、玻璃等材料堆放是否做好成品保护，堆放不符合要求出现一处扣2分，整体摆放混乱扣5分' },
+      { id:'c4i14', name:'防火层', score:3, content:'防火棉填充是否密实，是否正确使用；防火钢板、铁皮是否固定，且打钉间距是否在300mm以内；防火胶有无开裂、打钉处有无打胶，与立柱交接有无漏打胶；每项扣1分' },
+      { id:'c4i15', name:'防雷', score:2, content:'焊缝长度、质量、防腐等符合要求，防雷系统上下贯通，分格满足规范要求；导电片接触位置涂层清理干净。门窗、室外栏杆、铝板等有独立接地。否则每项扣2分' }
     ]
   },
   { id:'cat5', icon:'💧', name:'五、防渗漏及整改闭合', total:30,
     items: [
-      { id:'c5i1', name:'防水质量', score:10, content:'重点检查：背板、装饰条内部、压顶、排水槽、首层幕墙底部、悬窗、伸缩缝、连桥、单元板块端头、不同幕墙衔接位置、栏杆立柱上口等部位防水打胶及胶条安装质量\n出屋面：板块十字缝打胶、框架横梁立柱拼缝、与结构交接处理、钢通封堵、连接件封堵\n阳台：栏杆扶手/立柱接缝打胶、防水铁皮打钉位置、包边铝板玻璃间打胶、与主体结构交接\n开启扇：胶条压缩量、胶条类型、组框错台、组角胶、转换框打胶、排水孔大小数量\n门窗：窗框门框与结构交接（砂浆塞缝、防水涂料、型材与结构间打胶）、组角胶、转换框打胶、室外侧玻璃打胶、拼接窗框打胶、门框下口排水孔\n玻璃幕墙底口：幕墙与结构间缝隙处理、起底立柱鼻腔下口打胶、铝板交接位置打胶\n无隐患不扣分，存在渗漏隐患无处理方案扣3分，施工质量问题造成隐患扣5分，未按图施工造成隐患扣10分' },
+      { id:'c5i1', name:'防水质量', score:10, content:'重点检查：背板、装饰条内部、压顶、排水槽、首层幕墙底部、悬窗、伸缩缝、连桥、单元板块端头、不同幕墙衔接位置、栏杆立柱上口等部位防水打胶及胶条安装质量\n无隐患不扣分，存在渗漏隐患无处理方案扣3分，施工质量问题造成隐患扣5分，未按图施工造成隐患扣10分' },
       { id:'c5i2', name:'淋水测试', score:15, content:'单元式幕墙：每层进行水槽闭水试验，安装2-3层后必须淋水实验，检查记录及影像资料，无起底横梁水槽闭水实验扣3分；有淋水实验但未按进度执行扣5分，无淋水实验扣15分。无淋水方案扣5分\n住宅门窗系统：大面施工前必须进行样板安装及淋水试验，未进行样板淋水实验就大面施工扣15分。无淋水方案扣5分\n框架式幕墙：需进行工艺样板安装并淋水试验，未进行样板淋水试验已大面施工扣15分。无淋水方案扣5分' },
       { id:'c5i3', name:'公司巡视检查以及流程闭合情况', score:5, content:'流程提交后7个工作日内未回复，每逾期1天扣1分' }
     ]
@@ -482,8 +493,9 @@ var API = {
   async initFields() { return this.request('/api/init-fields', {}); }
 };
 
-// ===== 缓存记录数据供详情查看 =====
 var assessRecordsCache = [];
+var assessPhotos = {};
+var sgIncluded = {}; // 幕墙子分组是否包含
 
 function updateSyncBar() {
   var bar = document.getElementById('syncBar');
@@ -491,7 +503,6 @@ function updateSyncBar() {
   else { bar.className='sync-bar'; bar.style.display=''; bar.textContent='⚠️ 离线模式'; }
 }
 function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2000); }
-
 var profile = JSON.parse(localStorage.getItem('qc_profile')||'{}');
 var project = JSON.parse(localStorage.getItem('qc_project')||'{}');
 var todos = JSON.parse(localStorage.getItem('qc_todos')||'[]');
@@ -500,7 +511,6 @@ var currentFormType = '';
 // ===== 导航 =====
 var pageHistory = ['home'];
 var mainPages = {home:true, todo:true, profile:true};
-
 function switchTab(name, el) {
   pageHistory = [name];
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -512,7 +522,6 @@ function switchTab(name, el) {
   if(name==='home') loadHomeStats();
   window.scrollTo(0,0);
 }
-
 function openPage(name) {
   pageHistory.push(name);
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -523,7 +532,6 @@ function openPage(name) {
   if(name==='assess-form') initAssessForm();
   window.scrollTo(0,0);
 }
-
 function goBack() {
   pageHistory.pop();
   var name = pageHistory[pageHistory.length-1]||'home';
@@ -537,7 +545,6 @@ function goBack() {
   }
   updateTopbar(name); window.scrollTo(0,0);
 }
-
 var pageTitles = {
   home:['工程质量管理','质量巡查 · 高效管理'], todo:['待办事项','今日任务一览'], profile:['个人中心','基本信息管理'],
   'profile-edit':['编辑个人信息','填写您的基本资料'], 'profile-project':['项目信息设置','设置后将自动填充'],
@@ -564,14 +571,21 @@ function delTodo(i){todos.splice(i,1);localStorage.setItem('qc_todos',JSON.strin
 function loadHomeStats() { document.getElementById('statTodo').textContent=todos.filter(function(t){return !t.done;}).length; }
 
 // ===== 考核检查表 =====
-var assessPhotos = {};
-
 function initAssessForm() {
   fillProjectFields();
   document.getElementById('a_date').value = new Date().toISOString().split('T')[0];
   if(profile.name) document.getElementById('a_person').value = profile.name;
   if(project.mgr) document.getElementById('a_mgr').value = project.mgr;
   assessPhotos = {};
+  // 默认所有子分组包含
+  sgIncluded = {};
+  checklistData.forEach(function(cat){
+    if(cat.items) cat.items.forEach(function(item){
+      if(item.type==='formula-group' && item.subGroups){
+        item.subGroups.forEach(function(sg){ sgIncluded[sg.id]=true; });
+      }
+    });
+  });
   renderChecklist();
 }
 
@@ -584,21 +598,81 @@ function renderChecklist() {
     html += '<div class="cat-header-left"><span class="cat-icon">'+cat.icon+'</span><span class="cat-name">'+cat.name+'</span><span class="cat-score" id="catScore_'+ci+'">('+cat.total+'分)</span></div>';
     html += '<span class="cat-arrow">›</span></div>';
     html += '<div class="cat-body'+(ci===0?' open':'')+'" id="catBody_'+ci+'">';
+
     cat.items.forEach(function(item, ii) {
-      html += '<div class="check-item">';
-      html += '<div class="check-item-head"><div class="check-item-name">'+(ii+1)+'. '+item.name+'</div><div class="check-item-std">'+item.score+'分</div></div>';
-      html += '<div class="check-item-content">'+item.content+'</div>';
-      html += '<div class="check-item-row"><label class="deduct-label">扣分：</label><input type="number" min="0" max="'+item.score+'" value="0" step="0.5" id="deduct_'+item.id+'" onchange="calcAll()" /><label>得分：</label><span class="score-display" id="itemScore_'+item.id+'">'+item.score+'</span></div>';
-      html += '<div class="check-item-remark"><textarea id="remark_'+item.id+'" placeholder="问题说明（选填）"></textarea></div>';
-      html += '<div class="item-photo-area" id="photoArea_'+item.id+'">';
-      html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+item.id+'\',this)" /></div>';
-      html += '</div></div>';
+      if(item.type === 'formula-group') {
+        // 公式分组项（样板引路/构件面板）
+        html += renderFormulaGroup(item, ii);
+      } else {
+        // 普通项
+        html += renderNormalItem(item, ii);
+      }
     });
+
     html += '<div class="cat-subtotal">小计得分：<span id="catTotal_'+ci+'">'+cat.total+'</span> / '+cat.total+'</div>';
     html += '</div></div>';
   });
   container.innerHTML = html;
   calcAll();
+}
+
+function renderFormulaGroup(item, idx) {
+  var html = '';
+  html += '<div class="formula-item">';
+  html += '<div class="fi-head"><span class="fi-name">'+item.name+'</span><span class="fi-total">满分'+item.formulaTotal+'分</span></div>';
+  html += '<div class="fi-formula">'+item.formulaDesc.replace(/\n/g,'<br/>')+'</div>';
+
+  item.subGroups.forEach(function(sg, si) {
+    var included = sgIncluded[sg.id] !== false;
+    html += '<div class="subgroup-header'+(si===0?' expanded':'')+'" onclick="toggleSubGroup(this)">';
+    html += '<div class="subgroup-left"><span class="sg-name">'+sg.name+'</span>';
+    var sgDeduct = 0;
+    sg.items.forEach(function(si2){ sgDeduct += parseFloat(document.getElementById('deduct_'+si2.id)?.value)||0; });
+    html += '<span class="sg-score" id="sgScore_'+sg.id+'"></span></div>';
+    html += '<div class="subgroup-toggle">';
+    html += '<span class="'+(included?'sg-included':'sg-excluded')+'" id="sgToggle_'+sg.id+'" onclick="event.stopPropagation();toggleIncluded(\''+sg.id+'\')">'+(included?'✓ 包含':'不含')+'</span>';
+    html += '<span class="sg-arrow">›</span></div></div>';
+    html += '<div class="subgroup-body'+(si===0?' open':'')+'" id="sgBody_'+sg.id+'">';
+
+    sg.items.forEach(function(si2, sii) {
+      html += '<div class="sub-check"'+(included?'':' style="opacity:0.4;"')+'>';
+      html += '<div class="sc-head"><span class="sc-name">'+(sii+1)+'. '+si2.name+'</span>';
+      if(si2.score) html += '<span class="sc-std">'+si2.score+'分</span>';
+      html += '</div>';
+      if(si2.content) {
+        html += '<div class="sc-content" id="scContent_'+si2.id+'">'+si2.content+'</div>';
+        html += '<div class="sc-toggle" onclick="var c=document.getElementById(\'scContent_'+si2.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起 ▲\':\'检查标准 ▼\';">检查标准 ▼</div>';
+      }
+      html += '<div class="sc-row">';
+      html += '<label style="color:#e74c3c;">扣分：</label>';
+      html += '<input type="number" min="0" max="'+(si2.score||si2.maxDeduct||5)+'" value="0" step="0.5" id="deduct_'+si2.id+'" onchange="calcAll()" />';
+      if(si2.maxDeduct) html += '<label style="color:#999;">/ '+(si2.maxDeduct||si2.score)+'</label>';
+      html += '</div>';
+      html += '<div class="check-item-remark"><textarea id="remark_'+si2.id+'" placeholder="问题说明（选填）"></textarea></div>';
+      html += '<div class="item-photo-area" id="photoArea_'+si2.id+'">';
+      html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+si2.id+'\',this)" /></div>';
+      html += '</div></div>';
+    });
+
+    html += '</div>';
+  });
+
+  html += '<div class="fi-result" id="formulaResult_'+item.id+'">'+item.formulaTotal+'.00</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderNormalItem(item, idx) {
+  var maxD = item.maxDeduct || item.score;
+  var html = '<div class="check-item">';
+  html += '<div class="check-item-head"><div class="check-item-name">'+item.name+'</div><div class="check-item-std">'+item.score+'分</div></div>';
+  html += '<div class="check-item-content">'+item.content+'</div>';
+  html += '<div class="check-item-row"><label class="deduct-label">扣分：</label><input type="number" min="0" max="'+maxD+'" value="0" step="0.5" id="deduct_'+item.id+'" onchange="calcAll()" /><label>得分：</label><span class="score-display" id="itemScore_'+item.id+'">'+item.score+'</span></div>';
+  html += '<div class="check-item-remark"><textarea id="remark_'+item.id+'" placeholder="问题说明（选填）"></textarea></div>';
+  html += '<div class="item-photo-area" id="photoArea_'+item.id+'">';
+  html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+item.id+'\',this)" /></div>';
+  html += '</div></div>';
+  return html;
 }
 
 function toggleCat(header) {
@@ -607,24 +681,160 @@ function toggleCat(header) {
   else { body.classList.add('open'); header.classList.add('expanded'); }
 }
 
+function toggleSubGroup(header) {
+  var body = header.nextElementSibling;
+  if(body.classList.contains('open')){ body.classList.remove('open'); header.classList.remove('expanded'); }
+  else { body.classList.add('open'); header.classList.add('expanded'); }
+}
+
+function toggleIncluded(sgId) {
+  sgIncluded[sgId] = !sgIncluded[sgId];
+  var el = document.getElementById('sgToggle_'+sgId);
+  var body = document.getElementById('sgBody_'+sgId);
+  if(sgIncluded[sgId]){
+    el.className='sg-included'; el.textContent='✓ 包含';
+    body.querySelectorAll('.sub-check').forEach(function(c){c.style.opacity='1';});
+  } else {
+    el.className='sg-excluded'; el.textContent='不含';
+    body.querySelectorAll('.sub-check').forEach(function(c){c.style.opacity='0.4';});
+    body.querySelectorAll('input[type=number]').forEach(function(inp){inp.value='0';});
+  }
+  calcAll();
+}
+
+// ===== 核心计算 =====
 function calcAll() {
-  var grandTotal = 0;
+  var catScores = [];
   checklistData.forEach(function(cat, ci) {
-    var catTotal = 0;
-    cat.items.forEach(function(item) {
-      var deduct = parseFloat(document.getElementById('deduct_'+item.id).value)||0;
-      deduct = Math.min(Math.max(deduct,0), item.score);
-      var itemScore = Math.max(0, item.score - deduct);
-      document.getElementById('itemScore_'+item.id).textContent = itemScore;
-      catTotal += itemScore;
-    });
-    document.getElementById('catTotal_'+ci).textContent = catTotal;
-    document.getElementById('catScore_'+ci).textContent = '('+catTotal+'/'+cat.total+'分)';
-    grandTotal += catTotal;
+    if(cat.id === 'cat4') {
+      catScores.push(calcCat4());
+    } else {
+      var catTotal = cat.total;
+      var totalDeduct = 0;
+      cat.items.forEach(function(item) {
+        var deduct = parseFloat(document.getElementById('deduct_'+item.id)?.value)||0;
+        deduct = Math.min(Math.max(deduct,0), item.maxDeduct||item.score);
+        var itemScore = Math.max(0, item.score - deduct);
+        var el = document.getElementById('itemScore_'+item.id);
+        if(el) el.textContent = itemScore;
+        totalDeduct += deduct;
+      });
+      var catScore = Math.max(0, cat.total - totalDeduct);
+      catScores.push(catScore);
+      document.getElementById('catTotal_'+ci).textContent = catScore;
+      document.getElementById('catScore_'+ci).textContent = '('+catScore+'/'+cat.total+'分)';
+    }
   });
+
+  // 综合得分 = (五类之和)/2
+  var grandTotal = 0;
+  catScores.forEach(function(s){ grandTotal += s; });
+  grandTotal = Math.round(grandTotal / 2 * 100) / 100;
   document.getElementById('totalScore').textContent = grandTotal;
 }
 
+function calcCat4() {
+  // 第四类公式: 40 - SUM(普通项扣分) + 样板引路得分 + 构件面板得分
+  var sampleScore = 0, panelScore = 0;
+  var simpleDeductions = 0;
+
+  checklistData.forEach(function(cat){
+    if(cat.id !== 'cat4') return;
+    cat.items.forEach(function(item, ii) {
+      if(item.type === 'formula-group') {
+        if(item.formulaType === 'sample') {
+          sampleScore = calcSampleScore(item);
+        } else if(item.formulaType === 'panel') {
+          panelScore = calcPanelScore(item);
+        }
+      } else {
+        var deduct = parseFloat(document.getElementById('deduct_'+item.id)?.value)||0;
+        deduct = Math.min(Math.max(deduct,0), item.maxDeduct||item.score);
+        var itemScore = Math.max(0, item.score - deduct);
+        var el = document.getElementById('itemScore_'+item.id);
+        if(el) el.textContent = itemScore;
+        simpleDeductions += deduct;
+      }
+    });
+  });
+
+  var cat4Score = Math.max(0, 40 - simpleDeductions + sampleScore + panelScore);
+  document.getElementById('catTotal_3').textContent = cat4Score;
+  document.getElementById('catScore_3').textContent = '('+cat4Score+'/70分)';
+  return cat4Score;
+}
+
+function calcSampleScore(item) {
+  // 得分=10-x(扣分总数)÷{n(包含幕墙类型数)×5}×10
+  var totalDeduct = 0;
+  var includedTypes = 0;
+  item.subGroups.forEach(function(sg) {
+    if(sgIncluded[sg.id] === false) return;
+    includedTypes++;
+    var sgDeduct = 0;
+    sg.items.forEach(function(si) {
+      var d = parseFloat(document.getElementById('deduct_'+si.id)?.value)||0;
+      d = Math.min(Math.max(d,0), si.maxDeduct||1);
+      sgDeduct += d;
+    });
+    // 每类型最多扣5分
+    sgDeduct = Math.min(sgDeduct, 5);
+    totalDeduct += sgDeduct;
+  });
+  var score = 0;
+  if(includedTypes > 0) {
+    score = 10 - (totalDeduct / (includedTypes * 5)) * 10;
+    score = Math.max(0, Math.min(10, score));
+  }
+  score = Math.round(score * 100) / 100;
+  var el = document.getElementById('formulaResult_'+item.id);
+  if(el) el.textContent = score.toFixed(2) + '分';
+  // 更新子分组得分显示
+  item.subGroups.forEach(function(sg){
+    var sgEl = document.getElementById('sgScore_'+sg.id);
+    if(sgEl) {
+      var d = 0;
+      sg.items.forEach(function(si){ d += (parseFloat(document.getElementById('deduct_'+si.id)?.value)||0); });
+      d = Math.min(d, 5);
+      sgEl.textContent = '扣'+d+'分';
+    }
+  });
+  return score;
+}
+
+function calcPanelScore(item) {
+  // 得分=20-y(扣分总数)÷{z(包含的检查内容数量)×5}×20
+  var totalDeduct = 0;
+  var includedItems = 0;
+  item.subGroups.forEach(function(sg) {
+    if(sgIncluded[sg.id] === false) return;
+    sg.items.forEach(function(si) {
+      includedItems++;
+      var d = parseFloat(document.getElementById('deduct_'+si.id)?.value)||0;
+      d = Math.min(Math.max(d,0), si.score||5);
+      totalDeduct += d;
+    });
+  });
+  var score = 0;
+  if(includedItems > 0) {
+    score = 20 - (totalDeduct / (includedItems * 5)) * 20;
+    score = Math.max(0, Math.min(20, score));
+  }
+  score = Math.round(score * 100) / 100;
+  var el = document.getElementById('formulaResult_'+item.id);
+  if(el) el.textContent = score.toFixed(2) + '分';
+  item.subGroups.forEach(function(sg){
+    var sgEl = document.getElementById('sgScore_'+sg.id);
+    if(sgEl) {
+      var d = 0;
+      sg.items.forEach(function(si){ d += (parseFloat(document.getElementById('deduct_'+si.id)?.value)||0); });
+      sgEl.textContent = '扣'+d+'分';
+    }
+  });
+  return score;
+}
+
+// ===== 照片 =====
 function addPhoto(itemId, input) {
   if(!input.files||!input.files[0])return;
   var file = input.files[0];
@@ -638,9 +848,7 @@ function addPhoto(itemId, input) {
   reader.readAsDataURL(file);
   input.value = '';
 }
-
 function removePhoto(itemId, idx) { if(assessPhotos[itemId]){assessPhotos[itemId].splice(idx,1);if(assessPhotos[itemId].length===0)delete assessPhotos[itemId];renderPhotos(itemId);} }
-
 function renderPhotos(itemId) {
   var area = document.getElementById('photoArea_'+itemId);
   var photos = assessPhotos[itemId]||[];
@@ -651,7 +859,6 @@ function renderPhotos(itemId) {
   html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+itemId+'\',this)" /></div>';
   area.innerHTML = html;
 }
-
 function previewPhoto(itemId, idx) {
   var src = assessPhotos[itemId]&&assessPhotos[itemId][idx];
   if(!src)return;
@@ -662,17 +869,36 @@ function previewPhoto(itemId, idx) {
   overlay.appendChild(img);document.body.appendChild(overlay);
 }
 
+// ===== 提交考核 =====
 async function saveAssess() {
   var totalScore = document.getElementById('totalScore').textContent;
   var detail = {};
   var photoSummary = {};
   checklistData.forEach(function(cat) {
     cat.items.forEach(function(item) {
-      var deduct = parseFloat(document.getElementById('deduct_'+item.id).value)||0;
-      var remark = document.getElementById('remark_'+item.id).value||'';
-      var itemScore = Math.max(0, item.score - deduct);
-      detail[item.id] = {name:item.name, score:item.score, deduct:deduct, got:itemScore, remark:remark, content:item.content};
-      if(assessPhotos[item.id]&&assessPhotos[item.id].length>0) photoSummary[item.id]=assessPhotos[item.id].length;
+      if(item.type === 'formula-group') {
+        var formulaScore = 0;
+        if(item.formulaType==='sample') formulaScore = calcSampleScore(item);
+        else if(item.formulaType==='panel') formulaScore = calcPanelScore(item);
+        var subDetail = {};
+        item.subGroups.forEach(function(sg) {
+          var sgInfo = {name:sg.name, included: sgIncluded[sg.id]!==false, items:{}};
+          sg.items.forEach(function(si) {
+            var d = parseFloat(document.getElementById('deduct_'+si.id)?.value)||0;
+            var r = document.getElementById('remark_'+si.id)?.value||'';
+            sgInfo.items[si.id] = {name:si.name, deduct:d, remark:r};
+            if(assessPhotos[si.id]&&assessPhotos[si.id].length>0) photoSummary[si.id]=assessPhotos[si.id].length;
+          });
+          subDetail[sg.id] = sgInfo;
+        });
+        detail[item.id] = {name:item.name, formulaTotal:item.formulaTotal, formulaType:item.formulaType, formulaScore:formulaScore, subGroups:subDetail};
+      } else {
+        var deduct = parseFloat(document.getElementById('deduct_'+item.id)?.value)||0;
+        var remark = document.getElementById('remark_'+item.id)?.value||'';
+        var itemScore = Math.max(0, item.score - deduct);
+        detail[item.id] = {name:item.name, score:item.score, deduct:deduct, got:itemScore, remark:remark, content:item.content};
+        if(assessPhotos[item.id]&&assessPhotos[item.id].length>0) photoSummary[item.id]=assessPhotos[item.id].length;
+      }
     });
   });
   var fields = {
@@ -683,10 +909,10 @@ async function saveAssess() {
     '质检员': document.getElementById('a_qc').value||'',
     '施工员': document.getElementById('a_builder').value||'',
     '材料员': document.getElementById('a_material').value||'',
-    '总分': parseInt(totalScore),
+    '总分': parseFloat(totalScore),
     '评分详情': JSON.stringify(detail),
     '照片汇总': JSON.stringify(photoSummary),
-    '问题清单': Object.keys(detail).filter(function(k){return detail[k].deduct>0;}).map(function(k){return detail[k].name+'(扣'+detail[k].deduct+'分)';}).join('；'),
+    '问题清单': Object.keys(detail).filter(function(k){var d=detail[k];return d.deduct>0||d.formulaScore!==undefined;}).map(function(k){var d=detail[k];return d.name+(d.deduct?'(扣'+d.deduct+'分)':'('+d.formulaScore.toFixed(1)+'分)');}).join('；'),
     '创建人': profile.name||''
   };
   var btn=document.getElementById('assessSaveBtn');btn.disabled=true;btn.textContent='提交中...';
@@ -707,60 +933,88 @@ function viewAssessDetail(recordId) {
   try { photoSummary = JSON.parse(f['照片汇总']||'{}'); } catch(e){}
 
   var html = '';
-  // 顶部信息卡
   html += '<div class="detail-header-card">';
   html += '<div class="dh-project">'+(f['项目名称']||'未知项目')+'</div>';
-  html += '<div class="dh-score">'+(f['总分']!==undefined?f['总分']:'--')+'<small> / 200</small></div>';
+  html += '<div class="dh-score">'+(f['总分']!==undefined?f['总分']:'--')+'<small> / 100</small></div>';
   html += '<div class="dh-meta">';
   html += '考核日期：'+(f['考核日期']||'--')+'<br>';
   html += '考核人：'+(f['考核人']||'--')+' · 项目经理：'+(f['项目经理']||'--')+'<br>';
   html += '质检员：'+(f['质检员']||'--')+' · 施工员：'+(f['施工员']||'--')+' · 材料员：'+(f['材料员']||'--');
   html += '</div></div>';
 
-  // 问题清单
   if(f['问题清单']) {
     html += '<div class="section-card" style="margin-bottom:12px;">';
     html += '<div class="section-title" style="color:#e74c3c;">⚠️ 扣分项</div>';
     var issues = f['问题清单'].split('；');
     html += '<div class="detail-issue-list">';
-    issues.forEach(function(iss) {
-      html += '<div class="detail-issue-item"><span class="di-name">'+iss+'</span></div>';
-    });
+    issues.forEach(function(iss) { html += '<div class="detail-issue-item"><span class="di-name">'+iss+'</span></div>'; });
     html += '</div></div>';
   }
 
-  // 五大类明细
   checklistData.forEach(function(cat, ci) {
-    var catGot = 0, catTotal = 0;
+    var catGot = 0, catTotal = cat.total;
     cat.items.forEach(function(item) {
-      catTotal += item.score;
-      if(detail[item.id]) catGot += detail[item.id].got;
-      else catGot += item.score;
+      if(item.type==='formula-group') {
+        var d = detail[item.id];
+        if(d && d.formulaScore !== undefined) catGot += d.formulaScore;
+        else catGot += item.formulaTotal;
+      } else {
+        var d = detail[item.id];
+        catTotal += 0; // already set
+        if(d) catGot += d.got;
+        else catGot += item.score;
+      }
     });
+
     html += '<div style="margin-bottom:4px;">';
     html += '<div class="detail-cat-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cat-arrow\').style.transform=this.nextElementSibling.style.display===\'none\'?\'\':\'rotate(90deg)\';">';
-    html += '<div class="detail-cat-header-left"><span class="dc-icon">'+cat.icon+'</span><span class="dc-name">'+cat.name+'</span><span class="dc-score">'+catGot+'/'+catTotal+'</span></div>';
+    html += '<div class="detail-cat-header-left"><span class="dc-icon">'+cat.icon+'</span><span class="dc-name">'+cat.name+'</span><span class="dc-score">'+Math.round(catGot)+'/'+catTotal+'</span></div>';
     html += '<span class="cat-arrow" style="transition:transform 0.25s;">›</span></div>';
     html += '<div style="display:none;padding:4px 0 8px;">';
 
     cat.items.forEach(function(item, ii) {
-      var d = detail[item.id];
-      var got = d ? d.got : item.score;
-      var deduct = d ? d.deduct : 0;
-      var remark = d ? (d.remark||'') : '';
-      var photoCount = photoSummary[item.id]||0;
+      if(item.type === 'formula-group') {
+        var d = detail[item.id];
+        var fScore = d ? d.formulaScore : item.formulaTotal;
+        html += '<div class="detail-item" style="border-left:3px solid #1a73e8;">';
+        html += '<div class="di-head"><span class="di-name">'+item.name+'</span><span class="di-scores"><span class="di-got">'+(fScore!==undefined?fScore.toFixed(1):item.formulaTotal)+'/'+item.formulaTotal+'</span></span></div>';
+        if(d && d.subGroups) {
+          Object.keys(d.subGroups).forEach(function(sgId) {
+            var sg = d.subGroups[sgId];
+            html += '<div class="detail-subgroup">';
+            html += '<div class="dsg-name">'+sg.name+(sg.included===false?' (不含)':'')+'</div>';
+            Object.keys(sg.items).forEach(function(siId) {
+              var si = sg.items[siId];
+              if(si.deduct > 0) {
+                html += '<div style="font-size:11px;color:#e74c3c;margin:2px 0;">'+si.name+' 扣'+si.deduct+'分</div>';
+              }
+              if(si.remark) {
+                html += '<div style="font-size:11px;color:#888;margin:2px 0;">📝 '+si.remark+'</div>';
+              }
+            });
+            html += '</div>';
+          });
+        }
+        html += '</div>';
+      } else {
+        var d = detail[item.id];
+        var got = d ? d.got : item.score;
+        var deduct = d ? d.deduct : 0;
+        var remark = d ? (d.remark||'') : '';
+        var photoCount = photoSummary[item.id]||0;
 
-      html += '<div class="detail-item">';
-      html += '<div class="di-head"><span class="di-name">'+(ii+1)+'. '+item.name+'</span>';
-      html += '<span class="di-scores">';
-      if(deduct>0) html += '<span class="di-deduct">-'+deduct+'</span> ';
-      html += '<span class="di-got">'+got+'/'+item.score+'</span>';
-      html += '</span></div>';
-      if(remark) html += '<div class="di-remark">📝 '+remark+'</div>';
-      if(photoCount>0) html += '<div style="font-size:11px;color:#999;margin-top:2px;">📷 '+photoCount+'张照片</div>';
-      html += '<div class="di-content" id="detailContent_'+item.id+'">'+item.content+'</div>';
-      html += '<div class="di-toggle" onclick="var c=document.getElementById(\'detailContent_'+item.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起检查标准 ▲\':\'展开检查标准 ▼\';">展开检查标准 ▼</div>';
-      html += '</div>';
+        html += '<div class="detail-item">';
+        html += '<div class="di-head"><span class="di-name">'+item.name+'</span>';
+        html += '<span class="di-scores">';
+        if(deduct>0) html += '<span class="di-deduct">-'+deduct+'</span> ';
+        html += '<span class="di-got">'+got+'/'+item.score+'</span>';
+        html += '</span></div>';
+        if(remark) html += '<div class="di-remark">📝 '+remark+'</div>';
+        if(photoCount>0) html += '<div style="font-size:11px;color:#999;margin-top:2px;">📷 '+photoCount+'张照片</div>';
+        html += '<div class="di-content" id="detailContent_'+item.id+'">'+item.content+'</div>';
+        html += '<div class="di-toggle" onclick="var c=document.getElementById(\'detailContent_'+item.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起检查标准 ▲\':\'展开检查标准 ▼\';">展开检查标准 ▼</div>';
+        html += '</div>';
+      }
     });
 
     html += '</div></div>';
@@ -779,13 +1033,10 @@ var formConfigs = {
   protect:{title:'🛡️ 新增成品保护检查',fields:[{key:'项目名称',type:'readonly'},{key:'保护对象',type:'select',options:['门窗','地面','墙面','管道','设备','其他']},{key:'检查日期',type:'date'},{key:'检查人',type:'text',placeholder:'姓名'},{key:'保护措施',type:'textarea',placeholder:'描述采取的成品保护措施'},{key:'检查结果',type:'select',options:['保护良好','有损坏','需加强']},{key:'问题描述',type:'textarea',placeholder:'描述发现的成品损坏问题'}]},
   testing:{title:'🧪 新增送检记录',fields:[{key:'项目名称',type:'readonly'},{key:'样品名称',type:'text',placeholder:'如：混凝土试块、钢筋'},{key:'规格等级',type:'text',placeholder:'如：C30、HRB400'},{key:'代表数量',type:'text',placeholder:'如：3组'},{key:'取样日期',type:'date'},{key:'送检人',type:'text',placeholder:'姓名'},{key:'检测单位',type:'text',placeholder:'检测机构名称'},{key:'检测项目',type:'select',options:['抗压强度','抗拉强度','弯折强度','钢筋保护层','其他']},{key:'送检状态',type:'select',options:['已取样','已送检','报告已出']}]}
 };
-
 function showForm(type) {
-  currentFormType=type;
-  var config=formConfigs[type];
+  currentFormType=type;var config=formConfigs[type];
   document.getElementById('formTitle').innerHTML=config.title+' <button class="modal-close" onclick="closeModal(\'formModal\')">✕</button>';
-  var html='';
-  config.fields.forEach(function(f){
+  var html='';config.fields.forEach(function(f){
     html+='<div class="field'+(f.type==='readonly'?' field-readonly':'')+'"><label>'+f.key+'</label>';
     if(f.type==='readonly') html+='<input id="f_'+f.key+'" readonly value="'+(f.key==='项目名称'?(project.name||''):'' )+'" />';
     else if(f.type==='date') html+='<input id="f_'+f.key+'" type="date" value="'+new Date().toISOString().split('T')[0]+'" />';
@@ -798,7 +1049,6 @@ function showForm(type) {
   if(profile.name){config.fields.filter(function(f){return f.key.indexOf('人')>=0&&f.type==='text';}).forEach(function(f){var el=document.getElementById('f_'+f.key);if(el&&!el.value)el.value=profile.name;});}
   document.getElementById('formModal').classList.add('show');
 }
-
 async function saveCurrentForm() {
   var config=formConfigs[currentFormType];var fields={};
   config.fields.forEach(function(f){var el=document.getElementById('f_'+f.key);if(el)fields[f.key]=el.value;});
@@ -813,30 +1063,22 @@ async function saveCurrentForm() {
 // ===== 记录列表 =====
 async function loadRecordList(type) {
   var el=document.getElementById(type+'RecordList');
-  if(!el)return;
-  el.innerHTML='<div class="loading">加载中...</div>';
+  if(!el)return;el.innerHTML='<div class="loading">加载中...</div>';
   var res=await API.listRecords(type,50);
   if(res.code!==0||!res.data||!res.data.items){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>暂无记录</p></div>';return;}
   var items=res.data.items;
   if(items.length===0){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>暂无记录，点击下方新增</p></div>';return;}
-
-  // 缓存考核记录
   if(type==='assess') assessRecordsCache=items;
-
   el.innerHTML=items.map(function(item){
     var f=item.fields;
     var title=f['材料名称']||f['检验批部位']||f['验收部位']||f['检查部位']||f['保护对象']||f['样品名称']||f['待办内容']||'';
     var date=f['考核日期']||f['验收日期']||f['自检日期']||f['检查日期']||f['取样日期']||'';
     var result=f['验收结果']||f['自检结果']||f['验收结论']||f['检查结果']||f['送检状态']||'';
-    if(type==='assess'){
-      title=(f['项目名称']||'考核')+' · '+(f['总分']!==undefined?f['总分']+'分':'');
-      result=f['总分']>=150?'良好':(f['总分']>=100?'一般':'待整改');
-    }
+    if(type==='assess'){title=(f['项目名称']||'考核')+' · '+(f['总分']!==undefined?f['总分']+'分':'');result=f['总分']>=80?'良好':(f['总分']>=60?'一般':'待整改');}
     var statusClass='';
     if(result.indexOf('合格')>=0||result.indexOf('通过')>=0||result.indexOf('良好')>=0||result.indexOf('报告')>=0)statusClass='status-pass';
     else if(result.indexOf('不合格')>=0||result.indexOf('不通过')>=0||result.indexOf('损坏')>=0||result.indexOf('返工')>=0||result.indexOf('整改')>=0)statusClass='status-fail';
     else statusClass='status-pending';
-
     var clickAction = type==='assess' ? 'onclick="viewAssessDetail(\''+item.record_id+'\')"' : '';
     return '<div class="record-item" '+clickAction+'>'+
       '<div class="ri-head"><span class="ri-title">'+title+'</span>'+
@@ -854,7 +1096,6 @@ function exportAllData(){var data={profile:profile,project:project,todos:todos,e
 // ===== 初始化 =====
 loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar();
 document.querySelectorAll('input[type="date"]').forEach(function(el){if(!el.value)el.value=new Date().toISOString().split('T')[0];});
-
 fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();loadHomeStats();}).catch(function(){API.online=false;updateSyncBar();});
 </script>
 </body>
