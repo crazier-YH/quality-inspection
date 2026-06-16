@@ -1,0 +1,14 @@
+{
+  "name": "quality-inspection-tool",
+  "version": "2.0.0",
+  "description": "工程质量管理工具 - 飞书多维表格版",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "init": "node init-fields.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  }
+}
