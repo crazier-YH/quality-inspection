@@ -288,8 +288,11 @@ const TABLE_FIELDS = {
   ],
   assess: [
     { field_name: '项目名称', type: 1 }, { field_name: '考核日期', type: 5 },
-    { field_name: '考核人', type: 1 }, { field_name: '总分', type: 2 },
-    { field_name: '评分详情', type: 1 }, { field_name: '问题清单', type: 1 }, { field_name: '创建人', type: 1 }
+    { field_name: '考核人', type: 1 }, { field_name: '项目经理', type: 1 },
+    { field_name: '质检员', type: 1 }, { field_name: '施工员', type: 1 },
+    { field_name: '材料员', type: 1 }, { field_name: '总分', type: 2 },
+    { field_name: '评分详情', type: 1 }, { field_name: '照片汇总', type: 1 },
+    { field_name: '问题清单', type: 1 }, { field_name: '创建人', type: 1 }
   ],
   material: [
     { field_name: '项目名称', type: 1 }, { field_name: '验收日期', type: 5 },
