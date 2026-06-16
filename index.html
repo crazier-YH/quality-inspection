@@ -750,7 +750,7 @@ function openPage(name) {
   pageHistory.push(name);
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-'+name).classList.add('active');
-  document.getElementById('backBtn').style.display = '';
+  document.getElementById('backBtn').style.display = 'inline-block';
   updateTopbar(name); fillProjectFields();
   if(['assess','material','process','signboard','waterproof','protect','testing'].indexOf(name)>=0) loadRecordList(name);
   if(name==='assess-form') initAssessForm();
@@ -766,6 +766,8 @@ function goBack() {
     document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
     var idx=['home','todo','profile'].indexOf(name);
     if(idx>=0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  } else {
+    document.getElementById('backBtn').style.display='inline-block';
   }
   updateTopbar(name); window.scrollTo(0,0);
 }
