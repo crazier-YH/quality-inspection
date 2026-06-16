@@ -10,35 +10,28 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; padding-bottom: 64px; }
 
-    /* 同步状态条 */
     .sync-bar { background: #fff3e0; color: #f57c00; font-size: 12px; padding: 6px 16px; text-align: center; display: none; }
     .sync-bar.online { background: #e8f5e9; color: #4caf50; }
-    .sync-bar.syncing { background: #e3f2fd; color: #1a73e8; }
 
-    /* 顶部栏 */
     .topbar { background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 100; }
     .topbar h1 { font-size: 20px; font-weight: 700; }
     .topbar .sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
     .topbar-back { display: none; cursor: pointer; font-size: 18px; margin-right: 8px; }
     .topbar .topbar-row { display: flex; align-items: center; }
 
-    /* 底部导航 */
     .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; border-top: 1px solid #e8e8e8; z-index: 100; height: 60px; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 10px; transition: color 0.2s; }
     .nav-item.active { color: #1a73e8; }
     .nav-icon { font-size: 24px; margin-bottom: 2px; }
 
-    /* 页面 */
     .page { display: none; }
     .page.active { display: block; }
 
-    /* 首页图标网格 */
     .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; background: #fff; margin: 12px; border-radius: 14px; padding: 20px 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .grid-item { display: flex; flex-direction: column; align-items: center; padding: 12px 4px; cursor: pointer; border-radius: 12px; transition: background 0.15s; }
     .grid-item:active { background: #f0f4ff; }
     .grid-icon { width: 50px; height: 50px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 8px; }
     .grid-label { font-size: 12px; color: #555; font-weight: 500; text-align: center; }
-
     .icon-assess { background: #e8f0fe; }
     .icon-material { background: #fce8e6; }
     .icon-process { background: #e6f4ea; }
@@ -48,13 +41,11 @@
     .icon-testing { background: #fff3e0; }
     .icon-profile { background: #e0e0e0; }
 
-    /* 快捷信息条 */
     .info-bar { margin: 0 12px; background: #fff; border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
     .info-bar .info-project { font-size: 15px; font-weight: 600; color: #333; }
     .info-bar .info-hint { font-size: 12px; color: #999; }
     .info-bar .info-set { font-size: 12px; color: #1a73e8; cursor: pointer; }
 
-    /* 待办 */
     .todo-input-row { display: flex; gap: 8px; padding: 16px; background: #fff; margin-bottom: 2px; }
     .todo-input-row input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; }
     .todo-input-row input:focus { border-color: #1a73e8; }
@@ -67,12 +58,10 @@
     .todo-text.done { text-decoration: line-through; color: #bbb; }
     .todo-del { color: #ccc; cursor: pointer; font-size: 16px; padding: 4px; }
 
-    /* 通用卡片 */
     .section { padding: 16px; }
     .section-card { background: #fff; border-radius: 12px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .section-title { font-size: 16px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 
-    /* 表单 */
     .field { margin-bottom: 12px; }
     .field label { display: block; font-size: 12px; color: #888; margin-bottom: 4px; }
     .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; background: #fff; }
@@ -82,18 +71,6 @@
     .field-row .field { flex: 1; }
     .field-readonly input { background: #f5f7fa; color: #666; }
 
-    /* 照片 */
-    .photo-area { border: 2px dashed #e0e0e0; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; margin-bottom: 12px; transition: border-color 0.2s; }
-    .photo-area:hover { border-color: #1a73e8; }
-    .photo-area .photo-icon { font-size: 32px; margin-bottom: 4px; }
-    .photo-area .photo-hint { font-size: 12px; color: #999; }
-    .photo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    .photo-grid-item { position: relative; width: 72px; height: 72px; }
-    .photo-grid-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    .photo-grid-item .del { position: absolute; top: -6px; right: -6px; background: #e74c3c; color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-    /* 记录列表 */
-    .record-list { margin-top: 12px; }
     .record-item { background: #f8f9fb; border-radius: 10px; padding: 14px; margin-bottom: 8px; cursor: pointer; }
     .record-item:active { background: #eef1f6; }
     .record-item .ri-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
@@ -105,26 +82,13 @@
     .status-fail { background: #fce8e6; color: #e74c3c; }
     .status-pending { background: #fff3e0; color: #f57c00; }
 
-    /* 评分表 */
-    .score-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
-    .score-table th, .score-table td { border: 1px solid #e0e0e0; padding: 8px 6px; text-align: center; }
-    .score-table th { background: #f0f4ff; font-weight: 600; color: #555; font-size: 12px; }
-    .score-table td:first-child { text-align: left; padding-left: 10px; }
-    .score-table td input { border: none; outline: none; width: 40px; text-align: center; font-size: 14px; }
-    .score-total { text-align: right; font-size: 16px; font-weight: 700; color: #1a73e8; margin: 8px 0; }
-
-    /* 按钮 */
     .btn-primary { background: #1a73e8; color: #fff; border: none; border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
     .btn-primary:active { background: #1557b0; }
     .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
     .btn-green { background: #34a853; }
     .btn-green:active { background: #2d8e47; }
     .btn-outline { background: #fff; color: #1a73e8; border: 1px solid #1a73e8; border-radius: 8px; padding: 10px 16px; font-size: 13px; cursor: pointer; }
-    .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
-    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
-    .btn-row .btn-primary, .btn-row .btn-outline { flex: 1; width: auto; }
 
-    /* 弹窗 */
     .modal-mask { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: flex-end; justify-content: center; }
     .modal-mask.show { display: flex; }
     .modal { background: #fff; border-radius: 16px 16px 0 0; width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto; padding: 20px; animation: slideUp 0.3s; }
@@ -132,7 +96,6 @@
     .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
     .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
 
-    /* 个人中心 */
     .profile-header { background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff; text-align: center; padding: 30px 20px 20px; }
     .profile-avatar { width: 64px; height: 64px; background: rgba(255,255,255,0.25); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 10px; }
     .profile-name { font-size: 18px; font-weight: 600; }
@@ -144,852 +107,755 @@
     .profile-menu-item .pmi-text { font-size: 14px; }
     .profile-menu-item .pmi-arrow { color: #ccc; font-size: 14px; }
 
-    /* 统计数字 */
     .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px; }
     .stat-card { background: #fff; border-radius: 12px; padding: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
     .stat-num { font-size: 24px; font-weight: 700; color: #1a73e8; }
     .stat-label { font-size: 11px; color: #999; margin-top: 2px; }
 
-    /* 空状态 */
     .empty { text-align: center; padding: 40px 20px; color: #bbb; }
     .empty .empty-icon { font-size: 48px; margin-bottom: 8px; }
     .empty p { font-size: 14px; }
 
-    /* Toast */
     .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: #fff; padding: 10px 24px; border-radius: 20px; font-size: 14px; z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
     .toast.show { opacity: 1; }
 
-    /* 加载 */
     .loading { text-align: center; padding: 20px; color: #999; font-size: 13px; }
+
+    /* ===== 考核检查表 ===== */
+    .cat-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; background: #fff; border-radius: 12px;
+      margin-bottom: 2px; cursor: pointer; user-select: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04); transition: background 0.15s;
+    }
+    .cat-header:active { background: #f0f4ff; }
+    .cat-header-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+    .cat-header-left .cat-icon { font-size: 20px; }
+    .cat-header-left .cat-name { font-size: 15px; font-weight: 600; color: #333; }
+    .cat-header-left .cat-score { font-size: 12px; color: #1a73e8; font-weight: 600; margin-left: 4px; }
+    .cat-arrow { font-size: 14px; color: #999; transition: transform 0.25s; }
+    .cat-header.expanded .cat-arrow { transform: rotate(90deg); }
+    .cat-body { display: none; padding: 0 0 8px 0; }
+    .cat-body.open { display: block; }
+
+    .check-item {
+      background: #fff; border-radius: 10px; margin: 6px 0;
+      padding: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .check-item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .check-item-name { font-size: 14px; font-weight: 600; color: #333; flex: 1; line-height: 1.4; }
+    .check-item-std { font-size: 13px; color: #1a73e8; font-weight: 600; white-space: nowrap; }
+    .check-item-content { font-size: 12px; color: #666; line-height: 1.6; background: #f8f9fb; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; white-space: pre-line; }
+    .check-item-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .check-item-row label { font-size: 12px; color: #888; white-space: nowrap; }
+    .check-item-row input[type=number] { width: 60px; padding: 6px 8px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 14px; text-align: center; outline: none; }
+    .check-item-row input[type=number]:focus { border-color: #1a73e8; }
+    .check-item-row .score-display { font-size: 14px; font-weight: 600; color: #1a73e8; }
+    .check-item-row .deduct-label { color: #e74c3c; }
+    .check-item-remark { margin-bottom: 8px; }
+    .check-item-remark textarea { width: 100%; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 12px; resize: vertical; min-height: 36px; outline: none; font-family: inherit; }
+    .check-item-remark textarea:focus { border-color: #1a73e8; }
+
+    .item-photo-area { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .item-photo-add {
+      width: 56px; height: 56px; border: 2px dashed #d0d5dd; border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 10px; color: #999; position: relative; overflow: hidden;
+    }
+    .item-photo-add .add-icon { font-size: 18px; line-height: 1; }
+    .item-photo-add input[type=file] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+    .item-photo-thumb { position: relative; width: 56px; height: 56px; }
+    .item-photo-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .item-photo-thumb .photo-del {
+      position: absolute; top: -5px; right: -5px;
+      background: #e74c3c; color: #fff; border: none; border-radius: 50%;
+      width: 16px; height: 16px; font-size: 9px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; line-height: 1;
+    }
+
+    .assess-total-bar {
+      position: sticky; bottom: 60px; background: #fff;
+      padding: 14px 16px; border-top: 1px solid #e8e8e8;
+      display: flex; justify-content: space-between; align-items: center; z-index: 50;
+    }
+    .assess-total-bar .atb-label { font-size: 14px; color: #666; }
+    .assess-total-bar .atb-score { font-size: 22px; font-weight: 700; color: #1a73e8; }
+
+    .cat-subtotal { text-align: right; font-size: 13px; color: #666; padding: 8px 16px 4px; font-weight: 500; }
+    .cat-subtotal span { color: #1a73e8; font-weight: 700; }
+
+    /* ===== 考核详情页 ===== */
+    .detail-header-card {
+      background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff;
+      border-radius: 14px; padding: 20px; margin-bottom: 12px;
+    }
+    .detail-header-card .dh-project { font-size: 18px; font-weight: 700; }
+    .detail-header-card .dh-score { font-size: 32px; font-weight: 800; margin: 8px 0 4px; }
+    .detail-header-card .dh-score small { font-size: 14px; font-weight: 400; opacity: 0.7; }
+    .detail-header-card .dh-meta { font-size: 12px; opacity: 0.8; line-height: 1.6; }
+
+    .detail-cat-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 14px; background: #fff; border-radius: 10px;
+      margin-bottom: 2px; cursor: pointer; user-select: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .detail-cat-header-left { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .detail-cat-header-left .dc-icon { font-size: 18px; }
+    .detail-cat-header-left .dc-name { font-size: 14px; font-weight: 600; }
+    .detail-cat-header-left .dc-score { font-size: 12px; color: #1a73e8; font-weight: 600; }
+
+    .detail-item {
+      background: #fff; border-radius: 8px; margin: 4px 0;
+      padding: 12px; box-shadow: 0 1px 1px rgba(0,0,0,0.02);
+    }
+    .detail-item .di-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .detail-item .di-name { font-size: 13px; font-weight: 600; color: #333; }
+    .detail-item .di-scores { font-size: 12px; white-space: nowrap; }
+    .detail-item .di-scores .di-deduct { color: #e74c3c; }
+    .detail-item .di-scores .di-got { color: #1a73e8; font-weight: 700; }
+    .detail-item .di-remark { font-size: 12px; color: #888; margin-top: 4px; padding: 6px 8px; background: #f8f9fb; border-radius: 6px; }
+    .detail-item .di-content { font-size: 11px; color: #999; line-height: 1.5; margin-top: 4px; white-space: pre-line; max-height: 0; overflow: hidden; transition: max-height 0.3s; }
+    .detail-item .di-content.open { max-height: 600px; }
+    .detail-item .di-toggle { font-size: 11px; color: #1a73e8; cursor: pointer; margin-top: 4px; }
+
+    .detail-issue-list { margin-top: 12px; }
+    .detail-issue-item { background: #fff3e0; border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; font-size: 13px; }
+    .detail-issue-item .di-name { font-weight: 600; color: #e65100; }
   </style>
 </head>
 <body>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+<div class="toast" id="toast"></div>
+<div class="sync-bar" id="syncBar">正在连接服务器...</div>
 
-  <!-- 同步状态条 -->
-  <div class="sync-bar" id="syncBar">正在连接服务器...</div>
-
-  <!-- 顶部栏 -->
-  <div class="topbar">
-    <div class="topbar-row">
-      <span class="topbar-back" id="backBtn" onclick="goBack()">←</span>
-      <h1 id="pageTitle">工程质量管理</h1>
-    </div>
-    <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
+<div class="topbar">
+  <div class="topbar-row">
+    <span class="topbar-back" id="backBtn" onclick="goBack()">←</span>
+    <h1 id="pageTitle">工程质量管理</h1>
   </div>
+  <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
+</div>
 
-  <!-- ========== 首页 ========== -->
-  <div class="page active" id="page-home">
-    <div class="info-bar" id="homeInfoBar">
-      <div>
-        <div class="info-project" id="homeProjectName">未设置项目</div>
-        <div class="info-hint" id="homeProjectHint">点击右侧设置项目信息</div>
-      </div>
-      <span class="info-set" onclick="openPage('profile-edit')">设置 →</span>
+<!-- 首页 -->
+<div class="page active" id="page-home">
+  <div class="info-bar" id="homeInfoBar">
+    <div>
+      <div class="info-project" id="homeProjectName">未设置项目</div>
+      <div class="info-hint" id="homeProjectHint">点击右侧设置项目信息</div>
     </div>
-    <div class="stats-row" id="homeStats">
-      <div class="stat-card"><div class="stat-num" id="statTodo">0</div><div class="stat-label">待办事项</div></div>
-      <div class="stat-card"><div class="stat-num" id="statRecord">0</div><div class="stat-label">今日记录</div></div>
-      <div class="stat-card"><div class="stat-num" id="statIssue">0</div><div class="stat-label">待整改</div></div>
-    </div>
-    <div class="icon-grid">
-      <div class="grid-item" onclick="openPage('assess')">
-        <div class="grid-icon icon-assess">📋</div>
-        <span class="grid-label">考核</span>
-      </div>
-      <div class="grid-item" onclick="openPage('material')">
-        <div class="grid-icon icon-material">📦</div>
-        <span class="grid-label">材料验收</span>
-      </div>
-      <div class="grid-item" onclick="openPage('process')">
-        <div class="grid-icon icon-process">🔧</div>
-        <span class="grid-label">工序自检</span>
-      </div>
-      <div class="grid-item" onclick="openPage('signboard')">
-        <div class="grid-icon icon-signboard">🪧</div>
-        <span class="grid-label">举牌验收</span>
-      </div>
-      <div class="grid-item" onclick="openPage('waterproof')">
-        <div class="grid-icon icon-waterproof">💧</div>
-        <span class="grid-label">防水重点</span>
-      </div>
-      <div class="grid-item" onclick="openPage('protect')">
-        <div class="grid-icon icon-protect">🛡️</div>
-        <span class="grid-label">成品保护</span>
-      </div>
-      <div class="grid-item" onclick="openPage('testing')">
-        <div class="grid-icon icon-testing">🧪</div>
-        <span class="grid-label">送检</span>
-      </div>
-      <div class="grid-item" onclick="openPage('profile')">
-        <div class="grid-icon icon-profile">👤</div>
-        <span class="grid-label">个人中心</span>
-      </div>
-    </div>
+    <span class="info-set" onclick="openPage('profile-edit')">设置 →</span>
   </div>
-
-  <!-- ========== 待办页 ========== -->
-  <div class="page" id="page-todo">
-    <div class="todo-input-row">
-      <input id="todoInput" placeholder="添加待办事项..." onkeydown="if(event.key==='Enter')addTodo()" />
-      <button class="todo-add" onclick="addTodo()">添加</button>
-    </div>
-    <div class="todo-list" id="todoList"></div>
-    <div class="empty" id="todoEmpty">
-      <div class="empty-icon">📝</div>
-      <p>暂无待办，点击上方添加</p>
-    </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="statTodo">0</div><div class="stat-label">待办事项</div></div>
+    <div class="stat-card"><div class="stat-num" id="statRecord">0</div><div class="stat-label">今日记录</div></div>
+    <div class="stat-card"><div class="stat-num" id="statIssue">0</div><div class="stat-label">待整改</div></div>
   </div>
-
-  <!-- ========== 个人中心 ========== -->
-  <div class="page" id="page-profile">
-    <div class="profile-header">
-      <div class="profile-avatar">👷</div>
-      <div class="profile-name" id="profileDisplayName">未设置</div>
-      <div class="profile-role">工程质量管理</div>
-    </div>
-    <div class="profile-menu">
-      <div class="profile-menu-item" onclick="openPage('profile-edit')">
-        <div class="pmi-left"><span class="pmi-icon">📝</span><span class="pmi-text">编辑个人信息</span></div>
-        <span class="pmi-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="openPage('profile-project')">
-        <div class="pmi-left"><span class="pmi-icon">🏗️</span><span class="pmi-text">项目信息设置</span></div>
-        <span class="pmi-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="syncAll()">
-        <div class="pmi-left"><span class="pmi-icon">🔄</span><span class="pmi-text">同步云端数据</span></div>
-        <span class="pmi-arrow">›</span>
-      </div>
-      <div class="profile-menu-item" onclick="exportAllData()">
-        <div class="pmi-left"><span class="pmi-icon">💾</span><span class="pmi-text">导出所有数据</span></div>
-        <span class="pmi-arrow">›</span>
-      </div>
-    </div>
+  <div class="icon-grid">
+    <div class="grid-item" onclick="openPage('assess')"><div class="grid-icon icon-assess">📋</div><span class="grid-label">考核</span></div>
+    <div class="grid-item" onclick="openPage('material')"><div class="grid-icon icon-material">📦</div><span class="grid-label">材料验收</span></div>
+    <div class="grid-item" onclick="openPage('process')"><div class="grid-icon icon-process">🔧</div><span class="grid-label">工序自检</span></div>
+    <div class="grid-item" onclick="openPage('signboard')"><div class="grid-icon icon-signboard">🪧</div><span class="grid-label">举牌验收</span></div>
+    <div class="grid-item" onclick="openPage('waterproof')"><div class="grid-icon icon-waterproof">💧</div><span class="grid-label">防水重点</span></div>
+    <div class="grid-item" onclick="openPage('protect')"><div class="grid-icon icon-protect">🛡️</div><span class="grid-label">成品保护</span></div>
+    <div class="grid-item" onclick="openPage('testing')"><div class="grid-icon icon-testing">🧪</div><span class="grid-label">送检</span></div>
+    <div class="grid-item" onclick="openPage('profile')"><div class="grid-icon icon-profile">👤</div><span class="grid-label">个人中心</span></div>
   </div>
+</div>
 
-  <!-- ========== 编辑个人信息 ========== -->
-  <div class="page" id="page-profile-edit">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title">📝 个人信息</div>
-        <div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div>
-        <div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div>
-        <div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div>
-        <div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div>
-      </div>
-    </div>
+<!-- 待办 -->
+<div class="page" id="page-todo">
+  <div class="todo-input-row">
+    <input id="todoInput" placeholder="添加待办事项..." onkeydown="if(event.key==='Enter')addTodo()" />
+    <button class="todo-add" onclick="addTodo()">添加</button>
   </div>
+  <div class="todo-list" id="todoList"></div>
+  <div class="empty" id="todoEmpty"><div class="empty-icon">📝</div><p>暂无待办，点击上方添加</p></div>
+</div>
 
-  <!-- ========== 项目信息设置 ========== -->
-  <div class="page" id="page-profile-project">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title">🏗️ 项目信息</div>
-        <div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div>
-        <div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div>
-        <div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div>
-        <div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div>
-        <div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div>
-        <div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div>
-      </div>
-      <div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div>
-    </div>
+<!-- 个人中心 -->
+<div class="page" id="page-profile">
+  <div class="profile-header">
+    <div class="profile-avatar">👷</div>
+    <div class="profile-name" id="profileDisplayName">未设置</div>
+    <div class="profile-role">工程质量管理</div>
   </div>
-
-  <!-- ========== 考核页 ========== -->
-  <div class="page" id="page-assess">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title"><span>📊</span>历史考核记录</div>
-        <div id="assessRecordList"><div class="loading">加载中...</div></div>
-      </div>
-      <button class="btn-outline" style="width:100%" onclick="showAssessForm()">+ 新增考核</button>
-    </div>
+  <div class="profile-menu">
+    <div class="profile-menu-item" onclick="openPage('profile-edit')"><div class="pmi-left"><span class="pmi-icon">📝</span><span class="pmi-text">编辑个人信息</span></div><span class="pmi-arrow">›</span></div>
+    <div class="profile-menu-item" onclick="openPage('profile-project')"><div class="pmi-left"><span class="pmi-icon">🏗️</span><span class="pmi-text">项目信息设置</span></div><span class="pmi-arrow">›</span></div>
+    <div class="profile-menu-item" onclick="syncAll()"><div class="pmi-left"><span class="pmi-icon">🔄</span><span class="pmi-text">同步云端数据</span></div><span class="pmi-arrow">›</span></div>
+    <div class="profile-menu-item" onclick="exportAllData()"><div class="pmi-left"><span class="pmi-icon">💾</span><span class="pmi-text">导出所有数据</span></div><span class="pmi-arrow">›</span></div>
   </div>
+</div>
 
-  <!-- 考核表单（弹窗） -->
-  <div class="modal-mask" id="assessFormModal">
-    <div class="modal">
-      <div class="modal-title">📋 新增考核评分 <button class="modal-close" onclick="closeModal('assessFormModal')">✕</button></div>
+<div class="page" id="page-profile-edit">
+  <div class="section"><div class="section-card">
+    <div class="section-title">📝 个人信息</div>
+    <div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div>
+    <div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div>
+    <div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div>
+    <div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div>
+  </div></div>
+</div>
+
+<div class="page" id="page-profile-project">
+  <div class="section"><div class="section-card">
+    <div class="section-title">🏗️ 项目信息</div>
+    <div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div>
+    <div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div>
+    <div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div>
+    <div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div>
+    <div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div>
+    <div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div>
+  </div>
+  <div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div>
+</div>
+
+<!-- 考核记录列表 -->
+<div class="page" id="page-assess">
+  <div class="section">
+    <div class="section-card">
+      <div class="section-title"><span>📊</span>历史考核记录</div>
+      <div id="assessRecordList"><div class="loading">加载中...</div></div>
+    </div>
+    <button class="btn-outline" style="width:100%" onclick="openPage('assess-form')">+ 新增考核</button>
+  </div>
+</div>
+
+<!-- 考核检查表（新增） -->
+<div class="page" id="page-assess-form">
+  <div class="section" style="padding-bottom:0;">
+    <div class="section-card" style="margin-bottom:8px;">
       <div class="field field-readonly"><label>项目名称</label><input id="a_project" readonly /></div>
       <div class="field-row">
         <div class="field"><label>考核日期</label><input id="a_date" type="date" /></div>
         <div class="field"><label>考核人</label><input id="a_person" placeholder="姓名" /></div>
       </div>
-      <table class="score-table">
-        <thead><tr><th>考核项</th><th>标准</th><th>扣分</th><th>得分</th></tr></thead>
-        <tbody id="scoreBody"></tbody>
-      </table>
-      <div class="score-total">总分：<span id="totalScore">100</span> 分</div>
-      <div class="field"><label>问题说明</label><textarea id="a_issues" placeholder="考核中发现的问题"></textarea></div>
-      <button class="btn-primary btn-green" onclick="saveAssess()">💾 提交考核记录</button>
-    </div>
-  </div>
-
-  <!-- ========== 材料验收页 ========== -->
-  <div class="page" id="page-material">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title"><span>📦</span>历史验收记录</div>
-        <div id="materialRecordList"><div class="loading">加载中...</div></div>
+      <div class="field-row">
+        <div class="field"><label>项目经理</label><input id="a_mgr" placeholder="项目经理" /></div>
+        <div class="field"><label>质检员</label><input id="a_qc" placeholder="质检员" /></div>
       </div>
-      <button class="btn-outline" style="width:100%" onclick="showForm('material')">+ 新增验收</button>
-    </div>
-  </div>
-
-  <!-- ========== 工序自检页 ========== -->
-  <div class="page" id="page-process">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title"><span>🔧</span>历史自检记录</div>
-        <div id="processRecordList"><div class="loading">加载中...</div></div>
+      <div class="field-row">
+        <div class="field"><label>施工员</label><input id="a_builder" placeholder="施工员" /></div>
+        <div class="field"><label>材料员</label><input id="a_material" placeholder="材料员" /></div>
       </div>
-      <button class="btn-outline" style="width:100%" onclick="showForm('process')">+ 新增自检</button>
     </div>
   </div>
+  <div class="section" style="padding-top:0;" id="checklistContainer"></div>
+  <div class="assess-total-bar">
+    <div class="atb-label">考核总分</div>
+    <div class="atb-score"><span id="totalScore">0</span> / 200</div>
+  </div>
+  <div class="section" style="padding-top:0;">
+    <button class="btn-primary btn-green" onclick="saveAssess()" id="assessSaveBtn">💾 提交考核记录</button>
+  </div>
+</div>
 
-  <!-- ========== 举牌验收页 ========== -->
-  <div class="page" id="page-signboard">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title"><span>🪧</span>历史验收记录</div>
-        <div id="signboardRecordList"><div class="loading">加载中...</div></div>
-      </div>
-      <button class="btn-outline" style="width:100%" onclick="showForm('signboard')">+ 新增验收</button>
-    </div>
-  </div>
+<!-- 考核详情页（查看明细） -->
+<div class="page" id="page-assess-detail">
+  <div class="section" id="assessDetailContent"></div>
+</div>
 
-  <!-- ========== 防水重点页 ========== -->
-  <div class="page" id="page-waterproof">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title"><span>💧</span>历史检查记录</div>
-        <div id="waterproofRecordList"><div class="loading">加载中...</div></div>
-      </div>
-      <button class="btn-outline" style="width:100%" onclick="showForm('waterproof')">+ 新增检查</button>
-    </div>
-  </div>
+<!-- 材料验收 -->
+<div class="page" id="page-material">
+  <div class="section"><div class="section-card"><div class="section-title"><span>📦</span>历史验收记录</div><div id="materialRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('material')">+ 新增验收</button></div>
+</div>
+<div class="page" id="page-process">
+  <div class="section"><div class="section-card"><div class="section-title"><span>🔧</span>历史自检记录</div><div id="processRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('process')">+ 新增自检</button></div>
+</div>
+<div class="page" id="page-signboard">
+  <div class="section"><div class="section-card"><div class="section-title"><span>🪧</span>历史验收记录</div><div id="signboardRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('signboard')">+ 新增验收</button></div>
+</div>
+<div class="page" id="page-waterproof">
+  <div class="section"><div class="section-card"><div class="section-title"><span>💧</span>历史检查记录</div><div id="waterproofRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('waterproof')">+ 新增检查</button></div>
+</div>
+<div class="page" id="page-protect">
+  <div class="section"><div class="section-card"><div class="section-title"><span>🛡️</span>历史检查记录</div><div id="protectRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('protect')">+ 新增检查</button></div>
+</div>
+<div class="page" id="page-testing">
+  <div class="section"><div class="section-card"><div class="section-title"><span>🧪</span>历史送检记录</div><div id="testingRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('testing')">+ 新增送检</button></div>
+</div>
 
-  <!-- ========== 成品保护页 ========== -->
-  <div class="page" id="page-protect">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title"><span>🛡️</span>历史检查记录</div>
-        <div id="protectRecordList"><div class="loading">加载中...</div></div>
-      </div>
-      <button class="btn-outline" style="width:100%" onclick="showForm('protect')">+ 新增检查</button>
-    </div>
+<!-- 通用表单弹窗 -->
+<div class="modal-mask" id="formModal">
+  <div class="modal">
+    <div class="modal-title" id="formTitle">新增记录 <button class="modal-close" onclick="closeModal('formModal')">✕</button></div>
+    <div id="formBody"></div>
+    <button class="btn-primary btn-green" id="formSaveBtn" onclick="saveCurrentForm()">💾 保存记录</button>
   </div>
+</div>
 
-  <!-- ========== 送检页 ========== -->
-  <div class="page" id="page-testing">
-    <div class="section">
-      <div class="section-card">
-        <div class="section-title"><span>🧪</span>历史送检记录</div>
-        <div id="testingRecordList"><div class="loading">加载中...</div></div>
-      </div>
-      <button class="btn-outline" style="width:100%" onclick="showForm('testing')">+ 新增送检</button>
-    </div>
-  </div>
-
-  <!-- ========== 通用表单弹窗 ========== -->
-  <div class="modal-mask" id="formModal">
-    <div class="modal">
-      <div class="modal-title" id="formTitle">新增记录 <button class="modal-close" onclick="closeModal('formModal')">✕</button></div>
-      <div id="formBody"></div>
-      <button class="btn-primary btn-green" id="formSaveBtn" onclick="saveCurrentForm()">💾 保存记录</button>
-    </div>
-  </div>
-
-  <!-- 底部导航 -->
-  <div class="navbar">
-    <div class="nav-item active" onclick="switchTab('home',this)">
-      <span class="nav-icon">🏠</span><span>首页</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('todo',this)">
-      <span class="nav-icon">📝</span><span>待办</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('profile',this)">
-      <span class="nav-icon">👤</span><span>我的</span>
-    </div>
-  </div>
+<div class="navbar">
+  <div class="nav-item active" onclick="switchTab('home',this)"><span class="nav-icon">🏠</span><span>首页</span></div>
+  <div class="nav-item" onclick="switchTab('todo',this)"><span class="nav-icon">📝</span><span>待办</span></div>
+  <div class="nav-item" onclick="switchTab('profile',this)"><span class="nav-icon">👤</span><span>我的</span></div>
+</div>
 
 <script>
-// ============ 飞书API层 ============
+// ===== 考核检查表数据 =====
+var checklistData = [
+  { id:'cat1', icon:'🏗️', name:'一、标准化建设及周检', total:18,
+    items: [
+      { id:'c1i1', name:'办公室标准化建设及项目质量管理知识储备', score:2, content:'办公区是否按公司现场管理标准化要求悬挂有关图、牌：组织机构图、岗位职责牌、质量安全方针、晴雨表、形象进度图、项目质量目标。（每缺少一项扣1分）\n项目部需配备基础测量工具（卡尺、2m靠尺、镀锌层测厚仪），每缺少一项扣1分' },
+      { id:'c1i2', name:'档案资料管理', score:5, content:'资料入盒存放，档案盒摆放整齐（未装盒/不整齐扣2分，未装盒但整齐且查找方便扣1分）\n资料台账清晰（无台账或不清晰扣2分，有但不清晰扣1分）含：材料进场台账、隐蔽验收台账、签证变更台账、材料封样台账、品牌报审台账\n收发文记录齐全（无记录扣2分，有但与台账不符扣1分）' },
+      { id:'c1i3', name:'资料归档目录', score:1, content:'项目有当地施工资料统表软件、归档目录，能编制符合要求的施工资料，了解当地归档要求，广东省项目要使用华软。不符合扣1分' },
+      { id:'c1i4', name:'质量周报', score:5, content:'质检员每周上报周报，走OA流程，少一次扣1分' },
+      { id:'c1i5', name:'质量周检', score:5, content:'项目经理组织周检，项目经理未参加每次扣1分；周检内容对考核检查问题覆盖不全扣一半' }
+    ]
+  },
+  { id:'cat2', icon:'📂', name:'二、方案及资料管理', total:57,
+    items: [
+      { id:'c2i1', name:'分包资质报审及项目部人员设置', score:2, content:'分包单位资质报审（资质证书齐全）、项目经理任命书、人员设置通知书、变更、印章授权等文件报审，未完成或漏项扣2分，未使用统表扣1分' },
+      { id:'c2i2', name:'施工许可证及合同备案手续', score:1, content:'施工许可证、合同备案未办理或已提交未完成（有回执）扣1分。无需办理但无复印件扣0.5分' },
+      { id:'c2i3', name:'图纸会审', score:4, content:'图纸会审记录签章需齐全。已会审但未签章齐全视为未完成扣4分，我司公章已盖因其他单位原因未完成扣2分' },
+      { id:'c2i4', name:'深化图纸确认', score:2, content:'原建筑设计单位对幕墙深化图的确认。前期未完成扣1分，高峰期及收尾未完成扣2分' },
+      { id:'c2i5', name:'结构、节能计算书', score:2, content:'项目部需保存结构、节能计算书（热工计算书）纸质版。缺少一项扣2分，有但未盖章扣1分' },
+      { id:'c2i6', name:'施工组织设计的编制、报审', score:2, content:'出现未编制、未报审、报审未通过、未按审批意见修改、审批人员签字错误等任一项扣2分。需修改应重新报审否则扣2分' },
+      { id:'c2i7', name:'开工报告报审', score:2, content:'开工报审表是否审批，施工现场质量管理检查记录是否审批，未报审或未通过视为未完成扣2分，缺《施工现场质量管理检查记录》扣1分' },
+      { id:'c2i8', name:'材料品牌报审', score:1, content:'合同内要求品牌报审是否完整，品牌库要求报审的材料需进行确认。少一项扣1分' },
+      { id:'c2i9', name:'材料封样', score:1, content:'检查主要材料需有封样记录（保存封样色板），品牌型号确认封样，无封样或未完成扣1分' },
+      { id:'c2i10', name:'测量放线、控制点移交', score:1, content:'施工前完成测量放线、结构误差复测；每层板块安装需复核标高并留数据记录；板块安装前复核支座标高和进出位，有偏差及时报设计出方案。不符合扣1分' },
+      { id:'c2i11', name:'材料进场验收', score:5, content:'材料进场必须自检，未自检发现批量不合格扣5分；有自检但未举牌扣3分；有自检有举牌，核实进场材料少一类型扣2分' },
+      { id:'c2i12', name:'进场材料报审', score:10, content:'抽查每种进场材料最近三次报审记录，与现场材料对比，缺少一种材料未报审扣2分，其余单位问题扣分减半' },
+      { id:'c2i13', name:'技术交底', score:3, content:'设计交底文件（无交底扣2分，有但施工员/质检员未知扣1分）；特殊位置节点需反馈设计出方案(未发现扣1分）\n项目质量技术交底（每月更新，每缺一项扣1分；需注重现场实操交底，仅有纸质版扣1分）；需使用质量统表交底（24版GD-C1-3210）' },
+      { id:'c2i14', name:'隐蔽工程验收记录', score:5, content:'隐蔽工程应验收后方可进入下道工序，验收报审应与施工进度一致；抽查最近三次隐蔽验收，报审后未及时签回扣2分，缺举牌照片扣3分，未及时报审扣5分' },
+      { id:'c2i15', name:'检验批划分方案', score:5, content:'未做扣5分，已开始但未完成扣4分，已报至监理未签回扣3分，已完成但缺项每缺一项扣2分；未将施工电梯口和塔吊单独划分扣3分' },
+      { id:'c2i16', name:'检验批验收记录', score:2, content:'根据施工进度完成检验批验收，记录完整，否则每缺1检验批扣1分。缺举牌照片扣2分' },
+      { id:'c2i17', name:'质监站、监理、业主检查整改回复', score:2, content:'对监理通知、业主、质监站提出的问题是否及时整改回复。未回复扣2分' },
+      { id:'c2i18', name:'施工日志', score:3, content:'是否与工程进展同步且记录内容齐全，不同步一项扣1分，填写差3天扣1分' },
+      { id:'c2i19', name:'其他资料', score:2, content:'拉索幕墙张拉记录、结构胶现场剥离检测记录、淋水记录、防雷电阻测试记录、幕墙子分部验收记录、验收纪要、室内环境检测报告、消防验收回执、竣工报告。工序到了未开始编制每缺一项扣1分' }
+    ]
+  },
+  { id:'cat3', icon:'🔬', name:'三、检验检测', total:25,
+    items: [
+      { id:'c3i1', name:'项目材料送检计划', score:4, content:'是否完成材料送检计划（种类、检测项目、计划送检时间、批次、报告编号、完成时间）未编制扣4分，每缺一项扣1分；已做计划未提交审核扣2分；未做未提交扣4分' },
+      { id:'c3i2', name:'进场材料见证取样送检与流程闭合', score:8, content:'核对送检计划对应检测报告，滞后或漏项一项扣2分；未提交试验流程/费用申请流程，缺一项扣1分' },
+      { id:'c3i3', name:'重要的节能资料及参数', score:2, content:'收集建筑节能设计说明、节能计算书、幕墙节能计算书、节能备案文件等。文件缺失或参数不一致扣1分' },
+      { id:'c3i4', name:'节能检测', score:4, content:'玻璃、保温棉、浅色饰面板材、隔热型材需及时节能检测，结果及批次需满足设计规范要求。未及时检测或漏项一项扣2分' },
+      { id:'c3i5', name:'幕墙及门窗四性试验', score:3, content:'检查四性实验进度，幕墙开工后四性试验未完成扣1分\n检查四性试验检测结果、试验节点与施工节点一致性，参数及材料品牌是否与图纸和技术要求一致，不符合扣2分' },
+      { id:'c3i6', name:'现场见证检测', score:5, content:'槽式埋件拉拔、锚栓抗拔、石材背栓拉拔、焊缝探伤、防雷电阻测试等须现场检查试验，施工完成应及时检测并记录。结果需经设计确认或符合图纸要求。未及时检测或不合格每项扣2分' }
+    ]
+  },
+  { id:'cat4', icon:'🏗️', name:'四、实体质量管理', total:70,
+    items: [
+      { id:'c4i1', name:'样板引路', score:10, content:'框架幕墙（焊接样板、骨架安装样板、装饰条打胶防水样板、玻璃安装样板、开启扇安装样板、玻璃打胶样板、装饰条安装样板等），缺少一项扣1分\n单元式幕墙（钢支座焊接、铝支座安装、起底横梁安装、板块安装、打胶防水样板），缺少一项扣1分\n门窗系统（窗框安装、塞缝、涂料打胶、门扇窗扇安装、推拉门/提升推拉门/电动开启扇功能样板），缺少一项扣1分\n其他类型（拉锁、全玻、金属/石材、吊顶、栏杆、钢结构、防火/防雷）参照执行\n得分=10-扣分总数/(项目包含的幕墙类型×5)×10' },
+      { id:'c4i2', name:'工序自检（举牌验收）', score:8, content:'需编制表格或打印平面图如实填写自查结果。工序完成进入下道工序前（尤其是隐蔽前），应进行举牌验收并记录。无举牌验收且质量问题较多（≥3个）扣8分，无记录但质量较好（<3个）扣6分。自检记录与现场实际不符扣4分' },
+      { id:'c4i3', name:'焊工/打胶工/塞砂浆工/刷防水涂料工考核', score:2, content:'需进行入场考核，考核人数不符少一人扣1分，未考核扣2分' },
+      { id:'c4i4', name:'不合格控制', score:6, content:'是否每月开具不合格报告/整改通知并妥善整改关闭。不开具扣6分，未关闭/关闭不彻底扣3分；考核检查中渗漏隐患和结构受力风险未见管理痕迹扣6分' },
+      { id:'c4i5', name:'预埋件及后置埋件安装质量', score:4, content:'检查预埋件埋设质量及受力情况，后置埋件螺栓埋设深度、位置、露丝不足等。抽查10处不合格超三处扣2分，超五处扣4分' },
+      { id:'c4i6', name:'焊接质量', score:3, content:'检查漏焊、焊缝厚度长度外观质量等，抽查10处，超三处扣2分，超五处扣3分。主受力构件焊接问题扣3分' },
+      { id:'c4i7', name:'防腐质量', score:3, content:'检查防腐是否到位；是否两道防腐漆，钢铝连接有无防腐垫片。抽查10处，超三处扣2分，超五处扣3分' },
+      { id:'c4i8', name:'构件及面板安装固定质量', score:20, content:'单元板块：支座挂件固定、板块安装平齐、防跳钉限位钉、披水胶皮海绵、开启扇灵活、装饰条固定\n金属幕墙/吊顶：面板牢固、平整度、拼缝均匀、扣条安装\n石材幕墙：面板牢固、安装顺直、拼缝均匀、挂件垫片、附件安装\n门窗系统：塞缝饱满、防水涂料打胶、对角线偏差、玻璃安装、五金安装\n全玻幕墙：玻璃错台、入槽深度、玻璃肋均匀\n栏杆：立柱牢固、垂直度偏差、附件安装\n拉锁幕墙：张拉记录、面板平整度、拼缝均匀\n框架幕墙：垫块数量、压块固定、胶条安装、立柱插芯、扣盖固定、装饰条固定、开启扇\n得分=20-扣分总数/(包含的类型检查内容数量×5)×20' },
+      { id:'c4i9', name:'拉网板、格栅、遮阳板等构件安装固定', score:2, content:'外部构件是否固定牢固可靠，有无坠落隐患，核对图纸节点是否一致，否则扣2分' },
+      { id:'c4i10', name:'观感质量、色差', score:4, content:'检查已安装材料是否存在色差、观感质量差等情况，存在一处扣2分，面积较多（连续出现）扣4分。有色差但已走不合格报告扣分减半' },
+      { id:'c4i11', name:'打胶质量', score:3, content:'检查外露胶缝观感及颜色。起鼓、开裂、镂空、不连续扣2分，数量较多扣3分' },
+      { id:'c4i12', name:'材料及成品保护', score:10, content:'已完成安装材料：是否做好成品保护，型材铝板玻璃是否存在污染划伤烫伤，设备未做成品保护发现一处扣2分，材料污染划伤烫伤2处以内扣1分，3-5处扣3分，5处以上扣5分\n材料堆放：堆放是否整齐，堆放不符合一处扣2分，整体混乱扣5分' },
+      { id:'c4i13', name:'防火层', score:3, content:'防火棉填充是否密实、是否正确使用；防火钢板铁皮是否固定，打钉间距是否在300mm以内；防火胶有无开裂、打钉处有无打胶，与立柱交接有无漏打胶；每项扣1分' },
+      { id:'c4i14', name:'防雷', score:2, content:'焊缝长度质量防腐符合要求，防雷系统上下贯通，分格满足规范；导电片接触位置涂层清理干净。门窗、室外栏杆、铝板等有独立接地。否则每项扣2分' }
+    ]
+  },
+  { id:'cat5', icon:'💧', name:'五、防渗漏及整改闭合', total:30,
+    items: [
+      { id:'c5i1', name:'防水质量', score:10, content:'重点检查：背板、装饰条内部、压顶、排水槽、首层幕墙底部、悬窗、伸缩缝、连桥、单元板块端头、不同幕墙衔接位置、栏杆立柱上口等部位防水打胶及胶条安装质量\n出屋面：板块十字缝打胶、框架横梁立柱拼缝、与结构交接处理、钢通封堵、连接件封堵\n阳台：栏杆扶手/立柱接缝打胶、防水铁皮打钉位置、包边铝板玻璃间打胶、与主体结构交接\n开启扇：胶条压缩量、胶条类型、组框错台、组角胶、转换框打胶、排水孔大小数量\n门窗：窗框门框与结构交接（砂浆塞缝、防水涂料、型材与结构间打胶）、组角胶、转换框打胶、室外侧玻璃打胶、拼接窗框打胶、门框下口排水孔\n玻璃幕墙底口：幕墙与结构间缝隙处理、起底立柱鼻腔下口打胶、铝板交接位置打胶\n无隐患不扣分，存在渗漏隐患无处理方案扣3分，施工质量问题造成隐患扣5分，未按图施工造成隐患扣10分' },
+      { id:'c5i2', name:'淋水测试', score:15, content:'单元式幕墙：每层进行水槽闭水试验，安装2-3层后必须淋水实验，检查记录及影像资料，无起底横梁水槽闭水实验扣3分；有淋水实验但未按进度执行扣5分，无淋水实验扣15分。无淋水方案扣5分\n住宅门窗系统：大面施工前必须进行样板安装及淋水试验，未进行样板淋水实验就大面施工扣15分。无淋水方案扣5分\n框架式幕墙：需进行工艺样板安装并淋水试验，未进行样板淋水试验已大面施工扣15分。无淋水方案扣5分' },
+      { id:'c5i3', name:'公司巡视检查以及流程闭合情况', score:5, content:'流程提交后7个工作日内未回复，每逾期1天扣1分' }
+    ]
+  }
+];
+
+// ===== API层 =====
 var API = {
   baseUrl: window.location.origin,
   online: false,
-
   async request(endpoint, body) {
     try {
-      var res = await fetch(this.baseUrl + endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      var res = await fetch(this.baseUrl + endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
       var data = await res.json();
-      if (data.code === 0) {
-        this.online = true;
-        updateSyncBar();
-      }
+      if (data.code === 0) { this.online = true; updateSyncBar(); }
       return data;
-    } catch (e) {
-      this.online = false;
-      updateSyncBar();
-      return { code: -1, msg: '网络错误：' + e.message };
-    }
+    } catch(e) { this.online = false; updateSyncBar(); return {code:-1, msg:'网络错误：'+e.message}; }
   },
-
-  async listRecords(tableKey, pageSize) {
-    return this.request('/api/records/list', { tableKey, pageSize: pageSize || 100 });
-  },
-
-  async createRecord(tableKey, fields) {
-    return this.request('/api/records/create', { tableKey, fields });
-  },
-
-  async updateRecord(tableKey, recordId, fields) {
-    return this.request('/api/records/update', { tableKey, recordId, fields });
-  },
-
-  async deleteRecord(tableKey, recordId) {
-    return this.request('/api/records/delete', { tableKey, recordId });
-  },
-
-  async initFields() {
-    return this.request('/api/init-fields', {});
-  }
+  async listRecords(t,n) { return this.request('/api/records/list', {tableKey:t, pageSize:n||100}); },
+  async createRecord(t,f) { return this.request('/api/records/create', {tableKey:t, fields:f}); },
+  async updateRecord(t,r,f) { return this.request('/api/records/update', {tableKey:t, recordId:r, fields:f}); },
+  async deleteRecord(t,r) { return this.request('/api/records/delete', {tableKey:t, recordId:r}); },
+  async initFields() { return this.request('/api/init-fields', {}); }
 };
 
-// ============ 同步状态 ============
+// ===== 缓存记录数据供详情查看 =====
+var assessRecordsCache = [];
+
 function updateSyncBar() {
   var bar = document.getElementById('syncBar');
-  if (API.online) {
-    bar.className = 'sync-bar online';
-    bar.textContent = '✅ 已连接云端';
-    setTimeout(function() { bar.style.display = 'none'; }, 2000);
-  } else {
-    bar.className = 'sync-bar';
-    bar.style.display = '';
-    bar.textContent = '⚠️ 离线模式（数据仅保存在本地）';
-  }
+  if (API.online) { bar.className='sync-bar online'; bar.textContent='✅ 已连接云端'; setTimeout(function(){bar.style.display='none';},2000); }
+  else { bar.className='sync-bar'; bar.style.display=''; bar.textContent='⚠️ 离线模式'; }
 }
+function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2000); }
 
-// ============ Toast ============
-function showToast(msg) {
-  var t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(function() { t.classList.remove('show'); }, 2000);
-}
-
-// ============ 数据存储 ============
-var profile = JSON.parse(localStorage.getItem('qc_profile') || '{}');
-var project = JSON.parse(localStorage.getItem('qc_project') || '{}');
-var todos = JSON.parse(localStorage.getItem('qc_todos') || '[]');
+var profile = JSON.parse(localStorage.getItem('qc_profile')||'{}');
+var project = JSON.parse(localStorage.getItem('qc_project')||'{}');
+var todos = JSON.parse(localStorage.getItem('qc_todos')||'[]');
 var currentFormType = '';
 
-// ============ 页面导航 ============
+// ===== 导航 =====
 var pageHistory = ['home'];
-var mainPages = { home: true, todo: true, profile: true };
+var mainPages = {home:true, todo:true, profile:true};
 
 function switchTab(name, el) {
   pageHistory = [name];
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.getElementById('page-' + name).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-  if (el) el.classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+  if(el) el.classList.add('active');
   document.getElementById('backBtn').style.display = 'none';
-  updateTopbar(name);
-  fillProjectFields();
-  if (name === 'home') loadHomeStats();
-  window.scrollTo(0, 0);
+  updateTopbar(name); fillProjectFields();
+  if(name==='home') loadHomeStats();
+  window.scrollTo(0,0);
 }
 
 function openPage(name) {
   pageHistory.push(name);
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
   document.getElementById('backBtn').style.display = '';
-  updateTopbar(name);
-  fillProjectFields();
-  if (['assess','material','process','signboard','waterproof','protect','testing'].indexOf(name) >= 0) {
-    loadRecordList(name);
-  }
-  window.scrollTo(0, 0);
+  updateTopbar(name); fillProjectFields();
+  if(['assess','material','process','signboard','waterproof','protect','testing'].indexOf(name)>=0) loadRecordList(name);
+  if(name==='assess-form') initAssessForm();
+  window.scrollTo(0,0);
 }
 
 function goBack() {
   pageHistory.pop();
-  var name = pageHistory[pageHistory.length - 1] || 'home';
-  document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-  document.getElementById('page-' + name).classList.add('active');
-  if (mainPages[name]) {
-    document.getElementById('backBtn').style.display = 'none';
-    document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
-    var tabs = ['home', 'todo', 'profile'];
-    var idx = tabs.indexOf(name);
-    if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
+  var name = pageHistory[pageHistory.length-1]||'home';
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');
+  if(mainPages[name]) {
+    document.getElementById('backBtn').style.display='none';
+    document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
+    var idx=['home','todo','profile'].indexOf(name);
+    if(idx>=0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
   }
-  updateTopbar(name);
-  window.scrollTo(0, 0);
+  updateTopbar(name); window.scrollTo(0,0);
 }
 
 var pageTitles = {
-  home: ['工程质量管理', '质量巡查 · 高效管理'],
-  todo: ['待办事项', '今日任务一览'],
-  profile: ['个人中心', '基本信息管理'],
-  'profile-edit': ['编辑个人信息', '填写您的基本资料'],
-  'profile-project': ['项目信息设置', '设置后将自动填充'],
-  assess: ['考核评分', '质量管理考核'],
-  material: ['材料验收', '进场材料验收'],
-  process: ['工序自检', '工序质量自检'],
-  signboard: ['举牌验收', '举牌验收记录'],
-  waterproof: ['防水重点', '防水质量检查'],
-  protect: ['成品保护', '成品保护检查'],
-  testing: ['送检记录', '材料送检管理']
+  home:['工程质量管理','质量巡查 · 高效管理'], todo:['待办事项','今日任务一览'], profile:['个人中心','基本信息管理'],
+  'profile-edit':['编辑个人信息','填写您的基本资料'], 'profile-project':['项目信息设置','设置后将自动填充'],
+  assess:['考核评分','质量管理考核'], 'assess-form':['考核检查表','五大类逐项评分'], 'assess-detail':['考核详情','查看评分明细'],
+  material:['材料验收','进场材料验收'], process:['工序自检','工序质量自检'], signboard:['举牌验收','举牌验收记录'],
+  waterproof:['防水重点','防水质量检查'], protect:['成品保护','成品保护检查'], testing:['送检记录','材料送检管理']
 };
+function updateTopbar(name) { var t=pageTitles[name]||['工程质量管理','']; document.getElementById('pageTitle').textContent=t[0]; document.getElementById('pageSub').textContent=t[1]; }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-function updateTopbar(name) {
-  var t = pageTitles[name] || ['工程质量管理', ''];
-  document.getElementById('pageTitle').textContent = t[0];
-  document.getElementById('pageSub').textContent = t[1];
-}
+// ===== 个人/项目信息 =====
+function loadProfile() { document.getElementById('pe_name').value=profile.name||''; document.getElementById('pe_position').value=profile.position||''; document.getElementById('pe_company').value=profile.company||''; document.getElementById('pe_phone').value=profile.phone||''; document.getElementById('profileDisplayName').textContent=profile.name||'未设置'; }
+function saveProfile() { profile.name=document.getElementById('pe_name').value; profile.position=document.getElementById('pe_position').value; profile.company=document.getElementById('pe_company').value; profile.phone=document.getElementById('pe_phone').value; localStorage.setItem('qc_profile',JSON.stringify(profile)); document.getElementById('profileDisplayName').textContent=profile.name||'未设置'; if(profile.name){var f=document.getElementById('a_person');if(f&&!f.value)f.value=profile.name;} }
+function loadProject() { document.getElementById('pj_name').value=project.name||''; document.getElementById('pj_addr').value=project.addr||''; document.getElementById('pj_dev').value=project.dev||''; document.getElementById('pj_build').value=project.build||''; document.getElementById('pj_sup').value=project.sup||''; document.getElementById('pj_mgr').value=project.mgr||''; updateHomeProjectBar(); }
+function saveProject() { project.name=document.getElementById('pj_name').value; project.addr=document.getElementById('pj_addr').value; project.dev=document.getElementById('pj_dev').value; project.build=document.getElementById('pj_build').value; project.sup=document.getElementById('pj_sup').value; project.mgr=document.getElementById('pj_mgr').value; localStorage.setItem('qc_project',JSON.stringify(project)); updateHomeProjectBar(); }
+function updateHomeProjectBar() { document.getElementById('homeProjectName').textContent=project.name||'未设置项目'; document.getElementById('homeProjectHint').textContent=project.name?(project.build||'点击设置项目详情'):'点击右侧设置项目信息'; }
+function fillProjectFields() { if(project.name){var el=document.getElementById('a_project');if(el)el.value=project.name;} }
 
-function closeModal(id) {
-  document.getElementById(id).classList.remove('show');
-}
+// ===== 待办 =====
+function renderTodos() { var list=document.getElementById('todoList'),empty=document.getElementById('todoEmpty'); if(todos.length===0){list.innerHTML='';empty.style.display='';return;} empty.style.display='none'; list.innerHTML=todos.map(function(t,i){return '<div class="todo-item"><div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div><span class="todo-text'+(t.done?' done':'')+'">'+t.text+'</span><span class="todo-del" onclick="delTodo('+i+')">✕</span></div>';}).join(''); }
+async function addTodo() { var input=document.getElementById('todoInput'),text=input.value.trim(); if(!text)return; var todo={text:text,done:false,id:Date.now()}; todos.unshift(todo); input.value=''; localStorage.setItem('qc_todos',JSON.stringify(todos)); renderTodos(); if(API.online){var res=await API.createRecord('todo',{'项目名称':project.name||'','待办内容':text,'是否完成':false,'创建人':profile.name||''}); if(res.code===0&&res.data&&res.data.record){todo._recordId=res.data.record.record_id;localStorage.setItem('qc_todos',JSON.stringify(todos));}} updateHomeStats(); }
+function toggleTodo(i){todos[i].done=!todos[i].done;localStorage.setItem('qc_todos',JSON.stringify(todos));renderTodos();}
+function delTodo(i){todos.splice(i,1);localStorage.setItem('qc_todos',JSON.stringify(todos));renderTodos();}
+function loadHomeStats() { document.getElementById('statTodo').textContent=todos.filter(function(t){return !t.done;}).length; }
 
-// ============ 个人信息 ============
-function loadProfile() {
-  document.getElementById('pe_name').value = profile.name || '';
-  document.getElementById('pe_position').value = profile.position || '';
-  document.getElementById('pe_company').value = profile.company || '';
-  document.getElementById('pe_phone').value = profile.phone || '';
-  document.getElementById('profileDisplayName').textContent = profile.name || '未设置';
-}
-function saveProfile() {
-  profile.name = document.getElementById('pe_name').value;
-  profile.position = document.getElementById('pe_position').value;
-  profile.company = document.getElementById('pe_company').value;
-  profile.phone = document.getElementById('pe_phone').value;
-  localStorage.setItem('qc_profile', JSON.stringify(profile));
-  document.getElementById('profileDisplayName').textContent = profile.name || '未设置';
-  if (profile.name) {
-    ['a_person'].forEach(function(id) { var f = document.getElementById(id); if (f && !f.value) f.value = profile.name; });
-  }
-}
+// ===== 考核检查表 =====
+var assessPhotos = {};
 
-// ============ 项目信息 ============
-function loadProject() {
-  document.getElementById('pj_name').value = project.name || '';
-  document.getElementById('pj_addr').value = project.addr || '';
-  document.getElementById('pj_dev').value = project.dev || '';
-  document.getElementById('pj_build').value = project.build || '';
-  document.getElementById('pj_sup').value = project.sup || '';
-  document.getElementById('pj_mgr').value = project.mgr || '';
-  updateHomeProjectBar();
-}
-function saveProject() {
-  project.name = document.getElementById('pj_name').value;
-  project.addr = document.getElementById('pj_addr').value;
-  project.dev = document.getElementById('pj_dev').value;
-  project.build = document.getElementById('pj_build').value;
-  project.sup = document.getElementById('pj_sup').value;
-  project.mgr = document.getElementById('pj_mgr').value;
-  localStorage.setItem('qc_project', JSON.stringify(project));
-  updateHomeProjectBar();
-}
-function updateHomeProjectBar() {
-  document.getElementById('homeProjectName').textContent = project.name || '未设置项目';
-  document.getElementById('homeProjectHint').textContent = project.name ? (project.build || '点击设置项目详情') : '点击右侧设置项目信息';
-}
-function fillProjectFields() {
-  if (project.name) {
-    ['a_project'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = project.name; });
-  }
-}
-
-// ============ 待办事项 ============
-function renderTodos() {
-  var list = document.getElementById('todoList');
-  var empty = document.getElementById('todoEmpty');
-  if (todos.length === 0) { list.innerHTML = ''; empty.style.display = ''; return; }
-  empty.style.display = 'none';
-  list.innerHTML = todos.map(function(t, i) {
-    return '<div class="todo-item">' +
-      '<div class="todo-check' + (t.done ? ' done' : '') + '" onclick="toggleTodo(' + i + ')">' + (t.done ? '✓' : '') + '</div>' +
-      '<span class="todo-text' + (t.done ? ' done' : '') + '">' + t.text + '</span>' +
-      '<span class="todo-del" onclick="delTodo(' + i + ')">✕</span></div>';
-  }).join('');
-}
-async function addTodo() {
-  var input = document.getElementById('todoInput');
-  var text = input.value.trim();
-  if (!text) return;
-  var todo = { text: text, done: false, id: Date.now() };
-  todos.unshift(todo);
-  input.value = '';
-  localStorage.setItem('qc_todos', JSON.stringify(todos));
-  renderTodos();
-  // 同步到飞书
-  if (API.online) {
-    var res = await API.createRecord('todo', {
-      '项目名称': project.name || '',
-      '待办内容': text,
-      '是否完成': false,
-      '创建人': profile.name || ''
-    });
-    if (res.code === 0 && res.data && res.data.record) {
-      todo._recordId = res.data.record.record_id;
-      localStorage.setItem('qc_todos', JSON.stringify(todos));
-    }
-  }
-  updateHomeStats();
-}
-function toggleTodo(i) { todos[i].done = !todos[i].done; localStorage.setItem('qc_todos', JSON.stringify(todos)); renderTodos(); }
-function delTodo(i) { todos.splice(i, 1); localStorage.setItem('qc_todos', JSON.stringify(todos)); renderTodos(); }
-
-// ============ 首页统计 ============
-function loadHomeStats() {
-  document.getElementById('statTodo').textContent = todos.filter(function(t) { return !t.done; }).length;
-  // 其他统计从云端加载
-  if (API.online) {
-    API.listRecords('process', 100).then(function(res) {
-      if (res.code === 0) {
-        var records = res.data?.items || [];
-        var today = new Date().toISOString().split('T')[0];
-        var todayCount = records.filter(function(r) {
-          return r.fields['自检日期'] && r.fields['自检日期'].startsWith(today);
-        }).length;
-        document.getElementById('statRecord').textContent = todayCount;
-      }
-    });
-  }
-}
-
-// ============ 考核评分表 ============
-var scoreItems = [
-  { name: '质量管理制度', std: 10 },
-  { name: '施工过程控制', std: 15 },
-  { name: '材料质量控制', std: 10 },
-  { name: '工序质量验收', std: 15 },
-  { name: '质量通病防治', std: 10 },
-  { name: '成品保护措施', std: 10 },
-  { name: '质量整改落实', std: 10 },
-  { name: '质量资料管理', std: 10 },
-  { name: '样板引路执行', std: 5 },
-  { name: '综合观感质量', std: 5 }
-];
-
-function renderScoreTable() {
-  var body = document.getElementById('scoreBody');
-  body.innerHTML = scoreItems.map(function(item, i) {
-    return '<tr><td>' + item.name + '</td><td>' + item.std + '</td>' +
-      '<td><input type="number" min="0" max="' + item.std + '" value="0" data-idx="' + i + '" onchange="calcScore()" /></td>' +
-      '<td id="sc_' + i + '">' + item.std + '</td></tr>';
-  }).join('');
-  calcScore();
-}
-
-function calcScore() {
-  var total = 0;
-  scoreItems.forEach(function(item, i) {
-    var deduct = parseFloat(document.querySelector('input[data-idx="' + i + '"]').value) || 0;
-    var score = Math.max(0, item.std - deduct);
-    document.getElementById('sc_' + i).textContent = score;
-    total += score;
-  });
-  document.getElementById('totalScore').textContent = total;
-}
-
-function showAssessForm() {
+function initAssessForm() {
   fillProjectFields();
   document.getElementById('a_date').value = new Date().toISOString().split('T')[0];
-  if (profile.name) document.getElementById('a_person').value = profile.name;
-  renderScoreTable();
-  document.getElementById('assessFormModal').classList.add('show');
+  if(profile.name) document.getElementById('a_person').value = profile.name;
+  if(project.mgr) document.getElementById('a_mgr').value = project.mgr;
+  assessPhotos = {};
+  renderChecklist();
+}
+
+function renderChecklist() {
+  var container = document.getElementById('checklistContainer');
+  var html = '';
+  checklistData.forEach(function(cat, ci) {
+    html += '<div class="cat-section">';
+    html += '<div class="cat-header'+(ci===0?' expanded':'')+'" onclick="toggleCat(this)">';
+    html += '<div class="cat-header-left"><span class="cat-icon">'+cat.icon+'</span><span class="cat-name">'+cat.name+'</span><span class="cat-score" id="catScore_'+ci+'">('+cat.total+'分)</span></div>';
+    html += '<span class="cat-arrow">›</span></div>';
+    html += '<div class="cat-body'+(ci===0?' open':'')+'" id="catBody_'+ci+'">';
+    cat.items.forEach(function(item, ii) {
+      html += '<div class="check-item">';
+      html += '<div class="check-item-head"><div class="check-item-name">'+(ii+1)+'. '+item.name+'</div><div class="check-item-std">'+item.score+'分</div></div>';
+      html += '<div class="check-item-content">'+item.content+'</div>';
+      html += '<div class="check-item-row"><label class="deduct-label">扣分：</label><input type="number" min="0" max="'+item.score+'" value="0" step="0.5" id="deduct_'+item.id+'" onchange="calcAll()" /><label>得分：</label><span class="score-display" id="itemScore_'+item.id+'">'+item.score+'</span></div>';
+      html += '<div class="check-item-remark"><textarea id="remark_'+item.id+'" placeholder="问题说明（选填）"></textarea></div>';
+      html += '<div class="item-photo-area" id="photoArea_'+item.id+'">';
+      html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+item.id+'\',this)" /></div>';
+      html += '</div></div>';
+    });
+    html += '<div class="cat-subtotal">小计得分：<span id="catTotal_'+ci+'">'+cat.total+'</span> / '+cat.total+'</div>';
+    html += '</div></div>';
+  });
+  container.innerHTML = html;
+  calcAll();
+}
+
+function toggleCat(header) {
+  var body = header.nextElementSibling;
+  if(body.classList.contains('open')){ body.classList.remove('open'); header.classList.remove('expanded'); }
+  else { body.classList.add('open'); header.classList.add('expanded'); }
+}
+
+function calcAll() {
+  var grandTotal = 0;
+  checklistData.forEach(function(cat, ci) {
+    var catTotal = 0;
+    cat.items.forEach(function(item) {
+      var deduct = parseFloat(document.getElementById('deduct_'+item.id).value)||0;
+      deduct = Math.min(Math.max(deduct,0), item.score);
+      var itemScore = Math.max(0, item.score - deduct);
+      document.getElementById('itemScore_'+item.id).textContent = itemScore;
+      catTotal += itemScore;
+    });
+    document.getElementById('catTotal_'+ci).textContent = catTotal;
+    document.getElementById('catScore_'+ci).textContent = '('+catTotal+'/'+cat.total+'分)';
+    grandTotal += catTotal;
+  });
+  document.getElementById('totalScore').textContent = grandTotal;
+}
+
+function addPhoto(itemId, input) {
+  if(!input.files||!input.files[0])return;
+  var file = input.files[0];
+  if(file.size>10*1024*1024){showToast('图片不能超过10MB');return;}
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    if(!assessPhotos[itemId]) assessPhotos[itemId]=[];
+    assessPhotos[itemId].push(e.target.result);
+    renderPhotos(itemId);
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removePhoto(itemId, idx) { if(assessPhotos[itemId]){assessPhotos[itemId].splice(idx,1);if(assessPhotos[itemId].length===0)delete assessPhotos[itemId];renderPhotos(itemId);} }
+
+function renderPhotos(itemId) {
+  var area = document.getElementById('photoArea_'+itemId);
+  var photos = assessPhotos[itemId]||[];
+  var html = '';
+  photos.forEach(function(src, i) {
+    html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="previewPhoto(\''+itemId+'\','+i+')" /><button class="photo-del" onclick="removePhoto(\''+itemId+'\','+i+')">✕</button></div>';
+  });
+  html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+itemId+'\',this)" /></div>';
+  area.innerHTML = html;
+}
+
+function previewPhoto(itemId, idx) {
+  var src = assessPhotos[itemId]&&assessPhotos[itemId][idx];
+  if(!src)return;
+  var overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;display:flex;align-items:center;justify-content:center;';
+  overlay.onclick=function(){document.body.removeChild(overlay);};
+  var img=document.createElement('img');img.src=src;img.style.cssText='max-width:95%;max-height:90%;object-fit:contain;border-radius:8px;';
+  overlay.appendChild(img);document.body.appendChild(overlay);
 }
 
 async function saveAssess() {
   var totalScore = document.getElementById('totalScore').textContent;
-  var scoreDetail = scoreItems.map(function(item, i) {
-    var deduct = parseFloat(document.querySelector('input[data-idx="' + i + '"]').value) || 0;
-    return item.name + ':' + (item.std - deduct);
-  }).join(';');
-
+  var detail = {};
+  var photoSummary = {};
+  checklistData.forEach(function(cat) {
+    cat.items.forEach(function(item) {
+      var deduct = parseFloat(document.getElementById('deduct_'+item.id).value)||0;
+      var remark = document.getElementById('remark_'+item.id).value||'';
+      var itemScore = Math.max(0, item.score - deduct);
+      detail[item.id] = {name:item.name, score:item.score, deduct:deduct, got:itemScore, remark:remark, content:item.content};
+      if(assessPhotos[item.id]&&assessPhotos[item.id].length>0) photoSummary[item.id]=assessPhotos[item.id].length;
+    });
+  });
   var fields = {
-    '项目名称': document.getElementById('a_project').value || '',
-    '考核日期': document.getElementById('a_date').value || '',
-    '考核人': document.getElementById('a_person').value || '',
+    '项目名称': document.getElementById('a_project').value||'',
+    '考核日期': document.getElementById('a_date').value||'',
+    '考核人': document.getElementById('a_person').value||'',
+    '项目经理': document.getElementById('a_mgr').value||'',
+    '质检员': document.getElementById('a_qc').value||'',
+    '施工员': document.getElementById('a_builder').value||'',
+    '材料员': document.getElementById('a_material').value||'',
     '总分': parseInt(totalScore),
-    '评分详情': scoreDetail,
-    '问题清单': document.getElementById('a_issues').value || '',
-    '创建人': profile.name || ''
+    '评分详情': JSON.stringify(detail),
+    '照片汇总': JSON.stringify(photoSummary),
+    '问题清单': Object.keys(detail).filter(function(k){return detail[k].deduct>0;}).map(function(k){return detail[k].name+'(扣'+detail[k].deduct+'分)';}).join('；'),
+    '创建人': profile.name||''
   };
-
-  var btn = document.querySelector('#assessFormModal .btn-primary');
-  btn.disabled = true;
-  btn.textContent = '提交中...';
-
-  var res = await API.createRecord('assess', fields);
-
-  btn.disabled = false;
-  btn.textContent = '💾 提交考核记录';
-
-  if (res.code === 0) {
-    showToast('✅ 考核记录已保存');
-    closeModal('assessFormModal');
-    loadRecordList('assess');
-  } else {
-    showToast('❌ 保存失败：' + (res.msg || '未知错误'));
-  }
+  var btn=document.getElementById('assessSaveBtn');btn.disabled=true;btn.textContent='提交中...';
+  var res=await API.createRecord('assess',fields);
+  btn.disabled=false;btn.textContent='💾 提交考核记录';
+  if(res.code===0){showToast('✅ 考核记录已保存');goBack();loadRecordList('assess');}
+  else{showToast('❌ 保存失败：'+(res.msg||'未知错误'));}
 }
 
-// ============ 通用表单 ============
-var formConfigs = {
-  material: {
-    title: '📦 新增材料验收',
-    fields: [
-      { key: '项目名称', type: 'readonly' },
-      { key: '验收日期', type: 'date' },
-      { key: '验收人', type: 'text', placeholder: '姓名' },
-      { key: '材料名称', type: 'text', placeholder: '如：钢筋、水泥' },
-      { key: '规格型号', type: 'text', placeholder: '如：HRB400 Φ12' },
-      { key: '进场数量', type: 'text', placeholder: '如：10吨' },
-      { key: '验收结果', type: 'select', options: ['合格', '不合格', '待复检'] },
-      { key: '问题描述', type: 'textarea', placeholder: '如有问题请描述' }
-    ]
-  },
-  process: {
-    title: '🔧 新增工序自检',
-    fields: [
-      { key: '项目名称', type: 'readonly' },
-      { key: '检验批部位', type: 'text', placeholder: '如：1号楼3层剪力墙' },
-      { key: '工序名称', type: 'select', options: ['钢筋绑扎', '模板安装', '混凝土浇筑', '砌体工程', '抹灰工程', '防水施工', '其他'] },
-      { key: '自检日期', type: 'date' },
-      { key: '自检人', type: 'text', placeholder: '姓名' },
-      { key: '自检结果', type: 'select', options: ['合格', '不合格'] },
-      { key: '问题描述', type: 'textarea', placeholder: '描述发现的质量问题' },
-      { key: '整改说明', type: 'textarea', placeholder: '描述整改措施' },
-      { key: '整改日期', type: 'date' },
-      { key: '整改人', type: 'text', placeholder: '姓名' }
-    ]
-  },
-  signboard: {
-    title: '🪧 新增举牌验收',
-    fields: [
-      { key: '项目名称', type: 'readonly' },
-      { key: '验收部位', type: 'text', placeholder: '如：地下室底板' },
-      { key: '验收日期', type: 'date' },
-      { key: '验收人', type: 'text', placeholder: '姓名' },
-      { key: '验收结论', type: 'select', options: ['通过', '不通过', '整改后通过'] },
-      { key: '存在问题', type: 'textarea', placeholder: '描述验收中发现的问题' }
-    ]
-  },
-  waterproof: {
-    title: '💧 新增防水检查',
-    fields: [
-      { key: '项目名称', type: 'readonly' },
-      { key: '检查部位', type: 'select', options: ['屋面', '地下室', '卫生间', '外墙', '水池', '其他'] },
-      { key: '检查日期', type: 'date' },
-      { key: '检查人', type: 'text', placeholder: '姓名' },
-      { key: '防水材料', type: 'text', placeholder: '如：SBS改性沥青防水卷材' },
-      { key: '施工做法', type: 'textarea', placeholder: '描述防水施工做法' },
-      { key: '检查结果', type: 'select', options: ['合格', '不合格', '需返工'] },
-      { key: '问题描述', type: 'textarea', placeholder: '描述发现的防水问题' }
-    ]
-  },
-  protect: {
-    title: '🛡️ 新增成品保护检查',
-    fields: [
-      { key: '项目名称', type: 'readonly' },
-      { key: '保护对象', type: 'select', options: ['门窗', '地面', '墙面', '管道', '设备', '其他'] },
-      { key: '检查日期', type: 'date' },
-      { key: '检查人', type: 'text', placeholder: '姓名' },
-      { key: '保护措施', type: 'textarea', placeholder: '描述采取的成品保护措施' },
-      { key: '检查结果', type: 'select', options: ['保护良好', '有损坏', '需加强'] },
-      { key: '问题描述', type: 'textarea', placeholder: '描述发现的成品损坏问题' }
-    ]
-  },
-  testing: {
-    title: '🧪 新增送检记录',
-    fields: [
-      { key: '项目名称', type: 'readonly' },
-      { key: '样品名称', type: 'text', placeholder: '如：混凝土试块、钢筋' },
-      { key: '规格等级', type: 'text', placeholder: '如：C30、HRB400' },
-      { key: '代表数量', type: 'text', placeholder: '如：3组' },
-      { key: '取样日期', type: 'date' },
-      { key: '送检人', type: 'text', placeholder: '姓名' },
-      { key: '检测单位', type: 'text', placeholder: '检测机构名称' },
-      { key: '检测项目', type: 'select', options: ['抗压强度', '抗拉强度', '弯折强度', '钢筋保护层', '其他'] },
-      { key: '送检状态', type: 'select', options: ['已取样', '已送检', '报告已出'] }
-    ]
+// ===== 考核详情 =====
+function viewAssessDetail(recordId) {
+  var record = assessRecordsCache.find(function(r){return r.record_id===recordId;});
+  if(!record){showToast('未找到记录');return;}
+  var f = record.fields;
+  var detail = {};
+  try { detail = JSON.parse(f['评分详情']||'{}'); } catch(e){}
+  var photoSummary = {};
+  try { photoSummary = JSON.parse(f['照片汇总']||'{}'); } catch(e){}
+
+  var html = '';
+  // 顶部信息卡
+  html += '<div class="detail-header-card">';
+  html += '<div class="dh-project">'+(f['项目名称']||'未知项目')+'</div>';
+  html += '<div class="dh-score">'+(f['总分']!==undefined?f['总分']:'--')+'<small> / 200</small></div>';
+  html += '<div class="dh-meta">';
+  html += '考核日期：'+(f['考核日期']||'--')+'<br>';
+  html += '考核人：'+(f['考核人']||'--')+' · 项目经理：'+(f['项目经理']||'--')+'<br>';
+  html += '质检员：'+(f['质检员']||'--')+' · 施工员：'+(f['施工员']||'--')+' · 材料员：'+(f['材料员']||'--');
+  html += '</div></div>';
+
+  // 问题清单
+  if(f['问题清单']) {
+    html += '<div class="section-card" style="margin-bottom:12px;">';
+    html += '<div class="section-title" style="color:#e74c3c;">⚠️ 扣分项</div>';
+    var issues = f['问题清单'].split('；');
+    html += '<div class="detail-issue-list">';
+    issues.forEach(function(iss) {
+      html += '<div class="detail-issue-item"><span class="di-name">'+iss+'</span></div>';
+    });
+    html += '</div></div>';
   }
+
+  // 五大类明细
+  checklistData.forEach(function(cat, ci) {
+    var catGot = 0, catTotal = 0;
+    cat.items.forEach(function(item) {
+      catTotal += item.score;
+      if(detail[item.id]) catGot += detail[item.id].got;
+      else catGot += item.score;
+    });
+    html += '<div style="margin-bottom:4px;">';
+    html += '<div class="detail-cat-header" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\';this.querySelector(\'.cat-arrow\').style.transform=this.nextElementSibling.style.display===\'none\'?\'\':\'rotate(90deg)\';">';
+    html += '<div class="detail-cat-header-left"><span class="dc-icon">'+cat.icon+'</span><span class="dc-name">'+cat.name+'</span><span class="dc-score">'+catGot+'/'+catTotal+'</span></div>';
+    html += '<span class="cat-arrow" style="transition:transform 0.25s;">›</span></div>';
+    html += '<div style="display:none;padding:4px 0 8px;">';
+
+    cat.items.forEach(function(item, ii) {
+      var d = detail[item.id];
+      var got = d ? d.got : item.score;
+      var deduct = d ? d.deduct : 0;
+      var remark = d ? (d.remark||'') : '';
+      var photoCount = photoSummary[item.id]||0;
+
+      html += '<div class="detail-item">';
+      html += '<div class="di-head"><span class="di-name">'+(ii+1)+'. '+item.name+'</span>';
+      html += '<span class="di-scores">';
+      if(deduct>0) html += '<span class="di-deduct">-'+deduct+'</span> ';
+      html += '<span class="di-got">'+got+'/'+item.score+'</span>';
+      html += '</span></div>';
+      if(remark) html += '<div class="di-remark">📝 '+remark+'</div>';
+      if(photoCount>0) html += '<div style="font-size:11px;color:#999;margin-top:2px;">📷 '+photoCount+'张照片</div>';
+      html += '<div class="di-content" id="detailContent_'+item.id+'">'+item.content+'</div>';
+      html += '<div class="di-toggle" onclick="var c=document.getElementById(\'detailContent_'+item.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起检查标准 ▲\':\'展开检查标准 ▼\';">展开检查标准 ▼</div>';
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  document.getElementById('assessDetailContent').innerHTML = html;
+  openPage('assess-detail');
+}
+
+// ===== 通用表单 =====
+var formConfigs = {
+  material:{title:'📦 新增材料验收',fields:[{key:'项目名称',type:'readonly'},{key:'验收日期',type:'date'},{key:'验收人',type:'text',placeholder:'姓名'},{key:'材料名称',type:'text',placeholder:'如：钢筋、水泥'},{key:'规格型号',type:'text',placeholder:'如：HRB400 Φ12'},{key:'进场数量',type:'text',placeholder:'如：10吨'},{key:'验收结果',type:'select',options:['合格','不合格','待复检']},{key:'问题描述',type:'textarea',placeholder:'如有问题请描述'}]},
+  process:{title:'🔧 新增工序自检',fields:[{key:'项目名称',type:'readonly'},{key:'检验批部位',type:'text',placeholder:'如：1号楼3层剪力墙'},{key:'工序名称',type:'select',options:['钢筋绑扎','模板安装','混凝土浇筑','砌体工程','抹灰工程','防水施工','其他']},{key:'自检日期',type:'date'},{key:'自检人',type:'text',placeholder:'姓名'},{key:'自检结果',type:'select',options:['合格','不合格']},{key:'问题描述',type:'textarea',placeholder:'描述发现的质量问题'},{key:'整改说明',type:'textarea',placeholder:'描述整改措施'},{key:'整改日期',type:'date'},{key:'整改人',type:'text',placeholder:'姓名'}]},
+  signboard:{title:'🪧 新增举牌验收',fields:[{key:'项目名称',type:'readonly'},{key:'验收部位',type:'text',placeholder:'如：地下室底板'},{key:'验收日期',type:'date'},{key:'验收人',type:'text',placeholder:'姓名'},{key:'验收结论',type:'select',options:['通过','不通过','整改后通过']},{key:'存在问题',type:'textarea',placeholder:'描述验收中发现的问题'}]},
+  waterproof:{title:'💧 新增防水检查',fields:[{key:'项目名称',type:'readonly'},{key:'检查部位',type:'select',options:['屋面','地下室','卫生间','外墙','水池','其他']},{key:'检查日期',type:'date'},{key:'检查人',type:'text',placeholder:'姓名'},{key:'防水材料',type:'text',placeholder:'如：SBS改性沥青防水卷材'},{key:'施工做法',type:'textarea',placeholder:'描述防水施工做法'},{key:'检查结果',type:'select',options:['合格','不合格','需返工']},{key:'问题描述',type:'textarea',placeholder:'描述发现的防水问题'}]},
+  protect:{title:'🛡️ 新增成品保护检查',fields:[{key:'项目名称',type:'readonly'},{key:'保护对象',type:'select',options:['门窗','地面','墙面','管道','设备','其他']},{key:'检查日期',type:'date'},{key:'检查人',type:'text',placeholder:'姓名'},{key:'保护措施',type:'textarea',placeholder:'描述采取的成品保护措施'},{key:'检查结果',type:'select',options:['保护良好','有损坏','需加强']},{key:'问题描述',type:'textarea',placeholder:'描述发现的成品损坏问题'}]},
+  testing:{title:'🧪 新增送检记录',fields:[{key:'项目名称',type:'readonly'},{key:'样品名称',type:'text',placeholder:'如：混凝土试块、钢筋'},{key:'规格等级',type:'text',placeholder:'如：C30、HRB400'},{key:'代表数量',type:'text',placeholder:'如：3组'},{key:'取样日期',type:'date'},{key:'送检人',type:'text',placeholder:'姓名'},{key:'检测单位',type:'text',placeholder:'检测机构名称'},{key:'检测项目',type:'select',options:['抗压强度','抗拉强度','弯折强度','钢筋保护层','其他']},{key:'送检状态',type:'select',options:['已取样','已送检','报告已出']}]}
 };
 
 function showForm(type) {
-  currentFormType = type;
-  var config = formConfigs[type];
-  document.getElementById('formTitle').innerHTML = config.title + ' <button class="modal-close" onclick="closeModal(\'formModal\')">✕</button>';
-
-  var html = '';
-  config.fields.forEach(function(f) {
-    html += '<div class="field' + (f.type === 'readonly' ? ' field-readonly' : '') + '">';
-    html += '<label>' + f.key + '</label>';
-    if (f.type === 'readonly') {
-      html += '<input id="f_' + f.key + '" readonly value="' + (f.key === '项目名称' ? (project.name || '') : '') + '" />';
-    } else if (f.type === 'date') {
-      html += '<input id="f_' + f.key + '" type="date" value="' + new Date().toISOString().split('T')[0] + '" />';
-    } else if (f.type === 'select') {
-      html += '<select id="f_' + f.key + '">';
-      f.options.forEach(function(o) { html += '<option>' + o + '</option>'; });
-      html += '</select>';
-    } else if (f.type === 'textarea') {
-      html += '<textarea id="f_' + f.key + '" placeholder="' + (f.placeholder || '') + '"></textarea>';
-    } else {
-      html += '<input id="f_' + f.key + '" placeholder="' + (f.placeholder || '') + '" />';
-    }
-    html += '</div>';
+  currentFormType=type;
+  var config=formConfigs[type];
+  document.getElementById('formTitle').innerHTML=config.title+' <button class="modal-close" onclick="closeModal(\'formModal\')">✕</button>';
+  var html='';
+  config.fields.forEach(function(f){
+    html+='<div class="field'+(f.type==='readonly'?' field-readonly':'')+'"><label>'+f.key+'</label>';
+    if(f.type==='readonly') html+='<input id="f_'+f.key+'" readonly value="'+(f.key==='项目名称'?(project.name||''):'' )+'" />';
+    else if(f.type==='date') html+='<input id="f_'+f.key+'" type="date" value="'+new Date().toISOString().split('T')[0]+'" />';
+    else if(f.type==='select'){html+='<select id="f_'+f.key+'">';f.options.forEach(function(o){html+='<option>'+o+'</option>';});html+='</select>';}
+    else if(f.type==='textarea') html+='<textarea id="f_'+f.key+'" placeholder="'+(f.placeholder||'')+'"></textarea>';
+    else html+='<input id="f_'+f.key+'" placeholder="'+(f.placeholder||'')+'" />';
+    html+='</div>';
   });
-
-  document.getElementById('formBody').innerHTML = html;
-  // 自动填入姓名
-  if (profile.name) {
-    var nameFields = config.fields.filter(function(f) { return f.key.indexOf('人') >= 0 && f.type === 'text'; });
-    nameFields.forEach(function(f) {
-      var el = document.getElementById('f_' + f.key);
-      if (el && !el.value) el.value = profile.name;
-    });
-  }
+  document.getElementById('formBody').innerHTML=html;
+  if(profile.name){config.fields.filter(function(f){return f.key.indexOf('人')>=0&&f.type==='text';}).forEach(function(f){var el=document.getElementById('f_'+f.key);if(el&&!el.value)el.value=profile.name;});}
   document.getElementById('formModal').classList.add('show');
 }
 
 async function saveCurrentForm() {
-  var config = formConfigs[currentFormType];
-  var fields = {};
-  config.fields.forEach(function(f) {
-    var el = document.getElementById('f_' + f.key);
-    if (el) fields[f.key] = el.value;
-  });
-  fields['创建人'] = profile.name || '';
-
-  var btn = document.getElementById('formSaveBtn');
-  btn.disabled = true;
-  btn.textContent = '保存中...';
-
-  var res = await API.createRecord(currentFormType, fields);
-
-  btn.disabled = false;
-  btn.textContent = '💾 保存记录';
-
-  if (res.code === 0) {
-    showToast('✅ 记录已保存');
-    closeModal('formModal');
-    loadRecordList(currentFormType);
-  } else {
-    showToast('❌ 保存失败：' + (res.msg || '未知错误'));
-  }
+  var config=formConfigs[currentFormType];var fields={};
+  config.fields.forEach(function(f){var el=document.getElementById('f_'+f.key);if(el)fields[f.key]=el.value;});
+  fields['创建人']=profile.name||'';
+  var btn=document.getElementById('formSaveBtn');btn.disabled=true;btn.textContent='保存中...';
+  var res=await API.createRecord(currentFormType,fields);
+  btn.disabled=false;btn.textContent='💾 保存记录';
+  if(res.code===0){showToast('✅ 记录已保存');closeModal('formModal');loadRecordList(currentFormType);}
+  else{showToast('❌ 保存失败：'+(res.msg||'未知错误'));}
 }
 
-// ============ 记录列表 ============
+// ===== 记录列表 =====
 async function loadRecordList(type) {
-  var el = document.getElementById(type + 'RecordList');
-  if (!el) return;
-  el.innerHTML = '<div class="loading">加载中...</div>';
+  var el=document.getElementById(type+'RecordList');
+  if(!el)return;
+  el.innerHTML='<div class="loading">加载中...</div>';
+  var res=await API.listRecords(type,50);
+  if(res.code!==0||!res.data||!res.data.items){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>暂无记录</p></div>';return;}
+  var items=res.data.items;
+  if(items.length===0){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>暂无记录，点击下方新增</p></div>';return;}
 
-  var res = await API.listRecords(type, 50);
-  if (res.code !== 0 || !res.data || !res.data.items) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>暂无记录</p></div>';
-    return;
-  }
+  // 缓存考核记录
+  if(type==='assess') assessRecordsCache=items;
 
-  var items = res.data.items;
-  if (items.length === 0) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>暂无记录，点击下方新增</p></div>';
-    return;
-  }
+  el.innerHTML=items.map(function(item){
+    var f=item.fields;
+    var title=f['材料名称']||f['检验批部位']||f['验收部位']||f['检查部位']||f['保护对象']||f['样品名称']||f['待办内容']||'';
+    var date=f['考核日期']||f['验收日期']||f['自检日期']||f['检查日期']||f['取样日期']||'';
+    var result=f['验收结果']||f['自检结果']||f['验收结论']||f['检查结果']||f['送检状态']||'';
+    if(type==='assess'){
+      title=(f['项目名称']||'考核')+' · '+(f['总分']!==undefined?f['总分']+'分':'');
+      result=f['总分']>=150?'良好':(f['总分']>=100?'一般':'待整改');
+    }
+    var statusClass='';
+    if(result.indexOf('合格')>=0||result.indexOf('通过')>=0||result.indexOf('良好')>=0||result.indexOf('报告')>=0)statusClass='status-pass';
+    else if(result.indexOf('不合格')>=0||result.indexOf('不通过')>=0||result.indexOf('损坏')>=0||result.indexOf('返工')>=0||result.indexOf('整改')>=0)statusClass='status-fail';
+    else statusClass='status-pending';
 
-  el.innerHTML = items.map(function(item) {
-    var f = item.fields;
-    var title = f['材料名称'] || f['检验批部位'] || f['验收部位'] || f['检查部位'] || f['保护对象'] || f['样品名称'] || f['待办内容'] || '记录';
-    var date = f['考核日期'] || f['验收日期'] || f['自检日期'] || f['检查日期'] || f['取样日期'] || '';
-    var result = f['验收结果'] || f['自检结果'] || f['验收结论'] || f['检查结果'] || f['送检状态'] || '';
-    var statusClass = '';
-    if (result.indexOf('合格') >= 0 || result.indexOf('通过') >= 0 || result.indexOf('良好') >= 0 || result.indexOf('报告') >= 0) statusClass = 'status-pass';
-    else if (result.indexOf('不合格') >= 0 || result.indexOf('不通过') >= 0 || result.indexOf('损坏') >= 0 || result.indexOf('返工') >= 0) statusClass = 'status-fail';
-    else statusClass = 'status-pending';
-
-    return '<div class="record-item">' +
-      '<div class="ri-head"><span class="ri-title">' + title + '</span>' +
-      (result ? '<span class="ri-status ' + statusClass + '">' + result + '</span>' : '') + '</div>' +
-      '<div class="ri-info">' + (f['项目名称'] || '') + (date ? ' · ' + date : '') + (f['创建人'] ? ' · ' + f['创建人'] : '') + '</div>' +
+    var clickAction = type==='assess' ? 'onclick="viewAssessDetail(\''+item.record_id+'\')"' : '';
+    return '<div class="record-item" '+clickAction+'>'+
+      '<div class="ri-head"><span class="ri-title">'+title+'</span>'+
+      (result?'<span class="ri-status '+statusClass+'">'+result+'</span>':'')+'</div>'+
+      '<div class="ri-info">'+(f['项目名称']||'')+(date?' · '+date:'')+(f['考核人']||f['创建人']?' · '+(f['考核人']||f['创建人']):'')+'</div>'+
+      (type==='assess'?'<div style="font-size:11px;color:#1a73e8;margin-top:4px;">点击查看明细 ›</div>':'')+
       '</div>';
   }).join('');
 }
 
-// ============ 同步 ============
-async function syncAll() {
-  showToast('🔄 正在同步...');
-  await API.initFields();
-  showToast('✅ 同步完成');
-}
+// ===== 同步/导出 =====
+async function syncAll(){showToast('🔄 正在同步...');await API.initFields();showToast('✅ 同步完成');}
+function exportAllData(){var data={profile:profile,project:project,todos:todos,exportTime:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='工程质量管理_数据导出_'+new Date().toLocaleDateString('zh-CN').replace(/\//g,'')+'.json';a.click();}
 
-// ============ 导出 ============
-function exportAllData() {
-  var data = { profile: profile, project: project, todos: todos, exportTime: new Date().toISOString() };
-  var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '工程质量管理_数据导出_' + new Date().toLocaleDateString('zh-CN').replace(/\//g, '') + '.json';
-  a.click();
-}
+// ===== 初始化 =====
+loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar();
+document.querySelectorAll('input[type="date"]').forEach(function(el){if(!el.value)el.value=new Date().toISOString().split('T')[0];});
 
-// ============ 初始化 ============
-loadProfile();
-loadProject();
-renderTodos();
-renderScoreTable();
-updateHomeProjectBar();
-updateSyncBar();
-
-// 设置默认日期
-document.querySelectorAll('input[type="date"]').forEach(function(el) {
-  if (!el.value) el.value = new Date().toISOString().split('T')[0];
-});
-
-// 检查服务器连接和登录状态
-fetch(window.location.origin + '/api/health')
-  .then(function(r) { return r.json(); })
-  .then(function(data) {
-    if (data.loggedIn) {
-      API.online = true;
-      updateSyncBar();
-      API.initFields();
-      loadHomeStats();
-    } else {
-      API.online = false;
-      var bar = document.getElementById('syncBar');
-      bar.style.display = '';
-      bar.className = 'sync-bar';
-      bar.innerHTML = '⚠️ 尚未登录飞书 <a href="/auth/login" style="color:#1a73e8;font-weight:600;margin-left:8px">点击登录</a>';
-      ['assess','material','process','signboard','waterproof','protect','testing'].forEach(function(t) {
-        var el = document.getElementById(t + 'RecordList');
-        if (el) el.innerHTML = '<div class="empty"><div class="empty-icon">🔐</div><p>请先<a href="/auth/login" style="color:#1a73e8">登录飞书</a></p></div>';
-      });
-    }
-  })
-  .catch(function() {
-    API.online = false;
-    updateSyncBar();
-    ['assess','material','process','signboard','waterproof','protect','testing'].forEach(function(t) {
-      var el = document.getElementById(t + 'RecordList');
-      if (el) el.innerHTML = '<div class="empty"><div class="empty-icon">📡</div><p>请先启动服务器连接云端</p></div>';
-    });
-  });
+fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();loadHomeStats();}).catch(function(){API.online=false;updateSyncBar();});
 </script>
 </body>
 </html>
