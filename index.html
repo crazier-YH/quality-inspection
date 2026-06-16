@@ -14,7 +14,9 @@
     .topbar { background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 100; }
     .topbar h1 { font-size: 20px; font-weight: 700; }
     .topbar .sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
-    .topbar-back { display: none; cursor: pointer; font-size: 18px; margin-right: 8px; }
+    .topbar-back { display: none; cursor: pointer; font-size: 20px; margin-right: 10px; padding: 4px 6px; border-radius: 8px; transition: background 0.15s; }
+    .topbar-back:hover { background: rgba(255,255,255,0.15); }
+    .topbar-back:active { background: rgba(255,255,255,0.25); }
     .topbar .topbar-row { display: flex; align-items: center; }
     .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; border-top: 1px solid #e8e8e8; z-index: 100; height: 60px; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 10px; transition: color 0.2s; }
@@ -98,6 +100,11 @@
     .stat-label { font-size: 11px; color: #999; margin-top: 2px; }
     .empty { text-align: center; padding: 40px 20px; color: #bbb; }
     .empty .empty-icon { font-size: 48px; margin-bottom: 8px; }
+    .ri-actions { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .ri-del-btn { font-size: 11px; color: #e74c3c; background: #fce8e6; border: none; border-radius: 6px; padding: 3px 10px; cursor: pointer; display: none; }
+    .ri-del-btn:active { background: #e74c3c; color: #fff; }
+    .admin-mode .ri-del-btn { display: inline-block; }
+    .admin-badge { font-size: 10px; background: #1a73e8; color: #fff; border-radius: 4px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
     .empty p { font-size: 14px; }
     .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.75); color: #fff; padding: 10px 24px; border-radius: 20px; font-size: 14px; z-index: 300; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
     .toast.show { opacity: 1; }
@@ -199,22 +206,89 @@
     .detail-issue-item .di-name { font-weight:600; color:#e65100; }
     .detail-subgroup { margin:4px 0 4px 12px; padding:8px; background:#f8f9fb; border-radius:6px; }
     .detail-subgroup .dsg-name { font-size:12px; font-weight:600; color:#555; margin-bottom:4px; }
+    /* 入口页 */
+    .entry-page { min-height:100vh; background:#f0f2f5; display:flex; flex-direction:column; }
+    .entry-header { background:linear-gradient(135deg,#1a73e8,#4a9af5); color:#fff; text-align:center; padding:50px 20px 30px; }
+    .entry-header h1 { font-size:24px; font-weight:700; }
+    .entry-header p { font-size:13px; opacity:0.8; margin-top:6px; }
+    .entry-body { flex:1; padding:20px 16px; }
+    .entry-card { background:#fff; border-radius:14px; padding:20px; margin-bottom:14px; box-shadow:0 1px 4px rgba(0,0,0,0.05); }
+    .entry-card-title { font-size:15px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+    .role-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+    .role-item { display:flex; flex-direction:column; align-items:center; padding:14px 6px; border-radius:12px; border:2px solid #e8e8e8; cursor:pointer; transition:all 0.15s; background:#fff; }
+    .role-item:active { background:#f0f4ff; }
+    .role-item.selected { border-color:#1a73e8; background:#e8f0fe; }
+    .role-item .role-icon { font-size:28px; margin-bottom:6px; }
+    .role-item .role-name { font-size:12px; font-weight:500; color:#333; }
+    .project-list { max-height:240px; overflow-y:auto; }
+    .project-option { display:flex; align-items:center; padding:12px 14px; border-radius:10px; border:2px solid #e8e8e8; margin-bottom:8px; cursor:pointer; transition:all 0.15s; }
+    .project-option:active { background:#f0f4ff; }
+    .project-option.selected { border-color:#1a73e8; background:#e8f0fe; }
+    .project-option .po-icon { font-size:22px; margin-right:10px; }
+    .project-option .po-info { flex:1; }
+    .project-option .po-name { font-size:14px; font-weight:600; color:#333; }
+    .project-option .po-addr { font-size:11px; color:#999; margin-top:2px; }
+    .entry-btn { width:100%; padding:14px; background:linear-gradient(135deg,#1a73e8,#4a9af5); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; margin-top:10px; }
+    .entry-btn:active { opacity:0.85; }
+    .entry-btn:disabled { background:#ccc; cursor:not-allowed; }
+    .entry-switch { text-align:center; margin-top:16px; font-size:13px; color:#999; }
+    .entry-switch span { color:#1a73e8; cursor:pointer; }
   </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 <div class="sync-bar" id="syncBar">正在连接服务器...</div>
+
+<!-- 入口页：选择身份和项目 -->
+<div class="entry-page" id="entryPage">
+  <div class="entry-header">
+    <h1>🏗️ 工程质量管理</h1>
+    <p>选择身份与项目，开始使用</p>
+  </div>
+  <div class="entry-body">
+    <div class="entry-card">
+      <div class="entry-card-title">👤 选择身份</div>
+      <div class="role-grid" id="roleGrid">
+        <div class="role-item" onclick="selectRole(this,'质检员')"><span class="role-icon">🔍</span><span class="role-name">质检员</span></div>
+        <div class="role-item" onclick="selectRole(this,'项目经理')"><span class="role-icon">👔</span><span class="role-name">项目经理</span></div>
+        <div class="role-item" onclick="selectRole(this,'施工员')"><span class="role-icon">👷</span><span class="role-name">施工员</span></div>
+        <div class="role-item" onclick="selectRole(this,'材料员')"><span class="role-icon">📦</span><span class="role-name">材料员</span></div>
+        <div class="role-item" onclick="selectRole(this,'管理员')"><span class="role-icon">🔑</span><span class="role-name">管理员</span></div>
+        <div class="role-item" onclick="selectRole(this,'其他')"><span class="role-icon">📋</span><span class="role-name">其他</span></div>
+      </div>
+      <div class="field" style="margin-top:12px;" id="nameFieldWrap">
+        <label>姓名</label>
+        <input id="entryName" placeholder="请输入您的姓名" />
+      </div>
+    </div>
+    <div class="entry-card">
+      <div class="entry-card-title">🏗️ 选择项目</div>
+      <div class="project-list" id="projectList">
+        <div class="loading">加载项目列表...</div>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>或输入新项目名称</label>
+        <input id="entryNewProject" placeholder="手动输入项目名称" />
+      </div>
+    </div>
+    <button class="entry-btn" id="entryBtn" onclick="enterApp()" disabled>进入系统</button>
+    <div class="entry-switch">已有账号？<span onclick="quickEntry()">快速进入</span></div>
+  </div>
+</div>
+
+<!-- 主应用区域 -->
+<div id="mainApp" style="display:none;">
 <div class="topbar">
   <div class="topbar-row">
-    <span class="topbar-back" id="backBtn" onclick="goBack()">←</span>
+    <span class="topbar-back" id="backBtn" onclick="goBack()">‹</span>
     <h1 id="pageTitle">工程质量管理</h1>
   </div>
   <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
 </div>
 <div class="page active" id="page-home">
   <div class="info-bar" id="homeInfoBar">
-    <div><div class="info-project" id="homeProjectName">未设置项目</div><div class="info-hint" id="homeProjectHint">点击右侧设置项目信息</div></div>
-    <span class="info-set" onclick="openPage('profile-edit')">设置 →</span>
+    <div><div class="info-project" id="homeProjectName">未设置项目</div><div class="info-hint" id="homeProjectHint">当前身份：<span id="homeUserRole">未设置</span></div></div>
+    <span class="info-set" onclick="switchProject()">切换 ›</span>
   </div>
   <div class="stats-row">
     <div class="stat-card"><div class="stat-num" id="statTodo">0</div><div class="stat-label">待办事项</div></div>
@@ -242,13 +316,15 @@
   <div class="profile-menu">
     <div class="profile-menu-item" onclick="openPage('profile-edit')"><div class="pmi-left"><span class="pmi-icon">📝</span><span class="pmi-text">编辑个人信息</span></div><span class="pmi-arrow">›</span></div>
     <div class="profile-menu-item" onclick="openPage('profile-project')"><div class="pmi-left"><span class="pmi-icon">🏗️</span><span class="pmi-text">项目信息设置</span></div><span class="pmi-arrow">›</span></div>
+    <div class="profile-menu-item" onclick="switchProject()"><div class="pmi-left"><span class="pmi-icon">🔄</span><span class="pmi-text">切换项目/身份</span></div><span class="pmi-arrow">›</span></div>
+    <div class="profile-menu-item" onclick="toggleAdmin()"><div class="pmi-left"><span class="pmi-icon">🔑</span><span class="pmi-text">管理员模式<span id="adminStatusBadge"></span></span></div><span class="pmi-arrow" id="adminToggleArrow">关</span></div>
     <div class="profile-menu-item" onclick="syncAll()"><div class="pmi-left"><span class="pmi-icon">🔄</span><span class="pmi-text">同步云端数据</span></div><span class="pmi-arrow">›</span></div>
     <div class="profile-menu-item" onclick="exportAllData()"><div class="pmi-left"><span class="pmi-icon">💾</span><span class="pmi-text">导出所有数据</span></div><span class="pmi-arrow">›</span></div>
   </div>
 </div>
 <div class="page" id="page-profile-edit"><div class="section"><div class="section-card"><div class="section-title">📝 个人信息</div><div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div><div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div><div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div><div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div></div></div></div>
 <div class="page" id="page-profile-project"><div class="section"><div class="section-card"><div class="section-title">🏗️ 项目信息</div><div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div><div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div><div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div><div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div><div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div><div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div></div><div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div></div>
-<div class="page" id="page-assess"><div class="section"><div class="section-card"><div class="section-title"><span>📊</span>历史考核记录</div><div id="assessRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="openPage('assess-form')">+ 新增考核</button></div></div>
+<div class="page" id="page-assess"><div class="section"><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="openPage('assess-form')">+ 新增考核</button></div></div>
 <div class="page" id="page-assess-form">
   <div class="section" style="padding-bottom:0;">
     <div class="section-card" style="margin-bottom:8px;">
@@ -278,6 +354,7 @@
   <div class="nav-item" onclick="switchTab('todo',this)"><span class="nav-icon">📝</span><span>待办</span></div>
   <div class="nav-item" onclick="switchTab('profile',this)"><span class="nav-icon">👤</span><span>我的</span></div>
 </div>
+</div><!-- end mainApp -->
 <script>
 // ===== 考核检查表数据 =====
 var checklistData = [
@@ -503,6 +580,153 @@ function updateSyncBar() {
   else { bar.className='sync-bar'; bar.style.display=''; bar.textContent='⚠️ 离线模式'; }
 }
 function showToast(msg) { var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2000); }
+var isAdmin = localStorage.getItem('qc_admin') === '1';
+function toggleAdmin() {
+  if(!isAdmin) {
+    var pwd = prompt('请输入管理员密码：');
+    if(pwd !== 'jk2026') { showToast('❌ 密码错误'); return; }
+  }
+  isAdmin = !isAdmin;
+  localStorage.setItem('qc_admin', isAdmin ? '1' : '0');
+  document.body.classList.toggle('admin-mode', isAdmin);
+  document.getElementById('adminToggleArrow').textContent = isAdmin ? '开' : '关';
+  document.getElementById('adminStatusBadge').innerHTML = isAdmin ? '<span class="admin-badge">已开启</span>' : '';
+  showToast(isAdmin ? '🔑 管理员模式已开启' : '🔑 管理员模式已关闭');
+  loadRecordList('assess');
+}
+function initAdmin() {
+  document.body.classList.toggle('admin-mode', isAdmin);
+  document.getElementById('adminToggleArrow').textContent = isAdmin ? '开' : '关';
+  document.getElementById('adminStatusBadge').innerHTML = isAdmin ? '<span class="admin-badge">已开启</span>' : '';
+}
+async function deleteAssess(recordId) {
+  if(!isAdmin) { showToast('❌ 需要管理员权限'); return; }
+  if(!confirm('确定要删除该考核记录吗？此操作不可恢复。')) return;
+  var res = await API.deleteRecord('assess', recordId);
+  if(res.code === 0) { showToast('✅ 已删除'); loadRecordList('assess'); }
+  else { showToast('❌ 删除失败：'+(res.msg||'未知错误')); }
+}
+
+// ===== 入口页 =====
+var entryRole = '';
+var entryProjectName = '';
+var entryProjects = JSON.parse(localStorage.getItem('qc_projects_list')||'[]');
+
+function selectRole(el, role) {
+  document.querySelectorAll('#roleGrid .role-item').forEach(function(r){r.classList.remove('selected');});
+  el.classList.add('selected');
+  entryRole = role;
+  if(role==='管理员') { isAdmin=true; localStorage.setItem('qc_admin','1'); }
+  checkEntryReady();
+}
+
+function selectProject(el, name) {
+  document.querySelectorAll('#projectList .project-option').forEach(function(p){p.classList.remove('selected');});
+  el.classList.add('selected');
+  entryProjectName = name;
+  document.getElementById('entryNewProject').value = '';
+  checkEntryReady();
+}
+
+function checkEntryReady() {
+  var name = document.getElementById('entryName').value.trim();
+  var proj = entryProjectName || document.getElementById('entryNewProject').value.trim();
+  var btn = document.getElementById('entryBtn');
+  btn.disabled = !(name && proj);
+}
+
+function enterApp() {
+  var name = document.getElementById('entryName').value.trim();
+  var proj = entryProjectName || document.getElementById('entryNewProject').value.trim();
+  if(!name || !proj) return;
+
+  // 保存身份信息
+  profile.name = name;
+  profile.position = entryRole;
+  localStorage.setItem('qc_profile', JSON.stringify(profile));
+
+  // 保存项目信息
+  project.name = proj;
+  localStorage.setItem('qc_project', JSON.stringify(project));
+
+  // 保存项目到项目列表
+  if(entryProjects.indexOf(proj)===-1) { entryProjects.push(proj); localStorage.setItem('qc_projects_list', JSON.stringify(entryProjects)); }
+
+  // 如果是管理员，初始化
+  initAdmin();
+
+  // 切换到主应用
+  document.getElementById('entryPage').style.display = 'none';
+  document.getElementById('mainApp').style.display = '';
+  loadProfile(); loadProject(); updateHomeProjectBar(); renderTodos(); updateSyncBar();
+  if(API.online) { API.initFields(); loadHomeStats(); }
+  showToast('👋 欢迎，' + name);
+}
+
+function quickEntry() {
+  // 如果之前已设置过身份和项目，直接进入
+  if(profile.name && project.name) {
+    document.getElementById('entryPage').style.display = 'none';
+    document.getElementById('mainApp').style.display = '';
+    loadProfile(); loadProject(); updateHomeProjectBar(); renderTodos(); updateSyncBar();
+    if(API.online) { API.initFields(); loadHomeStats(); }
+    return;
+  }
+  showToast('请先选择身份和项目');
+}
+
+function loadEntryProjects() {
+  var el = document.getElementById('projectList');
+  // 从考核记录中提取已有的项目名称
+  var projectNames = entryProjects.slice();
+  if(API.online) {
+    API.listRecords('assess', 100).then(function(res) {
+      if(res.code===0 && res.data && res.data.items) {
+        res.data.items.forEach(function(item) {
+          var pn = item.fields['项目名称'];
+          if(pn && projectNames.indexOf(pn)===-1) projectNames.push(pn);
+        });
+        localStorage.setItem('qc_projects_list', JSON.stringify(projectNames));
+        entryProjects = projectNames;
+      }
+      renderProjectList(projectNames);
+    });
+  } else {
+    renderProjectList(projectNames);
+  }
+}
+
+function renderProjectList(names) {
+  var el = document.getElementById('projectList');
+  if(names.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:#999;padding:20px;font-size:13px;">暂无项目，请在下方输入项目名称</div>';
+    return;
+  }
+  var icons = ['🏗️','🏢','🏘️','🏛️','🌁'];
+  el.innerHTML = names.map(function(name, i) {
+    return '<div class="project-option" onclick="selectProject(this,\''+name.replace(/'/g,"\\'")+'\')">'+
+      '<span class="po-icon">'+icons[i%icons.length]+'</span>'+
+      '<div class="po-info"><div class="po-name">'+name+'</div></div></div>';
+  }).join('');
+}
+
+function showEntryPage() {
+  document.getElementById('entryPage').style.display = '';
+  document.getElementById('mainApp').style.display = 'none';
+  // 预填已有信息
+  if(profile.name) document.getElementById('entryName').value = profile.name;
+  if(profile.position) {
+    document.querySelectorAll('#roleGrid .role-item').forEach(function(r) {
+      if(r.querySelector('.role-name').textContent === profile.position) { r.classList.add('selected'); entryRole = profile.position; }
+    });
+  }
+  loadEntryProjects();
+  checkEntryReady();
+}
+function switchProject() {
+  pageHistory = ['home'];
+  showEntryPage();
+}
 var profile = JSON.parse(localStorage.getItem('qc_profile')||'{}');
 var project = JSON.parse(localStorage.getItem('qc_project')||'{}');
 var todos = JSON.parse(localStorage.getItem('qc_todos')||'[]');
@@ -560,7 +784,7 @@ function loadProfile() { document.getElementById('pe_name').value=profile.name||
 function saveProfile() { profile.name=document.getElementById('pe_name').value; profile.position=document.getElementById('pe_position').value; profile.company=document.getElementById('pe_company').value; profile.phone=document.getElementById('pe_phone').value; localStorage.setItem('qc_profile',JSON.stringify(profile)); document.getElementById('profileDisplayName').textContent=profile.name||'未设置'; if(profile.name){var f=document.getElementById('a_person');if(f&&!f.value)f.value=profile.name;} }
 function loadProject() { document.getElementById('pj_name').value=project.name||''; document.getElementById('pj_addr').value=project.addr||''; document.getElementById('pj_dev').value=project.dev||''; document.getElementById('pj_build').value=project.build||''; document.getElementById('pj_sup').value=project.sup||''; document.getElementById('pj_mgr').value=project.mgr||''; updateHomeProjectBar(); }
 function saveProject() { project.name=document.getElementById('pj_name').value; project.addr=document.getElementById('pj_addr').value; project.dev=document.getElementById('pj_dev').value; project.build=document.getElementById('pj_build').value; project.sup=document.getElementById('pj_sup').value; project.mgr=document.getElementById('pj_mgr').value; localStorage.setItem('qc_project',JSON.stringify(project)); updateHomeProjectBar(); }
-function updateHomeProjectBar() { document.getElementById('homeProjectName').textContent=project.name||'未设置项目'; document.getElementById('homeProjectHint').textContent=project.name?(project.build||'点击设置项目详情'):'点击右侧设置项目信息'; }
+function updateHomeProjectBar() { document.getElementById('homeProjectName').textContent=project.name||'未设置项目'; var roleEl=document.getElementById('homeUserRole'); if(roleEl) roleEl.textContent=(profile.position||'未设置')+' · '+(profile.name||''); }
 function fillProjectFields() { if(project.name){var el=document.getElementById('a_project');if(el)el.value=project.name;} }
 
 // ===== 待办 =====
@@ -1084,7 +1308,9 @@ async function loadRecordList(type) {
       '<div class="ri-head"><span class="ri-title">'+title+'</span>'+
       (result?'<span class="ri-status '+statusClass+'">'+result+'</span>':'')+'</div>'+
       '<div class="ri-info">'+(f['项目名称']||'')+(date?' · '+date:'')+(f['考核人']||f['创建人']?' · '+(f['考核人']||f['创建人']):'')+'</div>'+
-      (type==='assess'?'<div style="font-size:11px;color:#1a73e8;margin-top:4px;">点击查看明细 ›</div>':'')+
+      '<div class="ri-actions">'+
+      (type==='assess'?'<span style="font-size:11px;color:#1a73e8;">点击查看明细 ›</span><button class="ri-del-btn" onclick="event.stopPropagation();deleteAssess(\''+item.record_id+'\')">删除</button>':'')+
+      '</div>'+
       '</div>';
   }).join('');
 }
@@ -1094,9 +1320,27 @@ async function syncAll(){showToast('🔄 正在同步...');await API.initFields(
 function exportAllData(){var data={profile:profile,project:project,todos:todos,exportTime:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='工程质量管理_数据导出_'+new Date().toLocaleDateString('zh-CN').replace(/\//g,'')+'.json';a.click();}
 
 // ===== 初始化 =====
-loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar();
+document.getElementById('entryName').addEventListener('input', checkEntryReady);
+document.getElementById('entryNewProject').addEventListener('input', function(){ entryProjectName=''; document.querySelectorAll('#projectList .project-option').forEach(function(p){p.classList.remove('selected');}); checkEntryReady(); });
+// 判断是否显示入口页
+if(profile.name && project.name) {
+  // 已有身份和项目，直接进入主应用
+  document.getElementById('entryPage').style.display = 'none';
+  document.getElementById('mainApp').style.display = '';
+  loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar(); initAdmin();
+} else {
+  // 显示入口页
+  document.getElementById('entryPage').style.display = '';
+  document.getElementById('mainApp').style.display = 'none';
+  if(profile.name) document.getElementById('entryName').value = profile.name;
+  if(profile.position) {
+    document.querySelectorAll('#roleGrid .role-item').forEach(function(r) {
+      if(r.querySelector('.role-name').textContent === profile.position) { r.classList.add('selected'); entryRole = profile.position; }
+    });
+  }
+}
 document.querySelectorAll('input[type="date"]').forEach(function(el){if(!el.value)el.value=new Date().toISOString().split('T')[0];});
-fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();loadHomeStats();}).catch(function(){API.online=false;updateSyncBar();});
+fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();if(document.getElementById('mainApp').style.display!=='none'){loadHomeStats();}if(document.getElementById('entryPage').style.display!=='none'){loadEntryProjects();}}).catch(function(){API.online=false;updateSyncBar();});
 </script>
 </body>
 </html>
