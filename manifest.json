@@ -1,0 +1,24 @@
+{
+  "name": "工程质量管理",
+  "short_name": "质量管理",
+  "description": "工程质量巡查管理工具 - 待办·考核·验收·自检",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f0f2f5",
+  "theme_color": "#1a73e8",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
