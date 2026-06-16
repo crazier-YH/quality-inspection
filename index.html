@@ -1410,11 +1410,7 @@ function exportAssessScore(recordId) {
   html += '</table>';
 
   html += '<div style="margin-top:20px;font-size:12px;color:#999;text-align:center;">导出时间：'+new Date().toLocaleString('zh-CN')+'</div>';
-  html += '
-<script>
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/service-worker.js').catch(e=>console.log('SW注册失败',e));}
-</script>
-</body></html>';
+  html += '</body></html>';
 
   var blob = new Blob([html], {type:'text/html;charset=utf-8'});
   var a = document.createElement('a');
@@ -1567,11 +1563,7 @@ function exportAssessReport(recordId) {
   html += '</div>';
 
   html += '<div style="margin-top:30px;font-size:11px;color:#999;text-align:center;">报告生成时间：'+new Date().toLocaleString('zh-CN')+'</div>';
-  html += '
-<script>
-if('serviceWorker' in navigator){navigator.serviceWorker.register('/service-worker.js').catch(e=>console.log('SW注册失败',e));}
-</script>
-</body></html>';
+  html += '</body></html>';
 
   var blob = new Blob([html], {type:'text/html;charset=utf-8'});
   var a = document.createElement('a');
