@@ -14,9 +14,12 @@
     .topbar { background: linear-gradient(135deg, #1a73e8, #4a9af5); color: #fff; padding: 20px; position: sticky; top: 0; z-index: 100; }
     .topbar h1 { font-size: 20px; font-weight: 700; }
     .topbar .sub { font-size: 12px; opacity: 0.8; margin-top: 4px; }
-    .topbar-back { display: none; cursor: pointer; font-size: 22px; margin-right: 8px; padding: 6px 10px; border-radius: 8px; transition: background 0.15s; background: rgba(255,255,255,0.1); font-weight: 700; min-width: 36px; text-align: center; }
-    .topbar-back:hover { background: rgba(255,255,255,0.2); }
-    .topbar-back:active { background: rgba(255,255,255,0.3); }
+    .topbar-back { display: none; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); margin-right: 10px; flex-shrink: 0; transition: all 0.2s ease; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .topbar-back::before { content: ''; position: absolute; top: 50%; left: 54%; width: 10px; height: 10px; border-left: 2.2px solid #fff; border-bottom: 2.2px solid #fff; transform: translate(-50%, -50%) rotate(45deg); transition: all 0.2s ease; }
+    .topbar-back:hover { background: rgba(255,255,255,0.25); transform: scale(1.05); }
+    .topbar-back:hover::before { left: 50%; border-color: #fff; }
+    .topbar-back:active { background: rgba(255,255,255,0.35); transform: scale(0.95); }
+    
     .topbar .topbar-row { display: flex; align-items: center; }
     .navbar { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; display: flex; border-top: 1px solid #e8e8e8; z-index: 100; height: 60px; }
     .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 10px; transition: color 0.2s; }
@@ -280,7 +283,7 @@
 <div id="mainApp" style="display:none;">
 <div class="topbar">
   <div class="topbar-row">
-    <span class="topbar-back" id="backBtn" onclick="goBack()">←</span>
+    <div class="topbar-back" id="backBtn" onclick="goBack()"></div>
     <h1 id="pageTitle">工程质量管理</h1>
   </div>
   <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
