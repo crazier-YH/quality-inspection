@@ -1,8 +1,8 @@
 /**
- * 工程质量管理工具 - 飞书API代理服务器（用户身份版）
+ * 工程质量管理工具 - 飞书API代理服务器（应用身份版·多人协作）
  * 
+ * 使用 tenant_access_token，支持200人同时使用，无需每人登录飞书
  * 启动：npm install && node server.js
- * 首次启动后访问 http://localhost:3000/auth/login 完成飞书授权
  */
 
 const express = require('express');
@@ -37,7 +37,34 @@ const TABLE_IDS = {
   testing: 'tblctYgQboo3Qxqm'
 };
 
-// ============ Token存储 ============
+// ============ 应用身份Token管理（tenant_access_token）============
+let tenantToken = null;
+let tenantTokenExpiry = 0;
+
+async function getTenantAccessToken() {
+  if (tenantToken && Date.now() < tenantTokenExpiry) return tenantToken;
+  try {
+    const res = await fetch('https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ app_id: config.appId, app_secret: config.appSecret })
+    });
+    const data = await res.json();
+    if (data.code === 0) {
+      tenantToken = data.tenant_access_token;
+      tenantTokenExpiry = Date.now() + (data.expire - 300) * 1000;
+      console.log('✅ 获取tenant_access_token成功');
+      return tenantToken;
+    }
+    console.error('获取tenant_access_token失败:', data.msg);
+    return null;
+  } catch (e) {
+    console.error('获取tenant_access_token异常:', e.message);
+    return null;
+  }
+}
+
+// ============ 用户身份Token管理（保留兼容）============
 const TOKEN_FILE = path.join(__dirname, 'token.json');
 function loadToken() {
   if (fs.existsSync(TOKEN_FILE)) return JSON.parse(fs.readFileSync(TOKEN_FILE, 'utf8'));
@@ -45,7 +72,6 @@ function loadToken() {
 }
 function saveToken(t) { fs.writeFileSync(TOKEN_FILE, JSON.stringify(t, null, 2)); }
 
-// ============ 用户身份Token管理 ============
 let cachedToken = null;
 let tokenExpiry = 0;
 
@@ -80,18 +106,15 @@ async function getUserAccessToken() {
         user_name: stored.user_name,
         updated_at: new Date().toISOString()
       });
-      console.log('✅ 刷新用户token成功');
       return cachedToken;
     }
-    console.error('刷新token失败:', data.msg);
     return null;
   } catch (e) {
-    console.error('刷新token异常:', e.message);
     return null;
   }
 }
 
-// ============ OAuth登录 ============
+// ============ OAuth登录（保留，管理员首次授权用）============
 app.get('/auth/login', (req, res) => {
   const host = req.headers.host;
   const redirectUri = config.redirectUri || `http://${host}/auth/callback`;
@@ -143,10 +166,20 @@ app.get('/auth/callback', async (req, res) => {
   }
 });
 
-// ============ 飞书API代理 ============
+// ============ 飞书API代理（优先用tenant_access_token）============
 async function feishuRequest(method, urlPath, body) {
-  const token = await getUserAccessToken();
-  if (!token) return { code: -1, msg: '请先登录飞书授权', needLogin: true };
+  // 优先用应用身份token，支持多人同时使用
+  let token = await getTenantAccessToken();
+  let tokenType = 'tenant';
+  
+  // 如果应用身份token获取失败，回退到用户身份token
+  if (!token) {
+    token = await getUserAccessToken();
+    tokenType = 'user';
+  }
+  
+  if (!token) return { code: -1, msg: '无法获取访问令牌，请检查应用配置', needLogin: true };
+  
   const url = `https://open.feishu.cn/open-apis${urlPath}`;
   const options = {
     method,
@@ -155,17 +188,20 @@ async function feishuRequest(method, urlPath, body) {
   if (body) options.body = JSON.stringify(body);
   const res = await fetch(url, options);
   const data = await res.json();
-  if (data.code !== 0) console.error(`飞书API错误 [${method} ${urlPath}]:`, data.msg);
+  if (data.code !== 0) console.error(`飞书API错误 [${method} ${urlPath}] (${tokenType}Token):`, data.msg);
   return data;
 }
 
 // 记录列表
 app.post('/api/records/list', async (req, res) => {
   try {
-    const { tableKey, pageSize } = req.body;
+    const { tableKey, pageSize, filter } = req.body;
     const tableId = TABLE_IDS[tableKey];
     if (!tableId) return res.status(400).json({ error: '无效的表标识' });
     let urlPath = `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=${pageSize || 100}`;
+    if (filter) {
+      urlPath += `&filter=${encodeURIComponent(JSON.stringify(filter))}`;
+    }
     const result = await feishuRequest('GET', urlPath);
     res.json(result);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -321,17 +357,18 @@ app.post('/api/init-fields', async (req, res) => {
 
 // 健康检查
 app.get('/api/health', async (req, res) => {
-  const token = await getUserAccessToken();
+  const tenantTok = await getTenantAccessToken();
   const stored = loadToken();
   res.json({
     status: 'ok',
-    loggedIn: !!token,
+    loggedIn: !!tenantTok,
+    mode: tenantTok ? 'tenant' : (stored ? 'user' : 'none'),
     userName: stored?.user_name || '',
     appId: config.appId
   });
 });
 
-// 获取登录URL
+// 获取登录URL（保留兼容）
 app.get('/api/auth-url', (req, res) => {
   const host = req.headers.host;
   const redirectUri = config.redirectUri || `http://${host}/auth/callback`;
@@ -344,14 +381,12 @@ app.use(express.static(path.join(__dirname)));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
-  console.log(`\n🚀 工程质量管理工具已启动`);
+  console.log(`\n🚀 工程质量管理工具已启动（多人协作版）`);
   console.log(`📱 访问地址: http://localhost:${PORT}`);
-  const token = await getUserAccessToken();
-  if (token) {
-    const stored = loadToken();
-    console.log('✅ 飞书已授权（' + (stored?.user_name || '') + '），可直接使用\n');
+  const tenantTok = await getTenantAccessToken();
+  if (tenantTok) {
+    console.log('✅ 应用身份Token获取成功，支持多人同时使用\n');
   } else {
-    console.log(`\n⚠️  尚未登录飞书，请在浏览器中打开：`);
-    console.log(`   http://localhost:${PORT}/auth/login\n`);
+    console.log('⚠️  应用身份Token获取失败，请检查应用权限配置\n');
   }
 });
