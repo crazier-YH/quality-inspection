@@ -1302,8 +1302,8 @@ function viewAssessDetail(recordId) {
         if(photoCount>0) {
           html += '<div class="item-photo-area" style="margin-top:4px;">';
           attachPhotos.forEach(function(p, pi) {
-            var src = p.tmp_url || ('/api/image?file_token='+p.file_token);
-            html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="showAttachPhotos(\''+item.id+'\')" /></div>';
+            var src = '/api/image?file_token='+p.file_token;
+            html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="showAttachPhotos(\''+item.id+'\','+pi+')" /></div>';
           });
           html += '</div>';
         }
@@ -1441,7 +1441,7 @@ function showAttachPhotos(itemId, startIdx) {
   overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;';
   function renderImg() {
     var p = photos[idx];
-    var src = p.tmp_url || ('/api/image?file_token='+p.file_token);
+    var src = '/api/image?file_token='+p.file_token;
     var inner='<div style="position:absolute;top:12px;right:12px;"><button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,0.9);border:none;border-radius:50%;width:36px;height:36px;font-size:20px;cursor:pointer;">✕</button></div>';
     inner+='<div style="position:absolute;top:12px;left:50%;transform:translateX(-50%);color:#fff;font-size:14px;">'+(idx+1)+' / '+photos.length+'</div>';
     inner+='<img src="'+src+'" style="max-width:92vw;max-height:80vh;border-radius:8px;object-fit:contain;" />';
