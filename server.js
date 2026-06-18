@@ -435,7 +435,7 @@ app.get('/api/image', async (req, res) => {
     if (!token) return res.status(401).send('无法获取访问令牌');
 
     const imgRes = await fetch(
-      'https://open.feishu.cn/open-apis/drive/v1/medias/' + file_token,
+      'https://open.feishu.cn/open-apis/drive/v1/medias/' + file_token + '/download',
       { headers: { 'Authorization': 'Bearer ' + token } }
     );
     
