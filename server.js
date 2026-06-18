@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
+const ExcelJS = require('exceljs');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -448,8 +449,400 @@ app.get('/api/image', async (req, res) => {
   }
 });
 
+// ============ 导入考核评分表 =============
+app.post('/api/import-assess', async (req, res) => {
+  try {
+    const { fileName, fileData } = req.body;
+    if (!fileName || !fileData) {
+      return res.status(400).json({ code: -1, msg: '缺少文件数据' });
+    }
+
+    // Base64解码文件内容
+    const buffer = Buffer.from(fileData, 'base64');
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+
+    const worksheet = workbook.worksheets[0];
+    if (!worksheet) {
+      return res.status(400).json({ code: -1, msg: 'Excel文件无工作表' });
+    }
+
+    // 提取所有行数据
+    const rows = [];
+    worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+      const cells = [];
+      row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
+        cells.push({ col: colNumber, value: cell.value });
+      });
+      rows.push({ rowNumber, cells });
+    });
+
+    // 尝试智能解析评分表
+    // 常见格式：序号 | 检查项目 | 标准分 | 扣分 | 得分 | 备注
+    const result = {
+      meta: {},     // 项目信息
+      items: [],    // 评分项
+      totalScore: 0, // 总分
+      rawRows: rows.length
+    };
+
+    // 查找表头行（包含"检查项目"或"序号"等关键词的行）
+    let headerRow = -1;
+    let colMap = {}; // 列映射
+    for (let i = 0; i < rows.length; i++) {
+      const rowText = rows[i].cells.map(c => String(c.value || '')).join(' ');
+      if (rowText.indexOf('检查项目') >= 0 || rowText.indexOf('项目') >= 0 && rowText.indexOf('标准') >= 0) {
+        headerRow = i;
+        rows[i].cells.forEach(c => {
+          const v = String(c.value || '');
+          if (v.indexOf('序号') >= 0) colMap.idx = c.col;
+          if (v.indexOf('检查项目') >= 0 || v.indexOf('项目') >= 0) colMap.name = c.col;
+          if (v.indexOf('标准分') >= 0 || v.indexOf('标准') >= 0) colMap.std = c.col;
+          if (v.indexOf('扣分') >= 0) colMap.deduct = c.col;
+          if (v.indexOf('得分') >= 0) colMap.score = c.col;
+          if (v.indexOf('备注') >= 0 || v.indexOf('说明') >= 0) colMap.remark = c.col;
+        });
+        break;
+      }
+    }
+
+    // 如果没找到标准表头，尝试从行内容推断
+    if (headerRow < 0) {
+      // 返回原始数据让前端展示
+      return res.json({ code: 0, data: { parsed: false, rows, colMap: {}, message: '未识别到标准评分表格式，请手动映射列' } });
+    }
+
+    // 解析项目信息（表头之前的行）
+    for (let i = 0; i < headerRow; i++) {
+      const rowText = rows[i].cells.map(c => String(c.value || '')).join('');
+      if (rowText.indexOf('项目名称') >= 0 || rowText.indexOf('项目') >= 0) {
+        rows[i].cells.forEach(c => {
+          const v = String(c.value || '');
+          if (v.indexOf('项目') < 0 && v.trim()) result.meta.projectName = v.trim();
+        });
+      }
+      if (rowText.indexOf('考核日期') >= 0 || rowText.indexOf('日期') >= 0) {
+        rows[i].cells.forEach(c => {
+          const v = String(c.value || '');
+          if (v.indexOf('日期') < 0 && v.trim()) result.meta.assessDate = v.trim();
+        });
+      }
+      if (rowText.indexOf('考核人') >= 0) {
+        rows[i].cells.forEach(c => {
+          const v = String(c.value || '');
+          if (v.indexOf('考核人') < 0 && v.trim()) result.meta.assessor = v.trim();
+        });
+      }
+    }
+
+    // 解析评分项（表头之后的行）
+    let currentCat = '';
+    for (let i = headerRow + 1; i < rows.length; i++) {
+      const row = rows[i];
+      const cellValues = {};
+      row.cells.forEach(c => { cellValues[c.col] = c.value; });
+
+      const name = String(cellValues[colMap.name] || '').trim();
+      const std = parseFloat(cellValues[colMap.std]) || 0;
+      const deduct = parseFloat(cellValues[colMap.deduct]) || 0;
+      const score = parseFloat(cellValues[colMap.score]) || 0;
+      const remark = String(cellValues[colMap.remark] || '').trim();
+
+      if (!name) continue;
+
+      // 判断是否是分类行（通常合并单元格，序号为空，包含"一、""二、"等）
+      if (/^[一二三四五六七八九十]、/.test(name) || /^[1-6]、/.test(name)) {
+        currentCat = name;
+        continue;
+      }
+
+      // 如果有"小计"或"合计"也跳过
+      if (name.indexOf('小计') >= 0 || name.indexOf('合计') >= 0 || name.indexOf('总计') >= 0) {
+        if (name.indexOf('合计') >= 0 || name.indexOf('总计') >= 0) {
+          result.totalScore = score;
+        }
+        continue;
+      }
+
+      result.items.push({
+        category: currentCat,
+        name: name,
+        stdScore: std,
+        deduct: deduct,
+        score: score,
+        remark: remark
+      });
+    }
+
+    // 如果没解析到总分，尝试从项目求和
+    if (!result.totalScore && result.items.length > 0) {
+      result.totalScore = result.items.reduce((sum, item) => sum + item.score, 0);
+    }
+
+    res.json({ code: 0, data: { parsed: true, result, message: '解析成功' } });
+  } catch (err) {
+    console.error('导入考核表失败:', err);
+    res.status(500).json({ code: -1, msg: '导入失败: ' + err.message });
+  }
+});
+
 // 静态文件
 app.use(express.static(path.join(__dirname)));
+
+// ============ 导出评分表为Excel =============
+app.post('/api/export-score', async (req, res) => {
+  try {
+    const { data, projectName, assessDate, assessor, manager, qc, builder, material } = req.body;
+    
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = '工程质量管理工具';
+    workbook.created = new Date();
+    
+    const sheet = workbook.addWorksheet('考核评分表');
+    
+    // 设置列宽
+    sheet.columns = [
+      { width: 8 },   // 序号
+      { width: 35 },  // 检查项目
+      { width: 10 },  // 标准分
+      { width: 10 },  // 扣分
+      { width: 10 },  // 得分
+      { width: 25 }   // 备注
+    ];
+    
+    // 标题行
+    sheet.mergeCells('A1:F1');
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = '项目部质量管理考核评分表';
+    titleCell.font = { size: 18, bold: true, color: { argb: 'FF1a73e8' } };
+    titleCell.alignment = { horizontal: 'center' };
+    titleCell.height = 30;
+    
+    // 元信息区域
+    const metaRow = sheet.addRow();
+    metaRow.getCell(1).value = '项目名称';
+    metaRow.getCell(2).value = projectName || '--';
+    metaRow.getCell(3).value = '考核日期';
+    metaRow.getCell(4).value = assessDate || '--';
+    metaRow.height = 20;
+    
+    const metaRow2 = sheet.addRow();
+    metaRow2.getCell(1).value = '考核人';
+    metaRow2.getCell(2).value = assessor || '--';
+    metaRow2.getCell(3).value = '项目经理';
+    metaRow2.getCell(4).value = manager || '--';
+    
+    const metaRow3 = sheet.addRow();
+    metaRow3.getCell(1).value = '质检员';
+    metaRow3.getCell(2).value = qc || '--';
+    metaRow3.getCell(3).value = '施工员';
+    metaRow3.getCell(4).value = builder || '--';
+    metaRow3.getCell(5).value = '材料员';
+    metaRow3.getCell(6).value = material || '--';
+    
+    // 空行
+    sheet.addRow();
+    
+    // 表头
+    const headerRow = sheet.addRow();
+    headerRow.values = ['序号', '检查项目', '标准分', '扣分', '得分', '备注'];
+    headerRow.eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1a73e8' }
+      };
+      cell.alignment = { horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+    headerRow.height = 22;
+    
+    // 数据行
+    if (data && data.categories) {
+      data.categories.forEach((cat, catIdx) => {
+        // 分类行
+        const catRow = sheet.addRow();
+        catRow.getCell(1).value = '';
+        catRow.getCell(2).value = cat.icon + ' ' + cat.name + '（' + cat.total + '分）';
+        catRow.getCell(2).font = { bold: true };
+        catRow.eachCell(cell => {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFe8f0fe' }
+          };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+        sheet.mergeCells(catRow.num + ':' + catRow.num, 2, catRow.num, 6);
+        
+        // 子项行
+        let catGot = 0;
+        cat.items.forEach((item, itemIdx) => {
+          const dataRow = sheet.addRow();
+          const idx = (catIdx * 100) + itemIdx + 1;
+          dataRow.getCell(1).value = idx;
+          dataRow.getCell(2).value = item.name;
+          dataRow.getCell(3).value = item.total;
+          dataRow.getCell(4).value = item.deduct > 0 ? '-' + item.deduct : '';
+          dataRow.getCell(5).value = item.got;
+          dataRow.getCell(6).value = item.remark || '';
+          
+          dataRow.getCell(1).alignment = { horizontal: 'center' };
+          dataRow.getCell(3).alignment = { horizontal: 'center' };
+          dataRow.getCell(4).alignment = { horizontal: 'center' };
+          dataRow.getCell(5).alignment = { horizontal: 'center' };
+          
+          if (item.deduct > 0) {
+            dataRow.getCell(4).font = { color: { argb: 'FFe74c3c' } };
+          }
+          dataRow.getCell(5).font = { bold: true, color: { argb: 'FF1a73e8' } };
+          
+          dataRow.eachCell(cell => {
+            cell.border = {
+              top: { style: 'thin' },
+              left: { style: 'thin' },
+              bottom: { style: 'thin' },
+              right: { style: 'thin' }
+            };
+          });
+          
+          catGot += item.got;
+          
+          // 子项详情（如有）
+          if (item.subItems && item.subItems.length > 0) {
+            item.subItems.forEach(sub => {
+              const subRow = sheet.addRow();
+              subRow.getCell(1).value = '';
+              subRow.getCell(2).value = '  └ ' + sub.name;
+              subRow.getCell(3).value = sub.score;
+              subRow.getCell(4).value = sub.deduct > 0 ? '-' + sub.deduct : '';
+              subRow.getCell(5).value = sub.got;
+              subRow.getCell(6).value = sub.remark || '';
+              
+              subRow.getCell(3).alignment = { horizontal: 'center' };
+              subRow.getCell(4).alignment = { horizontal: 'center' };
+              subRow.getCell(5).alignment = { horizontal: 'center' };
+              subRow.getCell(2).font = { color: { argb: 'FF666666' } };
+              
+              subRow.eachCell(cell => {
+                cell.border = {
+                  top: { style: 'thin' },
+                  left: { style: 'thin' },
+                  bottom: { style: 'thin' },
+                  right: { style: 'thin' }
+                };
+              });
+            });
+          }
+        });
+        
+        // 小计行
+        const subtotalRow = sheet.addRow();
+        subtotalRow.getCell(1).value = '';
+        subtotalRow.getCell(2).value = '小计';
+        subtotalRow.getCell(2).font = { bold: true };
+        subtotalRow.getCell(3).value = cat.total;
+        subtotalRow.getCell(4).value = (cat.total - catGot) > 0 ? '-' + (cat.total - catGot).toFixed(1) : '';
+        subtotalRow.getCell(5).value = catGot.toFixed(1);
+        subtotalRow.getCell(5).font = { bold: true, color: { argb: 'FF1a73e8' } };
+        subtotalRow.getCell(6).value = '';
+        
+        subtotalRow.eachCell(cell => {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFf8f9fb' }
+          };
+          cell.font = { bold: true };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+        subtotalRow.getCell(2).alignment = { horizontal: 'right' };
+      });
+      
+      // 合计行
+      sheet.addRow();
+      const totalRow = sheet.addRow();
+      totalRow.getCell(1).value = '';
+      totalRow.getCell(2).value = '合计';
+      totalRow.getCell(3).value = data.totalStd;
+      totalRow.getCell(4).value = (data.totalStd - data.totalGot) > 0 ? '-' + (data.totalStd - data.totalGot).toFixed(1) : '';
+      totalRow.getCell(5).value = data.totalGot.toFixed(1);
+      totalRow.getCell(6).value = '';
+      
+      totalRow.eachCell(cell => {
+        cell.font = { bold: true, size: 14 };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFf0f2f5' }
+        };
+        cell.border = {
+          top: { style: 'medium' },
+          left: { style: 'medium' },
+          bottom: { style: 'medium' },
+          right: { style: 'medium' }
+        };
+      });
+      totalRow.getCell(2).alignment = { horizontal: 'right' };
+      totalRow.getCell(5).font = { bold: true, size: 16, color: { argb: 'FF1a73e8' } };
+    }
+    
+    // 导出时间
+    sheet.addRow();
+    const timeRow = sheet.addRow();
+    timeRow.getCell(1).value = '导出时间：' + new Date().toLocaleString('zh-CN');
+    timeRow.getCell(1).font = { size: 10, color: { argb: 'FF999999' } };
+    
+    // 生成buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'' + encodeURIComponent('考核评分表_' + (projectName || '') + '_' + (assessDate || '') + '.xlsx'));
+    res.send(buffer);
+    
+  } catch (err) {
+    console.error('Excel导出失败:', err);
+    res.status(500).json({ code: -1, msg: '导出失败: ' + err.message });
+  }
+});
+
+// ============ 导出考核报告为Word =============
+app.post('/api/export-report', async (req, res) => {
+  try {
+    const { html, fileName } = req.body;
+    
+    if (!html) {
+      return res.status(400).json({ code: -1, msg: '缺少HTML内容' });
+    }
+    
+    // 生成Word文档（使用HTML格式）
+    const docContent = '<!DOCTYPE html<html xmlns:o="urn:schemas-microsoft-com:office:office"\n      xmlns:w="urn:schemas-microsoft-com:office:word"\n      xmlns="http://www.w3.org/TR/REC-html40">\n<head>\n<meta charset="UTF-8">\n<title>考核报告</title>\n<style>\nbody { font-family: "Microsoft YaHei", "宋体", SimSun, sans-serif; margin: 40px; }\ntable { border-collapse: collapse; width: 100%; }\nth, td { border: 1px solid #666; padding: 6px 8px; }\nth { background: #1a73e8; color: white; text-align: center; font-weight: bold; }\n.cover { text-align: center; padding: 60px 0; border-bottom: 2px solid #1a73e8; margin-bottom: 30px; }\n.cover h1 { font-size: 26pt; color: #1a73e8; margin-bottom: 8px; }\n.section-title { font-size: 14pt; color: #1a73e8; border-left: 4px solid #1a73e8; padding-left: 10px; margin: 20px 0 10px; }\n.issue-box { background: #fff3e0; padding: 12px; border-radius: 4px; margin: 8px 0; }\n</style>\n</head>\n<body>\n' + html + '\n</body>\n</html>';
+    
+    res.setHeader('Content-Type', 'application/vnd.ms-word');
+    res.setHeader('Content-Disposition', 'attachment; filename*=UTF-8\'\'' + encodeURIComponent(fileName || '考核报告.doc'));
+    res.send(Buffer.from(docContent, 'utf-8'));
+    
+  } catch (err) {
+    console.error('Word导出失败:', err);
+    res.status(500).json({ code: -1, msg: '导出失败: ' + err.message });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
