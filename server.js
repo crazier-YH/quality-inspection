@@ -9,6 +9,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
+const FormData = require('form-data');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -291,14 +292,14 @@ const TABLE_FIELDS = {
     { field_name: '考核人', type: 1 }, { field_name: '项目经理', type: 1 },
     { field_name: '质检员', type: 1 }, { field_name: '施工员', type: 1 },
     { field_name: '材料员', type: 1 }, { field_name: '总分', type: 2 },
-    { field_name: '评分详情', type: 1 }, { field_name: '照片汇总', type: 1 },
+    { field_name: '评分详情', type: 1 }, { field_name: '照片汇总', type: 1 }, { field_name: '照片', type: 17 },
     { field_name: '问题清单', type: 1 }, { field_name: '创建人', type: 1 }
   ],
   material: [
     { field_name: '项目名称', type: 1 }, { field_name: '验收日期', type: 5 },
     { field_name: '验收人', type: 1 }, { field_name: '材料名称', type: 1 },
     { field_name: '规格型号', type: 1 }, { field_name: '进场数量', type: 1 },
-    { field_name: '验收结果', type: 1 }, { field_name: '问题描述', type: 1 }, { field_name: '创建人', type: 1 }
+    { field_name: '验收结果', type: 1 }, { field_name: '问题描述', type: 1 }, { field_name: '照片', type: 17 }, { field_name: '创建人', type: 1 }
   ],
   process: [
     { field_name: '项目名称', type: 1 }, { field_name: '检验批部位', type: 1 },
@@ -310,26 +311,26 @@ const TABLE_FIELDS = {
   signboard: [
     { field_name: '项目名称', type: 1 }, { field_name: '验收部位', type: 1 },
     { field_name: '验收日期', type: 5 }, { field_name: '验收人', type: 1 },
-    { field_name: '验收结论', type: 1 }, { field_name: '存在问题', type: 1 }, { field_name: '创建人', type: 1 }
+    { field_name: '验收结论', type: 1 }, { field_name: '存在问题', type: 1 }, { field_name: '照片', type: 17 }, { field_name: '创建人', type: 1 }
   ],
   waterproof: [
     { field_name: '项目名称', type: 1 }, { field_name: '检查部位', type: 1 },
     { field_name: '检查日期', type: 5 }, { field_name: '检查人', type: 1 },
     { field_name: '防水材料', type: 1 }, { field_name: '施工做法', type: 1 },
-    { field_name: '检查结果', type: 1 }, { field_name: '问题描述', type: 1 }, { field_name: '创建人', type: 1 }
+    { field_name: '检查结果', type: 1 }, { field_name: '问题描述', type: 1 }, { field_name: '照片', type: 17 }, { field_name: '创建人', type: 1 }
   ],
   protect: [
     { field_name: '项目名称', type: 1 }, { field_name: '保护对象', type: 1 },
     { field_name: '检查日期', type: 5 }, { field_name: '检查人', type: 1 },
     { field_name: '保护措施', type: 1 }, { field_name: '检查结果', type: 1 },
-    { field_name: '问题描述', type: 1 }, { field_name: '创建人', type: 1 }
+    { field_name: '问题描述', type: 1 }, { field_name: '照片', type: 17 }, { field_name: '创建人', type: 1 }
   ],
   testing: [
     { field_name: '项目名称', type: 1 }, { field_name: '样品名称', type: 1 },
     { field_name: '规格等级', type: 1 }, { field_name: '代表数量', type: 1 },
     { field_name: '取样日期', type: 5 }, { field_name: '送检人', type: 1 },
     { field_name: '检测单位', type: 1 }, { field_name: '检测项目', type: 1 },
-    { field_name: '送检状态', type: 1 }, { field_name: '创建人', type: 1 }
+    { field_name: '送检状态', type: 1 }, { field_name: '照片', type: 17 }, { field_name: '创建人', type: 1 }
   ]
 };
 
@@ -377,6 +378,72 @@ app.get('/api/auth-url', (req, res) => {
   const redirectUri = config.redirectUri || `http://${host}/auth/callback`;
   const authUrl = `https://open.feishu.cn/open-apis/authen/v1/authorize?app_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=login`;
   res.json({ url: authUrl });
+});
+
+
+// ============ 照片上传（飞书附件持久化）============
+app.post('/api/upload', async (req, res) => {
+  try {
+    const { imageData, fileName } = req.body;
+    if (!imageData) return res.status(400).json({ code: -1, msg: '缺少图片数据' });
+
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取访问令牌' });
+
+    // 解析base64
+    const matches = imageData.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) return res.status(400).json({ code: -1, msg: '图片格式无效' });
+    const mimeType = matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    const name = fileName || 'photo_' + Date.now() + '.jpg';
+
+    // 上传到飞书
+    const form = new FormData();
+    form.append('parent_type', 'bitable_file');
+    form.append('parent_node', config.bitableAppToken);
+    form.append('file_name', name);
+    form.append('file', buffer, { filename: name, contentType: mimeType });
+
+    const uploadRes = await fetch('https://open.feishu.cn/open-apis/drive/v1/medias/upload_all', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: form
+    });
+
+    const data = await uploadRes.json();
+    if (data.code === 0) {
+      res.json({ code: 0, file_token: data.data.file_token });
+    } else {
+      console.error('飞书上传失败:', data.code, data.msg);
+      res.json({ code: -1, msg: data.msg || '上传失败' });
+    }
+  } catch (err) {
+    console.error('上传异常:', err.message);
+    res.status(500).json({ code: -1, msg: err.message });
+  }
+});
+
+// 图片代理（从飞书下载附件图片）
+app.get('/api/image', async (req, res) => {
+  try {
+    const { file_token } = req.query;
+    if (!file_token) return res.status(400).send('缺少file_token');
+
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).send('无法获取访问令牌');
+
+    const imgRes = await fetch(
+      'https://open.feishu.cn/open-apis/drive/v1/medias/' + file_token,
+      { headers: { 'Authorization': 'Bearer ' + token } }
+    );
+    
+    const contentType = imgRes.headers.get('content-type');
+    if (contentType) res.set('Content-Type', contentType);
+    const buffer = await imgRes.buffer();
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).send('获取图片失败');
+  }
 });
 
 // 静态文件
