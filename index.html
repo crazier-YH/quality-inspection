@@ -240,10 +240,97 @@
     .entry-btn:disabled { background:#ccc; cursor:not-allowed; }
     .entry-switch { text-align:center; margin-top:16px; font-size:13px; color:#999; }
     .entry-switch span { color:#1a73e8; cursor:pointer; }
+
+    /* ===== 编辑预览页面 ===== */
+    .edit-page { position:fixed; top:0; left:0; right:0; bottom:0; background:#f0f2f5; z-index:500; display:none; flex-direction:column; }
+    .edit-page.active { display:flex; }
+    .edit-header { background:linear-gradient(135deg,#1a73e8,#4a9af5); color:#fff; padding:12px 16px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:10; }
+    .edit-header-back { width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px; }
+    .edit-header-back:active { background:rgba(255,255,255,0.3); }
+    .edit-header-title { font-size:16px; font-weight:600; flex:1; text-align:center; }
+    .edit-header-btn { padding:8px 16px; background:rgba(255,255,255,0.2); border:none; border-radius:20px; color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
+    .edit-header-btn:active { background:rgba(255,255,255,0.35); }
+    .edit-content { flex:1; overflow-y:auto; padding:12px; padding-bottom:80px; }
+    .edit-content-inner { background:#fff; border-radius:12px; overflow:hidden; }
+    
+    /* 评分表编辑 */
+    .score-edit-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .score-edit-table th { background:#1a73e8; color:#fff; padding:10px 8px; text-align:center; font-weight:600; font-size:11px; }
+    .score-edit-table td { border:1px solid #e0e0e0; padding:6px 8px; text-align:center; vertical-align:middle; }
+    .score-edit-table .cat-row td { background:#e8f0fe; font-weight:600; font-size:13px; text-align:left; padding:10px 8px; }
+    .score-edit-table .subtotal-row td { background:#f8f9fb; font-weight:600; }
+    .score-edit-table .total-row td { background:#f0f2f5; font-weight:700; font-size:14px; }
+    .score-edit-table .deduct-cell { color:#e74c3c; font-weight:600; }
+    .score-edit-table .got-cell { color:#1a73e8; font-weight:700; }
+    .score-edit-table .editable { min-width:60px; }
+    .score-edit-table .editable:focus { outline:2px solid #1a73e8; outline-offset:-2px; background:#f0f4ff; }
+    .score-edit-table .remark-editable { min-width:80px; text-align:left; }
+    
+    /* 报告编辑 */
+    .report-edit-cover { background:linear-gradient(135deg,#1a73e8,#4a9af5); color:#fff; text-align:center; padding:40px 20px 30px; }
+    .report-edit-cover h1 { font-size:24px; font-weight:700; margin-bottom:8px; }
+    .report-edit-cover h2 { font-size:16px; font-weight:400; opacity:0.9; margin-bottom:20px; }
+    .report-edit-cover .info { font-size:13px; opacity:0.8; line-height:1.8; }
+    .report-edit-meta { background:#fff; border-radius:12px; padding:16px; margin-bottom:12px; }
+    .report-edit-meta .meta-row { display:flex; align-items:center; margin-bottom:10px; }
+    .report-edit-meta .meta-label { font-size:12px; color:#888; width:70px; flex-shrink:0; }
+    .report-edit-meta .meta-value { flex:1; border:1px solid #e0e0e0; border-radius:6px; padding:8px 10px; font-size:13px; background:#fff; }
+    .report-edit-meta .meta-value:focus { border-color:#1a73e8; outline:none; }
+    .report-edit-section { background:#fff; border-radius:12px; padding:16px; margin-bottom:12px; }
+    .report-edit-section-title { font-size:15px; font-weight:600; color:#1a73e8; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #1a73e8; display:flex; align-items:center; gap:8px; }
+    .report-edit-score { display:flex; justify-content:center; align-items:center; gap:40px; padding:20px 0; }
+    .report-edit-score .big-num { font-size:48px; font-weight:800; color:#1a73e8; }
+    .report-edit-score .score-label { font-size:13px; color:#888; margin-top:4px; }
+    .report-edit-score .level-badge { font-size:14px; font-weight:600; padding:4px 14px; border-radius:20px; display:inline-block; margin-top:8px; }
+    .report-edit-cat-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .report-edit-cat-table th { background:#f0f4ff; color:#1a73e8; padding:8px; text-align:center; font-weight:600; border:1px solid #ddd; }
+    .report-edit-cat-table td { padding:8px; border:1px solid #ddd; text-align:center; }
+    .report-edit-cat-table td:first-child { text-align:left; }
+    .report-edit-issues { background:#fff3e0; border-radius:8px; padding:14px; }
+    .report-edit-issues .issue-item { display:flex; align-items:flex-start; margin-bottom:8px; font-size:13px; line-height:1.6; }
+    .report-edit-issues .issue-item:last-child { margin-bottom:0; }
+    .report-edit-issues .issue-num { color:#e74c3c; font-weight:600; margin-right:8px; }
+    .report-edit-textarea { width:100%; min-height:80px; border:1px solid #e0e0e0; border-radius:8px; padding:10px; font-size:13px; font-family:inherit; resize:vertical; }
+    .report-edit-textarea:focus { border-color:#1a73e8; outline:none; }
+    .report-edit-suggestion { background:#fff; border-radius:12px; padding:16px; margin-bottom:12px; }
+    .report-edit-suggestion-title { font-size:15px; font-weight:600; color:#1a73e8; margin-bottom:12px; }
+    .report-edit-signature { background:#fff; border-radius:12px; padding:16px; display:flex; justify-content:space-between; }
+    .report-edit-signature .sig-item { text-align:center; width:30%; }
+    .report-edit-signature .sig-line { border-bottom:1px solid #333; height:30px; margin-bottom:6px; }
+    .report-edit-signature .sig-label { font-size:12px; color:#666; }
   </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
+
+<!-- 评分表编辑预览页面 -->
+<div class="edit-page" id="scoreEditPage">
+  <div class="edit-header">
+    <div class="edit-header-back" onclick="closeScoreEdit()">‹</div>
+    <div class="edit-header-title">评分表导出</div>
+    <div class="edit-header-btn" id="exportScoreBtn" onclick="doExportScore()">导出Excel</div>
+  </div>
+  <div class="edit-content">
+    <div class="edit-content-inner" id="scoreEditContent">
+      <!-- 动态生成 -->
+    </div>
+  </div>
+</div>
+
+<!-- 考核报告编辑预览页面 -->
+<div class="edit-page" id="reportEditPage">
+  <div class="edit-header">
+    <div class="edit-header-back" onclick="closeReportEdit()">‹</div>
+    <div class="edit-header-title">考核报告导出</div>
+    <div class="edit-header-btn" id="exportReportBtn" onclick="doExportReport()">导出Word</div>
+  </div>
+  <div class="edit-content">
+    <div class="edit-content-inner" id="reportEditContent">
+      <!-- 动态生成 -->
+    </div>
+  </div>
+</div>
+
 <div class="sync-bar" id="syncBar">正在连接服务器...</div>
 
 <!-- 入口页：选择身份和项目 -->
@@ -331,7 +418,7 @@
 </div>
 <div class="page" id="page-profile-edit"><div class="section"><div class="section-card"><div class="section-title">📝 个人信息</div><div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div><div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div><div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div><div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div></div></div></div>
 <div class="page" id="page-profile-project"><div class="section"><div class="section-card"><div class="section-title">🏗️ 项目信息</div><div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div><div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div><div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div><div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div><div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div><div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div></div><div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div></div>
-<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:12px" onclick="openPage('assess-form')">+ 新增考核</button><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
+<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerImportAssess()">📥 考核表导入</button><input type="file" id="importAssessFile" accept=".xlsx,.xls" style="display:none" onchange="handleImportAssess(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
 <div class="page" id="page-assess-form">
   <div class="section" style="padding-bottom:0;">
     <div class="section-card" style="margin-bottom:8px;">
@@ -1067,6 +1154,217 @@ function calcPanelScore(item) {
   return score;
 }
 
+// ===== 考核表导入 =====
+var importAssessData = null;
+function triggerImportAssess() {
+  document.getElementById('importAssessFile').click();
+}
+async function handleImportAssess(input) {
+  var file = input.files[0];
+  if (!file) return;
+  input.value = '';
+
+  showToast('⏳ 正在解析...');
+  var reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      var base64 = e.target.result.split(',')[1];
+      var res = await fetch('/api/import-assess', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ fileName: file.name, fileData: base64 })
+      });
+      var data = await res.json();
+      if (data.code !== 0) { showToast('❌ 解析失败：'+(data.msg||'未知错误')); return; }
+      
+      if (!data.data.parsed) {
+        showToast('❌ 未识别到标准评分表格式');
+        return;
+      }
+      
+      importAssessData = data.data.result;
+      showImportPreview();
+    } catch(err) {
+      showToast('❌ 导入异常：'+err.message);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function showImportPreview() {
+  if (!importAssessData) return;
+  var r = importAssessData;
+  
+  // 创建预览弹窗
+  var overlay = document.createElement('div');
+  overlay.id = 'importPreviewOverlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:#f5f5f5;z-index:900;overflow-y:auto;';
+
+  var html = '<div style="background:#1a73e8;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">';
+  html += '<div style="font-size:16px;font-weight:600;">📥 导入考核表预览</div>';
+  html += '<button onclick="document.getElementById(\'importPreviewOverlay\').remove()" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;">✕</button>';
+  html += '</div>';
+
+  // 项目信息编辑区
+  html += '<div style="padding:12px;">';
+  html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="font-size:14px;font-weight:600;color:#333;margin-bottom:10px;">📋 基本信息</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+  html += '<div><label style="font-size:11px;color:#999;">项目名称</label><input id="imp_project" value="'+(r.meta.projectName||project.name||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">考核日期</label><input id="imp_date" value="'+(r.meta.assessDate||'')+'" placeholder="如：2026-06-18" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">考核人</label><input id="imp_person" value="'+(r.meta.assessor||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">项目经理</label><input id="imp_mgr" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">质检员</label><input id="imp_qc" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">施工员</label><input id="imp_builder" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">材料员</label><input id="imp_material" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">总分</label><input id="imp_total" value="'+(r.totalScore||0)+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-weight:600;color:#1a73e8;" /></div>';
+  html += '</div></div>';
+
+  // 评分项预览
+  html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="font-size:14px;font-weight:600;color:#333;margin-bottom:8px;">📊 评分明细（'+r.items.length+'项）</div>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<tr style="background:#f0f4ff;"><th style="padding:6px;border:1px solid #ddd;text-align:left;">检查项目</th><th style="padding:6px;border:1px solid #ddd;width:50px;">标准分</th><th style="padding:6px;border:1px solid #ddd;width:45px;">扣分</th><th style="padding:6px;border:1px solid #ddd;width:45px;">得分</th><th style="padding:6px;border:1px solid #ddd;">备注</th></tr>';
+
+  var lastCat = '';
+  r.items.forEach(function(item) {
+    if (item.category && item.category !== lastCat) {
+      lastCat = item.category;
+      html += '<tr style="background:#e8f0fe;"><td colspan="5" style="padding:6px 8px;border:1px solid #ddd;font-weight:600;color:#1a73e8;">'+item.category+'</td></tr>';
+    }
+    var deductStyle = item.deduct > 0 ? 'color:#e74c3c;font-weight:600;' : '';
+    html += '<tr>';
+    html += '<td style="padding:5px 6px;border:1px solid #ddd;">'+item.name+'</td>';
+    html += '<td style="padding:5px 6px;border:1px solid #ddd;text-align:center;">'+item.stdScore+'</td>';
+    html += '<td style="padding:5px 6px;border:1px solid #ddd;text-align:center;'+deductStyle+'">'+(item.deduct>0?'-'+item.deduct:'')+'</td>';
+    html += '<td style="padding:5px 6px;border:1px solid #ddd;text-align:center;font-weight:600;color:#1a73e8;">'+item.score+'</td>';
+    html += '<td style="padding:5px 6px;border:1px solid #ddd;color:#888;">'+item.remark+'</td>';
+    html += '</tr>';
+  });
+  html += '</table></div>';
+
+  // 导入按钮
+  html += '<button class="btn-primary" style="width:100%;padding:12px;font-size:15px;" onclick="confirmImportAssess()">✅ 确认导入并保存</button>';
+  html += '<div style="height:30px;"></div></div>';
+
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+async function confirmImportAssess() {
+  if (!importAssessData) return;
+  var r = importAssessData;
+
+  var projectName = document.getElementById('imp_project').value;
+  var assessDate = document.getElementById('imp_date').value;
+  var assessor = document.getElementById('imp_person').value;
+  var mgr = document.getElementById('imp_mgr').value;
+  var qc = document.getElementById('imp_qc').value;
+  var builder = document.getElementById('imp_builder').value;
+  var material = document.getElementById('imp_material').value;
+  var totalScore = parseFloat(document.getElementById('imp_total').value) || 0;
+
+  // 将导入的评分项映射到 checklistData 的评分详情
+  var detail = {};
+  var issueList = [];
+
+  // 尝试按名称匹配 checklistData 中的项目
+  r.items.forEach(function(importItem) {
+    var matched = false;
+    checklistData.forEach(function(cat) {
+      cat.items.forEach(function(item) {
+        if (item.type === 'formula-group') return; // 暂不自动匹配公式组
+        // 模糊匹配名称
+        var iName = importItem.name.replace(/\s/g,'');
+        var cName = item.name.replace(/\s/g,'');
+        if (iName === cName || iName.indexOf(cName) >= 0 || cName.indexOf(iName) >= 0) {
+          if (!detail[item.id]) {
+            detail[item.id] = {
+              name: item.name,
+              score: item.score,
+              deduct: importItem.deduct,
+              got: importItem.score,
+              remark: importItem.remark || '',
+              content: item.content
+            };
+            if (importItem.deduct > 0) {
+              issueList.push(item.name + '(扣' + importItem.deduct + '分)');
+            }
+            matched = true;
+          }
+        }
+      });
+    });
+    // 未匹配的项目也记录
+    if (!matched && importItem.deduct > 0) {
+      issueList.push(importItem.name + '(扣' + importItem.deduct + '分)');
+    }
+  });
+
+  // 对于未匹配的 checklistData 项目，填充默认满分
+  checklistData.forEach(function(cat) {
+    cat.items.forEach(function(item) {
+      if (item.type === 'formula-group') {
+        // 公式组默认满分
+        if (!detail[item.id]) {
+          detail[item.id] = {
+            name: item.name,
+            formulaTotal: item.formulaTotal,
+            formulaType: item.formulaType,
+            formulaScore: item.formulaTotal,
+            subGroups: {}
+          };
+        }
+      } else {
+        if (!detail[item.id]) {
+          detail[item.id] = {
+            name: item.name,
+            score: item.score,
+            deduct: 0,
+            got: item.score,
+            remark: '',
+            content: item.content
+          };
+        }
+      }
+    });
+  });
+
+  // 处理考核日期（支持字符串或时间戳）
+  var dateValue = assessDate;
+  if (dateValue && !isNaN(Date.parse(dateValue))) {
+    dateValue = new Date(assessDate).getTime();
+  } else if (dateValue && !isNaN(Number(dateValue))) {
+    dateValue = Number(dateValue);
+  }
+
+  var fields = {
+    '项目名称': projectName || '',
+    '考核日期': dateValue || Date.now(),
+    '考核人': assessor || '',
+    '项目经理': mgr || '',
+    '质检员': qc || '',
+    '施工员': builder || '',
+    '材料员': material || '',
+    '总分': totalScore,
+    '评分详情': JSON.stringify(detail),
+    '照片汇总': '{}',
+    '问题清单': issueList.join('；'),
+    '创建人': profile.name || assessor || ''
+  };
+
+  showToast('⏳ 正在保存...');
+  var res = await API.createRecord('assess', fields);
+  if (res.code === 0) {
+    showToast('✅ 导入成功');
+    document.getElementById('importPreviewOverlay').remove();
+    importAssessData = null;
+    loadRecordList('assess');
+  } else {
+    showToast('❌ 保存失败：'+(res.msg||'未知错误'));
+  }
+}
+
 // ===== 照片 =====
 function addPhoto(itemId, input) {
   if(!input.files||!input.files[0])return;
@@ -1463,41 +1761,28 @@ async function syncAll(){showToast('🔄 正在同步...');await API.initFields(
 function exportAllData(){var data={profile:profile,project:project,todos:todos,exportTime:new Date().toISOString()};var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='工程质量管理_数据导出_'+new Date().toLocaleDateString('zh-CN').replace(/\//g,'')+'.json';a.click();}
 
 // ===== 考核导出功能 =====
-function exportAssessScore(recordId) {
+var currentScoreData = null;
+var currentReportData = null;
+
+// 评分表编辑页面 - 打开
+function openScoreEdit(recordId) {
   var record = assessRecordsCache.find(function(r){return r.record_id===recordId;});
   if(!record){showToast('未找到记录');return;}
   var f = record.fields;
   var detail = {};
   try { detail = JSON.parse(f['评分详情']||'{}'); } catch(e){}
-
-  // 构建评分表HTML
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>考核评分表 - '+(f['项目名称']||'')+'</title>';
-  html += '<style>body{font-family:"Microsoft YaHei",sans-serif;padding:30px;color:#333;}';
-  html += 'h1{text-align:center;font-size:20px;margin-bottom:4px;}';
-  html += '.meta{text-align:center;font-size:13px;color:#666;margin-bottom:16px;line-height:1.8;}';
-  html += 'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;}';
-  html += 'th,td{border:1px solid #333;padding:8px 10px;text-align:left;vertical-align:top;}';
-  html += 'th{background:#1a73e8;color:#fff;text-align:center;font-weight:600;}';
-  html += 'td{text-align:center;}';
-  html += '.cat-row td{background:#e8f0fe;font-weight:700;text-align:left;}';
-  html += '.total-row td{background:#f0f2f5;font-weight:700;font-size:15px;}';
-  html += '.deduct{color:#e74c3c;font-weight:600;}';
-  html += '.got{color:#1a73e8;font-weight:600;}';
-  html += '@media print{body{padding:10px;}h1{font-size:16px;}th,td{padding:5px 6px;font-size:11px;}}';
-  html += '</style></head><body>';
-  html += '<h1>项目部质量管理考核评分表</h1>';
-  html += '<div class="meta">';
-  html += '项目名称：'+(f['项目名称']||'--')+'&nbsp;&nbsp;&nbsp;';
-  html += '考核日期：'+(f['考核日期']||'--')+'<br>';
-  html += '考核人：'+(f['考核人']||'--')+'&nbsp;&nbsp;&nbsp;';
-  html += '项目经理：'+(f['项目经理']||'--')+'&nbsp;&nbsp;&nbsp;';
-  html += '质检员：'+(f['质检员']||'--')+'&nbsp;&nbsp;&nbsp;';
-  html += '施工员：'+(f['施工员']||'--')+'&nbsp;&nbsp;&nbsp;';
-  html += '材料员：'+(f['材料员']||'--');
-  html += '</div>';
-
-  html += '<table><tr><th style="width:40px;">序号</th><th>检查项目</th><th style="width:60px;">标准分</th><th style="width:60px;">扣分</th><th style="width:60px;">得分</th><th>备注</th></tr>';
-
+  
+  // 缓存当前记录数据
+  currentScoreData = {
+    recordId: recordId,
+    fields: f,
+    detail: detail
+  };
+  
+  // 构建评分表编辑内容
+  var html = '<table class="score-edit-table">';
+  html += '<thead><tr><th style="width:40px;">序号</th><th>检查项目</th><th style="width:50px;">标准分</th><th style="width:60px;">扣分</th><th style="width:60px;">得分</th><th>备注</th></tr></thead><tbody>';
+  
   var idx = 0;
   var totalGot = 0, totalStd = 0;
   checklistData.forEach(function(cat) {
@@ -1509,14 +1794,32 @@ function exportAssessScore(recordId) {
         var d = detail[item.id];
         var fScore = d ? d.formulaScore : item.formulaTotal;
         catGot += fScore;
-        html += '<tr><td>'+idx+'</td><td style="text-align:left;font-weight:600;">'+item.name+'</td><td>'+item.formulaTotal+'</td><td class="deduct">'+(item.formulaTotal-fScore).toFixed(1)+'</td><td class="got">'+fScore.toFixed(1)+'</td><td>'+(d&&d.remark?d.remark:'')+'</td></tr>';
+        var deduct = (item.formulaTotal - fScore).toFixed(1);
+        var remark = (d && d.remark) ? d.remark : '';
+        html += '<tr data-itemid="'+item.id+'">';
+        html += '<td>'+idx+'</td>';
+        html += '<td style="text-align:left;font-weight:600;">'+item.name+'</td>';
+        html += '<td>'+item.formulaTotal+'</td>';
+        html += '<td class="deduct-cell">'+deduct+'</td>';
+        html += '<td class="got-cell">'+fScore.toFixed(1)+'</td>';
+        html += '<td><input type="text" class="remark-editable" value="'+remark+'" data-field="remark" placeholder="备注" /></td>';
+        html += '</tr>';
         // 子项
         if(d && d.subGroups) {
           Object.keys(d.subGroups).forEach(function(sgId) {
             var sg = d.subGroups[sgId];
             Object.keys(sg.items).forEach(function(siId) {
               var si = sg.items[siId];
-              html += '<tr><td></td><td style="text-align:left;padding-left:20px;color:#666;">'+sg.name+(sg.included===false?' (不含)':'')+' - '+si.name+'</td><td>'+si.score+'</td><td class="deduct">'+(si.deduct||0)+'</td><td class="got">'+si.got+'</td><td>'+(si.remark||'')+'</td></tr>';
+              var subDeduct = si.deduct || 0;
+              var subGot = si.got || si.score;
+              html += '<tr data-subid="'+siId+'" style="background:#fafafa;">';
+              html += '<td></td>';
+              html += '<td style="text-align:left;padding-left:20px;color:#666;font-size:11px;">'+sg.name+(sg.included===false?' (不含)':'')+' - '+si.name+'</td>';
+              html += '<td style="font-size:11px;">'+si.score+'</td>';
+              html += '<td class="deduct-cell" style="font-size:11px;">'+(subDeduct>0?'-'+subDeduct:'')+'</td>';
+              html += '<td class="got-cell" style="font-size:11px;">'+subGot+'</td>';
+              html += '<td><input type="text" class="remark-editable" style="min-width:60px;font-size:11px;" value="'+(si.remark||'')+'" data-field="subRemark" data-subid="'+siId+'" placeholder="备注" /></td>';
+              html += '</tr>';
             });
           });
         }
@@ -1526,86 +1829,234 @@ function exportAssessScore(recordId) {
         var deduct = d ? d.deduct : 0;
         var remark = d ? (d.remark||'') : '';
         catGot += got;
-        html += '<tr><td>'+idx+'</td><td style="text-align:left;">'+item.name+'</td><td>'+item.score+'</td><td class="deduct">'+(deduct>0?'-'+deduct:'')+'</td><td class="got">'+got+'</td><td>'+remark+'</td></tr>';
+        html += '<tr data-itemid="'+item.id+'">';
+        html += '<td>'+idx+'</td>';
+        html += '<td style="text-align:left;">'+item.name+'</td>';
+        html += '<td>'+item.score+'</td>';
+        html += '<td class="deduct-cell">'+(deduct>0?'-'+deduct:'')+'</td>';
+        html += '<td class="got-cell">'+got+'</td>';
+        html += '<td><input type="text" class="remark-editable" value="'+remark+'" data-field="remark" placeholder="备注" /></td>';
+        html += '</tr>';
       }
     });
     totalGot += catGot;
     totalStd += cat.total;
-    html += '<tr style="background:#f8f9fb;font-weight:600;"><td></td><td style="text-align:right;">小计</td><td>'+cat.total+'</td><td class="deduct">'+(cat.total-catGot).toFixed(1)+'</td><td class="got">'+catGot.toFixed(1)+'</td><td></td></tr>';
+    html += '<tr class="subtotal-row"><td></td><td style="text-align:right;">小计</td><td>'+cat.total+'</td><td class="deduct-cell">'+(cat.total-catGot).toFixed(1)+'</td><td class="got-cell">'+catGot.toFixed(1)+'</td><td></td></tr>';
   });
-
-  html += '<tr class="total-row"><td></td><td style="text-align:right;">合计</td><td>'+totalStd+'</td><td class="deduct">'+(totalStd-totalGot).toFixed(1)+'</td><td class="got" style="font-size:18px;">'+totalGot.toFixed(1)+'</td><td></td></tr>';
-  html += '</table>';
-
-  html += '<div style="margin-top:20px;font-size:12px;color:#999;text-align:center;">导出时间：'+new Date().toLocaleString('zh-CN')+'</div>';
-  html += '</body></html>';
-
-  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '考核评分表_'+(f['项目名称']||'')+'_'+(f['考核日期']||'')+'.html';
-  a.click();
-  showToast('✅ 评分表已导出');
+  
+  html += '<tr class="total-row"><td></td><td style="text-align:right;">合计</td><td>'+totalStd+'</td><td class="deduct-cell">'+(totalStd-totalGot).toFixed(1)+'</td><td class="got-cell" style="font-size:18px;">'+totalGot.toFixed(1)+'</td><td></td></tr>';
+  html += '</tbody></table>';
+  
+  // 添加导出时间
+  html += '<div style="padding:12px;text-align:center;font-size:11px;color:#999;">导出时间：'+new Date().toLocaleString('zh-CN')+'</div>';
+  
+  document.getElementById('scoreEditContent').innerHTML = html;
+  document.getElementById('scoreEditPage').classList.add('active');
 }
 
-function exportAssessReport(recordId) {
+// 关闭评分表编辑
+function closeScoreEdit() {
+  document.getElementById('scoreEditPage').classList.remove('active');
+  currentScoreData = null;
+}
+
+// 执行评分表导出Excel
+async function doExportScore() {
+  if(!currentScoreData) { showToast('数据已过期，请重新打开'); return; }
+  var btn = document.getElementById('exportScoreBtn');
+  btn.textContent = '导出中...';
+  btn.disabled = true;
+  
+  try {
+    // 从表格收集编辑后的数据
+    var rows = document.querySelectorAll('#scoreEditContent tbody tr[data-itemid]');
+    var updatedRemarks = {};
+    rows.forEach(function(row) {
+      var itemId = row.getAttribute('data-itemid');
+      var subId = row.getAttribute('data-subid');
+      var remarkInput = row.querySelector('input[data-field="remark"]');
+      if(remarkInput && remarkInput.value) {
+        if(subId) {
+          if(!updatedRemarks[itemId]) updatedRemarks[itemId] = {subRemarks: {}};
+          updatedRemarks[itemId].subRemarks[subId] = remarkInput.value;
+        } else {
+          if(!updatedRemarks[itemId]) updatedRemarks[itemId] = {};
+          updatedRemarks[itemId].remark = remarkInput.value;
+        }
+      }
+    });
+    
+    // 构建导出数据
+    var f = currentScoreData.fields;
+    var detail = currentScoreData.detail;
+    
+    var exportData = {
+      projectName: f['项目名称'] || '',
+      assessDate: f['考核日期'] || '',
+      assessor: f['考核人'] || '',
+      manager: f['项目经理'] || '',
+      qc: f['质检员'] || '',
+      builder: f['施工员'] || '',
+      material: f['材料员'] || '',
+      data: {
+        categories: [],
+        totalGot: 0,
+        totalStd: 0
+      }
+    };
+    
+    var idx = 0;
+    var totalGot = 0, totalStd = 0;
+    checklistData.forEach(function(cat) {
+      var catItems = [];
+      var catGot = 0;
+      cat.items.forEach(function(item) {
+        idx++;
+        if(item.type === 'formula-group') {
+          var d = detail[item.id];
+          var fScore = d ? d.formulaScore : item.formulaTotal;
+          var remark = (d && d.remark) ? d.remark : '';
+          if(updatedRemarks[item.id] && updatedRemarks[item.id].remark) {
+            remark = updatedRemarks[item.id].remark;
+          }
+          catItems.push({
+            name: item.name,
+            total: item.formulaTotal,
+            deduct: parseFloat((item.formulaTotal - fScore).toFixed(1)),
+            got: parseFloat(fScore.toFixed(1)),
+            remark: remark,
+            subItems: []
+          });
+          catGot += fScore;
+          if(d && d.subGroups) {
+            Object.keys(d.subGroups).forEach(function(sgId) {
+              var sg = d.subGroups[sgId];
+              Object.keys(sg.items).forEach(function(siId) {
+                var si = sg.items[siId];
+                var subRemark = si.remark || '';
+                if(updatedRemarks[item.id] && updatedRemarks[item.id].subRemarks && updatedRemarks[item.id].subRemarks[siId]) {
+                  subRemark = updatedRemarks[item.id].subRemarks[siId];
+                }
+                catItems[catItems.length-1].subItems.push({
+                  name: sg.name + ' - ' + si.name,
+                  score: si.score,
+                  deduct: si.deduct || 0,
+                  got: si.got || si.score,
+                  remark: subRemark
+                });
+              });
+            });
+          }
+        } else {
+          var d = detail[item.id];
+          var got = d ? d.got : item.score;
+          var deduct = d ? d.deduct : 0;
+          var remark = d ? (d.remark||'') : '';
+          if(updatedRemarks[item.id] && updatedRemarks[item.id].remark) {
+            remark = updatedRemarks[item.id].remark;
+          }
+          catItems.push({
+            name: item.name,
+            total: item.score,
+            deduct: deduct,
+            got: got,
+            remark: remark,
+            subItems: []
+          });
+          catGot += got;
+        }
+      });
+      exportData.data.categories.push({
+        icon: cat.icon,
+        name: cat.name,
+        total: cat.total,
+        items: catItems
+      });
+      totalGot += catGot;
+      totalStd += cat.total;
+    });
+    exportData.data.totalGot = parseFloat(totalGot.toFixed(1));
+    exportData.data.totalStd = totalStd;
+    
+    // 调用后端API导出
+    var res = await fetch('/api/export-score', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(exportData)
+    });
+    
+    if(!res.ok) throw new Error('导出失败');
+    
+    // 下载文件
+    var blob = await res.blob();
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = '考核评分表_' + (f['项目名称']||'') + '_' + (f['考核日期']||'') + '.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('✅ 评分表已导出为Excel');
+    closeScoreEdit();
+  } catch(err) {
+    console.error('导出失败:', err);
+    showToast('❌ 导出失败，请重试');
+  } finally {
+    btn.textContent = '导出Excel';
+    btn.disabled = false;
+  }
+}
+
+// 评分表导出（兼容旧调用）
+function exportAssessScore(recordId) {
+  openScoreEdit(recordId);
+}
+
+// 考核报告编辑页面 - 打开
+function openReportEdit(recordId) {
   var record = assessRecordsCache.find(function(r){return r.record_id===recordId;});
   if(!record){showToast('未找到记录');return;}
   var f = record.fields;
   var detail = {};
   try { detail = JSON.parse(f['评分详情']||'{}'); } catch(e){}
-  var photoSummary = {};
-  try { photoSummary = JSON.parse(f['照片汇总']||'{}'); } catch(e){}
-
-  // 构建考核报告HTML
-  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>考核报告 - '+(f['项目名称']||'')+'</title>';
-  html += '<style>body{font-family:"Microsoft YaHei",sans-serif;padding:40px;color:#333;max-width:800px;margin:0 auto;}';
-  html += '.cover{text-align:center;padding:80px 0 40px;border-bottom:2px solid #1a73e8;margin-bottom:30px;}';
-  html += '.cover h1{font-size:28px;color:#1a73e8;margin-bottom:10px;letter-spacing:2px;}';
-  html += '.cover h2{font-size:18px;color:#666;font-weight:400;margin-bottom:30px;}';
-  html += '.cover .info{font-size:14px;color:#888;line-height:2;}';
-  html += 'h3{font-size:16px;color:#1a73e8;border-left:4px solid #1a73e8;padding-left:10px;margin:24px 0 12px;}';
-  html += '.score-summary{display:flex;justify-content:center;gap:40px;margin:20px 0 30px;}';
-  html += '.score-big{text-align:center;}';
-  html += '.score-big .num{font-size:48px;font-weight:800;color:#1a73e8;}';
-  html += '.score-big .label{font-size:13px;color:#888;margin-top:4px;}';
-  html += '.score-big .level{font-size:16px;font-weight:600;margin-top:6px;padding:4px 14px;border-radius:20px;display:inline-block;}';
-  html += '.level-good{background:#e8f5e9;color:#34a853;}';
-  html += '.level-mid{background:#fff3e0;color:#f57c00;}';
-  html += '.level-bad{background:#fce8e6;color:#e74c3c;}';
-  html += 'table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}';
-  html += 'th,td{border:1px solid #ddd;padding:8px 10px;text-align:left;vertical-align:top;}';
-  html += 'th{background:#f0f4ff;color:#1a73e8;font-weight:600;text-align:center;}';
-  html += '.cat-row td{background:#f8f9fb;font-weight:700;}';
-  html += '.issue-box{background:#fff3e0;border-radius:8px;padding:14px;margin:8px 0;font-size:13px;line-height:1.8;}';
-  html += '.issue-box .item{margin:4px 0;}';
-  html += '.section-content{font-size:13px;line-height:1.8;color:#444;margin-bottom:16px;}';
-  html += '@media print{body{padding:10px;}.cover{padding:30px 0 20px;}.cover h1{font-size:20px;}.score-big .num{font-size:36px;}th,td{padding:5px 6px;font-size:11px;}}';
-  html += '</style></head><body>';
-
-  // 封面
-  html += '<div class="cover">';
-  html += '<h1>工程质量考核报告</h1>';
-  html += '<h2>'+(f['项目名称']||'--')+'</h2>';
-  html += '<div class="info">';
-  html += '考核日期：'+(f['考核日期']||'--')+'<br>';
-  html += '考核人：'+(f['考核人']||'--')+'<br>';
-  html += '项目经理：'+(f['项目经理']||'--')+' · 质检员：'+(f['质检员']||'--')+'<br>';
-  html += '施工员：'+(f['施工员']||'--')+' · 材料员：'+(f['材料员']||'--');
-  html += '</div></div>';
-
-  // 一、考核评分概况
+  
+  // 缓存当前记录数据
+  currentReportData = {
+    recordId: recordId,
+    fields: f,
+    detail: detail
+  };
+  
   var totalScore = f['总分'] !== undefined ? f['总分'] : 0;
   var level = totalScore >= 90 ? '优秀' : (totalScore >= 80 ? '良好' : (totalScore >= 60 ? '一般' : '待整改'));
-  var levelClass = totalScore >= 80 ? 'level-good' : (totalScore >= 60 ? 'level-mid' : 'level-bad');
-
-  html += '<h3>一、考核评分概况</h3>';
-  html += '<div class="score-summary">';
-  html += '<div class="score-big"><div class="num">'+totalScore+'</div><div class="label">总得分（满分100）</div><div class="level '+levelClass+'">'+level+'</div></div>';
+  var levelColor = totalScore >= 80 ? '#34a853' : (totalScore >= 60 ? '#f57c00' : '#e74c3c');
+  var levelBg = totalScore >= 80 ? '#e8f5e9' : (totalScore >= 60 ? '#fff3e0' : '#fce8e6');
+  
+  // 构建考核报告编辑内容
+  var html = '';
+  
+  // 封面
+  html += '<div class="report-edit-cover">';
+  html += '<h1>工程质量考核报告</h1>';
+  html += '<h2 contenteditable="true" id="reportProjectName">'+(f['项目名称']||'--')+'</h2>';
+  html += '<div class="info">';
+  html += '<div style="margin-bottom:4px;">考核日期：<span contenteditable="true" id="reportDate">'+(f['考核日期']||'--')+'</span></div>';
+  html += '<div style="margin-bottom:4px;">考核人：<span contenteditable="true" id="reportAssessor">'+(f['考核人']||'--')+'</span></div>';
+  html += '<div>项目经理：<span contenteditable="true" id="reportManager">'+(f['项目经理']||'--')+'</span> · 质检员：<span contenteditable="true" id="reportQC">'+(f['质检员']||'--')+'</span></div>';
+  html += '<div>施工员：<span contenteditable="true" id="reportBuilder">'+(f['施工员']||'--')+'</span> · 材料员：<span contenteditable="true" id="reportMaterial">'+(f['材料员']||'--')+'</span></div>';
+  html += '</div></div>';
+  
+  // 一、考核评分概况
+  html += '<div class="report-edit-section">';
+  html += '<div class="report-edit-section-title">📊 一、考核评分概况</div>';
+  html += '<div class="report-edit-score">';
+  html += '<div class="big-num" contenteditable="true" id="reportTotalScore">'+totalScore+'</div>';
+  html += '<div><div class="score-label">总得分（满分100）</div>';
+  html += '<div class="level-badge" id="reportLevelBadge" style="background:'+levelBg+';color:'+levelColor+';">'+level+'</div></div>';
   html += '</div>';
-
+  
   // 各大类得分表
-  html += '<table><tr><th>考核类别</th><th>标准分</th><th>实得分</th><th>得分率</th></tr>';
+  html += '<table class="report-edit-cat-table"><tr><th>考核类别</th><th>标准分</th><th>实得分</th><th>得分率</th></tr>';
   checklistData.forEach(function(cat) {
     var catGot = 0;
     cat.items.forEach(function(item) {
@@ -1618,13 +2069,14 @@ function exportAssessReport(recordId) {
       }
     });
     var rate = cat.total > 0 ? (catGot/cat.total*100).toFixed(1)+'%' : '--';
-    html += '<tr><td>'+cat.icon+' '+cat.name+'</td><td style="text-align:center;">'+cat.total+'</td><td style="text-align:center;font-weight:600;color:#1a73e8;">'+catGot.toFixed(1)+'</td><td style="text-align:center;">'+rate+'</td></tr>';
+    html += '<tr><td>'+cat.icon+' '+cat.name+'</td><td>'+cat.total+'</td><td style="color:#1a73e8;font-weight:600;">'+catGot.toFixed(1)+'</td><td>'+rate+'</td></tr>';
   });
-  html += '</table>';
-
+  html += '</table></div>';
+  
   // 二、扣分项明细
-  html += '<h3>二、扣分项明细</h3>';
-  var hasDeduct = false;
+  html += '<div class="report-edit-section">';
+  html += '<div class="report-edit-section-title">⚠️ 二、扣分项明细</div>';
+  var deductItems = [];
   checklistData.forEach(function(cat) {
     cat.items.forEach(function(item) {
       if(item.type === 'formula-group') {
@@ -1635,70 +2087,245 @@ function exportAssessReport(recordId) {
             Object.keys(sg.items).forEach(function(siId) {
               var si = sg.items[siId];
               if(si.deduct > 0) {
-                if(!hasDeduct) { html += '<div class="issue-box">'; hasDeduct = true; }
-                html += '<div class="item">🔴 <strong>'+cat.name+' · '+sg.name+' - '+si.name+'</strong>：扣'+si.deduct+'分'+(si.remark?'（'+si.remark+'）':'')+'</div>';
+                deductItems.push({cat: cat.name, item: sg.name + ' - ' + si.name, deduct: si.deduct, remark: si.remark || ''});
               }
             });
           });
-        }
-        var fScore = d ? d.formulaScore : item.formulaTotal;
-        if(item.formulaTotal - fScore > 0.05 && !d) {
-          // formula group deduct without subgroup detail
         }
       } else {
         var d = detail[item.id];
         var deduct = d ? d.deduct : 0;
         if(deduct > 0) {
-          if(!hasDeduct) { html += '<div class="issue-box">'; hasDeduct = true; }
-          html += '<div class="item">🔴 <strong>'+cat.name+' · '+item.name+'</strong>：扣'+deduct+'分'+(d.remark?'（'+d.remark+'）':'')+'</div>';
+          deductItems.push({cat: cat.name, item: item.name, deduct: deduct, remark: d.remark || ''});
         }
       }
     });
   });
-  if(hasDeduct) { html += '</div>'; }
-  else { html += '<div class="section-content">本次考核无扣分项，各项均达标。</div>'; }
-
-  // 三、问题清单
-  if(f['问题清单']) {
-    html += '<h3>三、问题清单</h3>';
-    html += '<div class="issue-box">';
-    var issues = f['问题清单'].split('；');
-    issues.forEach(function(iss, i) {
-      html += '<div class="item">'+(i+1)+'. '+iss+'</div>';
+  
+  if(deductItems.length > 0) {
+    html += '<div class="report-edit-issues">';
+    deductItems.forEach(function(item, i) {
+      html += '<div class="issue-item">';
+      html += '<span class="issue-num">🔴</span>';
+      html += '<span><strong>'+item.cat+' · '+item.item+'</strong>：扣'+item.deduct+'分';
+      if(item.remark) html += '（<span contenteditable="true">'+item.remark+'</span>）';
+      html += '</span></div>';
     });
     html += '</div>';
-  }
-
-  // 四、整改建议
-  html += '<h3>四、整改建议</h3>';
-  html += '<div class="section-content">';
-  if(totalScore >= 90) {
-    html += '本项目部质量管理整体水平优秀，各项制度执行到位。建议继续保持，持续改进细节。';
-  } else if(totalScore >= 80) {
-    html += '本项目部质量管理整体良好，部分检查项目存在扣分。建议针对上述扣分项制定整改计划，限期完成整改。';
-  } else if(totalScore >= 60) {
-    html += '本项目部质量管理存在较多问题，需重点关注扣分项。建议立即制定专项整改方案，明确责任人和整改时限，并报公司备案。';
   } else {
-    html += '本项目部质量管理不达标，存在严重问题。建议立即停工整改，由公司组织专项检查，整改合格后方可复工。';
+    html += '<div style="color:#34a853;padding:10px;">✅ 本次考核无扣分项，各项均达标。</div>';
   }
   html += '</div>';
-
-  // 签名区域
-  html += '<div style="margin-top:50px;display:flex;justify-content:space-between;font-size:13px;">';
-  html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>考核人签字</div>';
-  html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>项目经理签字</div>';
-  html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>日期</div>';
+  
+  // 三、问题清单
+  html += '<div class="report-edit-section">';
+  html += '<div class="report-edit-section-title">📋 三、问题清单</div>';
+  if(f['问题清单']) {
+    var issues = f['问题清单'].split('；');
+    html += '<div class="report-edit-issues">';
+    issues.forEach(function(iss, i) {
+      html += '<div class="issue-item" style="margin-bottom:6px;">';
+      html += '<span class="issue-num">'+(i+1)+'.</span>';
+      html += '<span contenteditable="true">'+iss+'</span></div>';
+    });
+    html += '</div>';
+  } else {
+    html += '<textarea class="report-edit-textarea" id="reportIssueList" placeholder="请输入问题清单，多项用分号分隔"></textarea>';
+  }
   html += '</div>';
+  
+  // 四、整改建议
+  var suggestion = '';
+  if(totalScore >= 90) {
+    suggestion = '本项目部质量管理整体水平优秀，各项制度执行到位。建议继续保持，持续改进细节。';
+  } else if(totalScore >= 80) {
+    suggestion = '本项目部质量管理整体良好，部分检查项目存在扣分。建议针对上述扣分项制定整改计划，限期完成整改。';
+  } else if(totalScore >= 60) {
+    suggestion = '本项目部质量管理存在较多问题，需重点关注扣分项。建议立即制定专项整改方案，明确责任人和整改时限，并报公司备案。';
+  } else {
+    suggestion = '本项目部质量管理不达标，存在严重问题。建议立即停工整改，由公司组织专项检查，整改合格后方可复工。';
+  }
+  html += '<div class="report-edit-suggestion">';
+  html += '<div class="report-edit-suggestion-title">💡 四、整改建议</div>';
+  html += '<textarea class="report-edit-textarea" id="reportSuggestion">'+suggestion+'</textarea>';
+  html += '</div>';
+  
+  // 签名区域
+  html += '<div class="report-edit-signature">';
+  html += '<div class="sig-item"><div class="sig-line"></div>考核人签字</div>';
+  html += '<div class="sig-item"><div class="sig-line"></div>项目经理签字</div>';
+  html += '<div class="sig-item"><div class="sig-line"></div>日期</div>';
+  html += '</div>';
+  
+  html += '<div style="padding:16px;text-align:center;font-size:11px;color:#999;">报告生成时间：'+new Date().toLocaleString('zh-CN')+'</div>';
+  
+  document.getElementById('reportEditContent').innerHTML = html;
+  document.getElementById('reportEditPage').classList.add('active');
+}
 
-  html += '<div style="margin-top:30px;font-size:11px;color:#999;text-align:center;">报告生成时间：'+new Date().toLocaleString('zh-CN')+'</div>';
-  html += '</body></html>';
+// 关闭考核报告编辑
+function closeReportEdit() {
+  document.getElementById('reportEditPage').classList.remove('active');
+  currentReportData = null;
+}
 
-  var blob = new Blob([html], {type:'text/html;charset=utf-8'});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '考核报告_'+(f['项目名称']||'')+'_'+(f['考核日期']||'')+'.html';
-  a.click();
-  showToast('✅ 考核报告已导出');
+// 执行考核报告导出Word
+async function doExportReport() {
+  if(!currentReportData) { showToast('数据已过期，请重新打开'); return; }
+  var btn = document.getElementById('exportReportBtn');
+  btn.textContent = '导出中...';
+  btn.disabled = true;
+  
+  try {
+    var f = currentReportData.fields;
+    var detail = currentReportData.detail;
+    
+    // 收集编辑后的数据
+    var projectName = document.getElementById('reportProjectName')?.textContent || f['项目名称'] || '--';
+    var assessDate = document.getElementById('reportDate')?.textContent || f['考核日期'] || '--';
+    var assessor = document.getElementById('reportAssessor')?.textContent || f['考核人'] || '--';
+    var manager = document.getElementById('reportManager')?.textContent || f['项目经理'] || '--';
+    var qc = document.getElementById('reportQC')?.textContent || f['质检员'] || '--';
+    var builder = document.getElementById('reportBuilder')?.textContent || f['施工员'] || '--';
+    var material = document.getElementById('reportMaterial')?.textContent || f['材料员'] || '--';
+    var totalScore = parseFloat(document.getElementById('reportTotalScore')?.textContent) || 0;
+    var issueList = document.getElementById('reportIssueList')?.value || f['问题清单'] || '';
+    var suggestion = document.getElementById('reportSuggestion')?.value || '';
+    
+    // 计算等级
+    var level = totalScore >= 90 ? '优秀' : (totalScore >= 80 ? '良好' : (totalScore >= 60 ? '一般' : '待整改'));
+    var levelBg = totalScore >= 80 ? '#e8f5e9' : (totalScore >= 60 ? '#fff3e0' : '#fce8e6');
+    var levelColor = totalScore >= 80 ? '#34a853' : (totalScore >= 60 ? '#f57c00' : '#e74c3c');
+    
+    // 构建HTML内容
+    var html = '';
+    
+    // 封面
+    html += '<div class="cover">';
+    html += '<h1>工程质量考核报告</h1>';
+    html += '<h2>'+projectName+'</h2>';
+    html += '<div class="info">';
+    html += '考核日期：'+assessDate+'<br>';
+    html += '考核人：'+assessor+'<br>';
+    html += '项目经理：'+manager+' · 质检员：'+qc+'<br>';
+    html += '施工员：'+builder+' · 材料员：'+material;
+    html += '</div></div>';
+    
+    // 评分概况
+    html += '<h3>一、考核评分概况</h3>';
+    html += '<div class="score-summary">';
+    html += '<div class="score-big"><div class="num">'+totalScore+'</div><div class="label">总得分（满分100）</div><div class="level '+levelBg+'" style="color:'+levelColor+';padding:4px 14px;border-radius:20px;display:inline-block;">'+level+'</div></div>';
+    html += '</div>';
+    
+    // 各大类得分表
+    html += '<table><tr><th>考核类别</th><th>标准分</th><th>实得分</th><th>得分率</th></tr>';
+    checklistData.forEach(function(cat) {
+      var catGot = 0;
+      cat.items.forEach(function(item) {
+        if(item.type==='formula-group') {
+          var d = detail[item.id];
+          catGot += d ? d.formulaScore : item.formulaTotal;
+        } else {
+          var d = detail[item.id];
+          catGot += d ? d.got : item.score;
+        }
+      });
+      var rate = cat.total > 0 ? (catGot/cat.total*100).toFixed(1)+'%' : '--';
+      html += '<tr><td>'+cat.icon+' '+cat.name+'</td><td style="text-align:center;">'+cat.total+'</td><td style="text-align:center;font-weight:600;color:#1a73e8;">'+catGot.toFixed(1)+'</td><td style="text-align:center;">'+rate+'</td></tr>';
+    });
+    html += '</table>';
+    
+    // 扣分项明细
+    html += '<h3>二、扣分项明细</h3>';
+    var hasDeduct = false;
+    checklistData.forEach(function(cat) {
+      cat.items.forEach(function(item) {
+        if(item.type === 'formula-group') {
+          var d = detail[item.id];
+          if(d && d.subGroups) {
+            Object.keys(d.subGroups).forEach(function(sgId) {
+              var sg = d.subGroups[sgId];
+              Object.keys(sg.items).forEach(function(siId) {
+                var si = sg.items[siId];
+                if(si.deduct > 0) {
+                  if(!hasDeduct) { html += '<div class="issue-box">'; hasDeduct = true; }
+                  html += '<div class="item">🔴 <strong>'+cat.name+' · '+sg.name+' - '+si.name+'</strong>：扣'+si.deduct+'分'+(si.remark?'（'+si.remark+'）':'')+'</div>';
+                }
+              });
+            });
+          }
+        } else {
+          var d = detail[item.id];
+          var deduct = d ? d.deduct : 0;
+          if(deduct > 0) {
+            if(!hasDeduct) { html += '<div class="issue-box">'; hasDeduct = true; }
+            html += '<div class="item">🔴 <strong>'+cat.name+' · '+item.name+'</strong>：扣'+deduct+'分'+(d.remark?'（'+d.remark+'）':'')+'</div>';
+          }
+        }
+      });
+    });
+    if(hasDeduct) { html += '</div>'; }
+    else { html += '<div class="section-content">本次考核无扣分项，各项均达标。</div>'; }
+    
+    // 问题清单
+    if(issueList) {
+      html += '<h3>三、问题清单</h3>';
+      html += '<div class="issue-box">';
+      var issues = issueList.split('；');
+      issues.forEach(function(iss, i) {
+        html += '<div class="item">'+(i+1)+'. '+iss+'</div>';
+      });
+      html += '</div>';
+    }
+    
+    // 整改建议
+    html += '<h3>四、整改建议</h3>';
+    html += '<div class="section-content">'+suggestion+'</div>';
+    
+    // 签名区域
+    html += '<div style="margin-top:50px;display:flex;justify-content:space-between;font-size:13px;">';
+    html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>考核人签字</div>';
+    html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>项目经理签字</div>';
+    html += '<div style="text-align:center;width:30%;"><div style="border-bottom:1px solid #333;height:30px;margin-bottom:6px;"></div>日期</div>';
+    html += '</div>';
+    
+    html += '<div style="margin-top:30px;font-size:11px;color:#999;text-align:center;">报告生成时间：'+new Date().toLocaleString('zh-CN')+'</div>';
+    
+    // 调用后端API导出
+    var res = await fetch('/api/export-report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        html: html,
+        fileName: '考核报告_'+(projectName||'')+'_'+(assessDate||'')+'.doc'
+      })
+    });
+    
+    if(!res.ok) throw new Error('导出失败');
+    
+    // 下载文件
+    var blob = await res.blob();
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = '考核报告_'+(projectName||'')+'_'+(assessDate||'')+'.doc';
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showToast('✅ 考核报告已导出为Word');
+    closeReportEdit();
+  } catch(err) {
+    console.error('导出失败:', err);
+    showToast('❌ 导出失败，请重试');
+  } finally {
+    btn.textContent = '导出Word';
+    btn.disabled = false;
+  }
+}
+
+// 考核报告导出（兼容旧调用）
+function exportAssessReport(recordId) {
+  openReportEdit(recordId);
 }
 
 // ===== 初始化 =====
