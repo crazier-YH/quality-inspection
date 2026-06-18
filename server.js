@@ -402,6 +402,8 @@ app.post('/api/upload', async (req, res) => {
     form.append('parent_type', 'bitable_file');
     form.append('parent_node', config.bitableAppToken);
     form.append('file_name', name);
+    form.append('size', buffer.length.toString());
+    form.append('extra', JSON.stringify({drive_route_token: config.bitableAppToken}));
     form.append('file', buffer, { filename: name, contentType: mimeType });
 
     const uploadRes = await fetch('https://open.feishu.cn/open-apis/drive/v1/medias/upload_all', {
