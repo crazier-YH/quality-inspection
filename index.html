@@ -1342,7 +1342,7 @@ function renderFormPhotos(){
   formPhotos.forEach(function(p,i){
     var src=p.base64||('/api/image?file_token='+p.file_token);
     var badge=p.uploading?'<span style="position:absolute;top:-3px;right:-3px;background:#f39c12;color:#fff;border-radius:50%;width:14px;height:14px;font-size:8px;display:flex;align-items:center;justify-content:center;">⏳</span>':'';
-    html+='<div class="item-photo-thumb"><img src="'+src+'" /><>'+badge+'<button class="photo-del" onclick="removeFormPhoto('+i+')">✕</button></div>';
+    html+='<div class="item-photo-thumb"><img src="'+src+'" />'+badge+'<button class="photo-del" onclick="removeFormPhoto('+i+')">✕</button></div>';
   });
   html+='<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addFormPhoto(this)" /></div>';
   pa.innerHTML=html;
