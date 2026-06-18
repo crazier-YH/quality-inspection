@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI工程质量智能管理平台 - 操作指南</title>
+<style>
+  :root { --primary: #1a73e8; --bg: #f5f7fa; --card: #fff; --text: #333; --sub: #666; --border: #e8eaed; --accent: #ff6d00; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+  
+  /* Header */
+  .header { background: linear-gradient(135deg, #1a73e8, #0d47a1); color: #fff; padding: 40px 20px 60px; text-align: center; }
+  .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .header p { font-size: 14px; opacity: 0.85; }
+  .header .badge { display: inline-block; margin-top: 12px; padding: 4px 16px; background: rgba(255,255,255,0.2); border-radius: 20px; font-size: 12px; }
+
+  /* Nav tabs */
+  .nav-tabs { display: flex; overflow-x: auto; background: var(--card); border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 10; -webkit-overflow-scrolling: touch; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab { flex-shrink: 0; padding: 12px 18px; font-size: 13px; color: var(--sub); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
+  .nav-tab:hover { color: var(--primary); }
+  .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 600; }
+
+  /* Content */
+  .container { max-width: 800px; margin: 0 auto; padding: 20px 16px 60px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .card-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+  .card-title .icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+
+  /* Steps */
+  .step { display: flex; gap: 12px; margin-bottom: 16px; }
+  .step-num { width: 24px; height: 24px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step-content { flex: 1; }
+  .step-content strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .step-content p { font-size: 13px; color: var(--sub); }
+
+  /* Feature grid */
+  .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
+  .feature-item { background: #f8f9fa; border-radius: 10px; padding: 14px; text-align: center; }
+  .feature-item .emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+  .feature-item .name { font-size: 13px; font-weight: 600; }
+  .feature-item .desc { font-size: 11px; color: var(--sub); margin-top: 2px; }
+
+  /* Tip box */
+  .tip { background: #e8f0fe; border-left: 3px solid var(--primary); border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 13px; color: #1a4a8a; }
+  .tip.warn { background: #fff3e0; border-left-color: var(--accent); color: #8a4a00; }
+
+  /* Table */
+  .info-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+  .info-table th { background: #f0f4f8; padding: 8px 12px; text-align: left; font-weight: 600; border: 1px solid var(--border); }
+  .info-table td { padding: 8px 12px; border: 1px solid var(--border); }
+
+  /* Screenshot placeholder */
+  .screenshot { background: linear-gradient(135deg, #f0f4f8, #e8eaed); border-radius: 8px; padding: 30px; text-align: center; color: #999; font-size: 13px; margin: 12px 0; border: 1px dashed #ccc; }
+  .screenshot .emoji { font-size: 32px; display: block; margin-bottom: 8px; }
+
+  /* Flow */
+  .flow { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 16px 0; flex-wrap: wrap; }
+  .flow-node { background: var(--primary); color: #fff; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; }
+  .flow-arrow { color: var(--primary); font-size: 16px; }
+
+  /* Architecture */
+  .arch-box { border: 2px solid var(--primary); border-radius: 10px; padding: 16px; margin: 12px 0; text-align: center; }
+  .arch-box .title { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 8px; }
+  .arch-layers { display: flex; flex-direction: column; gap: 6px; }
+  .arch-layer { padding: 8px; border-radius: 6px; font-size: 12px; text-align: center; }
+  .arch-layer.front { background: #e8f0fe; color: #1a4a8a; }
+  .arch-layer.back { background: #e6f4ea; color: #1a5a2a; }
+  .arch-layer.data { background: #fce8e6; color: #8a2a1a; }
+  .arch-layer.infra { background: #f3e5f5; color: #5a1a6a; }
+
+  /* QR */
+  .qr-section { text-align: center; padding: 20px; }
+  .qr-box { display: inline-block; background: #fff; padding: 16px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  .qr-box .url { font-size: 11px; color: var(--primary); word-break: break-all; margin-top: 8px; }
+
+  @media (max-width: 480px) {
+    .feature-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .header h1 { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏗️ AI工程质量智能管理平台</h1>
+  <p>操作指南 · 快速上手</p>
+  <span class="badge">方大集团建科公司 · 质安部</span>
+</div>
+
+<div class="nav-tabs" id="navTabs">
+  <div class="nav-tab active" data-tab="overview">平台概述</div>
+  <div class="nav-tab" data-tab="assess">考核评分</div>
+  <div class="nav-tab" data-tab="material">材料验收</div>
+  <div class="nav-tab" data-tab="process">工序自检</div>
+  <div class="nav-tab" data-tab="signboard">举牌验收</div>
+  <div class="nav-tab" data-tab="other">防水/成品/送检</div>
+  <div class="nav-tab" data-tab="export">报告导出</div>
+  <div class="nav-tab" data-tab="admin">管理功能</div>
+  <div class="nav-tab" data-tab="tech">技术架构</div>
+</div>
+
+<div class="container">
+
+  <!-- 平台概述 -->
+  <div class="section active" id="sec-overview">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e8f0fe;">📋</span> 平台简介</div>
+      <p style="font-size:14px;">AI工程质量智能管理平台是面向建筑工程质量管理场景的移动端应用，覆盖<strong>质量考核、材料验收、工序自检、举牌验收、防水检查、成品保护、送检记录</strong>等8大业务模块，实现质量巡查全流程数字化管理。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e6f4ea;">✨</span> 核心功能</div>
+      <div class="feature-grid">
+        <div class="feature-item"><span class="emoji">📋</span><span class="name">考核评分</span><span class="desc">五大类逐项评分</span></div>
+        <div class="feature-item"><span class="emoji">📦</span><span class="name">材料验收</span><span class="desc">进场材料记录</span></div>
+        <div class="feature-item"><span class="emoji">🔧</span><span class="name">工序自检</span><span class="desc">工序质量自检</span></div>
+        <div class="feature-item"><span class="emoji">🪧</span><span class="name">举牌验收</span><span class="desc">举牌验收记录</span></div>
+        <div class="feature-item"><span class="emoji">💧</span><span class="name">防水重点</span><span class="desc">防水质量检查</span></div>
+        <div class="feature-item"><span class="emoji">🛡️</span><span class="name">成品保护</span><span class="desc">成品保护检查</span></div>
+        <div class="feature-item"><span class="emoji">🧪</span><span class="name">送检记录</span><span class="desc">材料送检管理</span></div>
+        <div class="feature-item"><span class="emoji">📊</span><span class="name">报告导出</span><span class="desc">Word/Excel输出</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fce8e6;">🚀</span> 快速开始</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>打开平台</strong><p>手机浏览器访问平台地址，支持微信/企微内直接打开</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>设置项目信息</strong><p>进入「个人中心 → 项目信息设置」，填写项目名称、单位等，后续表单自动填充</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>开始使用</strong><p>首页选择对应模块，点击「+ 新增」即可开始填写记录，支持拍照上传</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#f3e5f5;">🔗</span> 访问地址</div>
+      <div class="qr-section">
+        <div class="qr-box">
+          <div style="font-size:40px;">📱</div>
+          <div style="font-size:13px;font-weight:600;margin:8px 0 4px;">扫码或点击访问</div>
+          <div class="url">https://quality-inspection-271006-5-1443845282.sh.run.tcloudbase.com</div>
+        </div>
+      </div>
+      <div class="tip">支持手机浏览器、微信、企业微信直接打开，无需安装App。建议添加到手机主屏幕，体验更接近原生应用。</div>
+    </div>
+  </div>
+
+  <!-- 考核评分 -->
+  <div class="section" id="sec-assess">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e8f0fe;">📋</span> 考核评分模块</div>
+      <p style="font-size:14px;">质量管理考核评分表，涵盖五大类考核项目，支持逐项评分、扣分备注、拍照留痕。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">新增考核</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>进入考核页</strong><p>首页点击「📋 考核」→ 点击「+ 新增考核」</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>填写基本信息</strong><p>填写考核日期、考核人、项目经理等基础信息（项目信息设置后自动填充）</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>逐项评分</strong><p>五大类考核项目依次展开，对每个检查项进行扣分，可填写备注说明</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content"><strong>拍照留痕</strong><p>每个扣分项支持拍照上传问题照片，拍照后自动压缩上传到云端存储</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content"><strong>提交保存</strong><p>确认所有项目评分后，点击「💾 提交考核记录」保存到云端</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">五大类评分说明</div>
+      <table class="info-table">
+        <tr><th>类别</th><th>满分</th><th>说明</th></tr>
+        <tr><td>一、标准化建设及周检</td><td>18分</td><td>办公区标准化、档案资料、质量周检</td></tr>
+        <tr><td>二、方案及资料管理</td><td>57分</td><td>施工方案、交底记录、检验批等20项</td></tr>
+        <tr><td>三、检验检测</td><td>25分</td><td>送检计划、见证取样、四性试验</td></tr>
+        <tr><td>四、实体质量管理</td><td>70分</td><td>含幕墙样板引路(公式计算)、安装质量</td></tr>
+        <tr><td>五、防渗漏及整改闭合</td><td>30分</td><td>淋水测试、整改闭合</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">子项评分</div>
+      <p style="font-size:13px;color:#666;">大项中的每个检查标准拆分为独立子项，每个子项可单独扣分、备注、拍照。例如：</p>
+      <div class="screenshot">
+        <span class="emoji">📝</span>
+        子项1: 办公区按标准化 → 独立扣分/备注/拍照<br>
+        子项2: 知识储备情况 → 独立扣分/备注/拍照
+      </div>
+      <div class="tip">子项扣分上限由maxDeduct属性控制，父项总分 = 满分 - 所有子项扣分之和（不超过满分）</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">考核表导入</div>
+      <div class="flow">
+        <span class="flow-node">📥 点击导入</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-node">选择Excel</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-node">预览编辑</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-node">确认保存</span>
+      </div>
+      <p style="font-size:13px;color:#666;">支持直接导入已有的考核评分表Excel文件（.xlsx/.xls），系统自动解析评分数据，预览确认后保存为考核记录。</p>
+    </div>
+  </div>
+
+  <!-- 材料验收 -->
+  <div class="section" id="sec-material">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fce8e6;">📦</span> 材料验收模块</div>
+      <p style="font-size:14px;">记录进场材料的验收情况，支持拍照、合格判定、批量记录。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">操作流程</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>新增验收</strong><p>首页 → 📦 材料验收 → 「+ 新增验收」</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>填写材料信息</strong><p>材料名称、规格型号、数量、生产厂家、进场日期等</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>合格判定</strong><p>选择「合格/不合格」，不合格时需填写原因</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content"><strong>拍照留档</strong><p>拍摄材料实物照片、合格证、质保书等</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content"><strong>提交记录</strong><p>确认信息后提交保存</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 工序自检 -->
+  <div class="section" id="sec-process">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e6f4ea;">🔧</span> 工序自检模块</div>
+      <p style="font-size:14px;">施工工序质量自检记录，按工序逐项检查，确保每道工序质量达标。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">操作流程</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>新增自检</strong><p>首页 → 🔧 工序自检 → 「+ 新增自检」</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>选择工序</strong><p>填写检查部位、工序名称、检查日期</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>逐项检查</strong><p>对照标准逐项检查，记录合格/不合格及问题描述</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content"><strong>拍照记录</strong><p>拍摄检查部位现状照片</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 举牌验收 -->
+  <div class="section" id="sec-signboard">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fef7e0;">🪧</span> 举牌验收模块</div>
+      <p style="font-size:14px;">举牌验收记录，拍照上传举牌照片，记录验收人员与结论。</p>
+    </div>
+    <div class="card">
+      <div class="card-title">操作流程</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>新增验收</strong><p>首页 → 🪧 举牌验收 → 「+ 新增验收」</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>填写验收信息</strong><p>验收部位、验收内容、验收人员</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>举牌拍照</strong><p>拍摄举牌照片，确保信息牌内容清晰可读</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content"><strong>验收结论</strong><p>选择通过/不通过，填写备注</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 防水/成品/送检 -->
+  <div class="section" id="sec-other">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e0f7fa;">💧</span> 防水重点检查</div>
+      <p style="font-size:14px;">记录防水施工质量检查情况，重点关注打胶质量、渗漏隐患。</p>
+      <div class="tip">重点检查：背板、装饰条内部、压顶、排水槽、首层幕墙底部、悬窗、伸缩缝等部位</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#f3e5f5;">🛡️</span> 成品保护检查</div>
+      <p style="font-size:14px;">记录已安装材料/成品的保护措施检查情况，防止施工过程中对成品造成损坏。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fff3e0;">🧪</span> 送检记录</div>
+      <p style="font-size:14px;">管理材料送检流程，记录送检材料、检测机构、报告编号及检测结果。</p>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>新增送检</strong><p>首页 → 🧪 送检 → 「+ 新增送检」</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>填写送检信息</strong><p>材料名称、送检日期、检测机构、报告编号</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>记录结果</strong><p>填写检测结果（合格/不合格），上传检测报告照片</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">通用操作说明</div>
+      <div class="tip">以上模块操作流程一致：进入模块 → 新增记录 → 填写信息 → 拍照上传 → 提交保存。所有模块均支持查看历史记录、照片缩略图预览。</div>
+    </div>
+  </div>
+
+  <!-- 报告导出 -->
+  <div class="section" id="sec-export">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#e8f0fe;">📊</span> 报告导出功能</div>
+      <p style="font-size:14px;">支持将考核数据导出为标准格式的Word/Excel文件，自动生成质量巡查报告。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">评分表导出 (Excel)</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>查看考核记录</strong><p>进入考核页 → 点击某条考核记录</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>点击导出按钮</strong><p>考核详情页右上角点击「📥 导出评分表」</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>编辑预览</strong><p>在编辑预览页面可修改内容，确认后下载.xlsx文件</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">考核报告导出 (Word)</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>查看考核记录</strong><p>进入考核页 → 点击某条考核记录</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>点击报告导出</strong><p>考核详情页点击「📄 导出考核报告」</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content"><strong>编辑预览</strong><p>在编辑页面修改报告内容，确认后下载.doc文件</p></div>
+      </div>
+      <div class="tip">报告包含：封面、形象进度图、项目基本信息、考核结果汇总、各考核项问题记录（含照片位置）、改进建议</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">AI自动生成报告</div>
+      <p style="font-size:13px;color:#666;">上传考核评分表Excel到AI助手，可自动生成完整的质量巡查报告Word文档，支持：</p>
+      <div class="feature-grid">
+        <div class="feature-item"><span class="emoji">📝</span><span class="name">自动解析</span><span class="desc">提取扣分项</span></div>
+        <div class="feature-item"><span class="emoji">🖼️</span><span class="name">照片预留</span><span class="desc">问题照片位</span></div>
+        <div class="feature-item"><span class="emoji">📊</span><span class="name">评分汇总</span><span class="desc">自动计算</span></div>
+        <div class="feature-item"><span class="emoji">📋</span><span class="name">标准格式</span><span class="desc">统一模板</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理功能 -->
+  <div class="section" id="sec-admin">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#fce8e6;">⚙️</span> 管理功能</div>
+      <p style="font-size:14px;">管理员模式提供数据管理和标准维护功能。</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">管理员模式</div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content"><strong>开启管理员</strong><p>个人中心 → 点击管理员开关 → 输入密码</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content"><strong>管理功能</strong><p>开启后可删除记录、管理考核标准、导出数据</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">管理考核标准</div>
+      <p style="font-size:13px;color:#666;">考核页 → 「⚙️ 管理考核标准」，可编辑检查项的名称和标准文字：</p>
+      <div class="feature-grid">
+        <div class="feature-item"><span class="emoji">✏️</span><span class="name">编辑文字</span><span class="desc">修改检查标准</span></div>
+        <div class="feature-item"><span class="emoji">➕</span><span class="name">添加子项</span><span class="desc">新增检查点</span></div>
+        <div class="feature-item"><span class="emoji">🗑️</span><span class="name">删除子项</span><span class="desc">移除检查点</span></div>
+        <div class="feature-item"><span class="emoji">🔄</span><span class="name">恢复默认</span><span class="desc">重置标准</span></div>
+      </div>
+      <div class="tip warn">标准修改仅影响新建的考核记录，历史记录不受影响。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">项目信息设置</div>
+      <p style="font-size:13px;color:#666;">个人中心 → 项目信息设置，设置后各模块表单自动填充项目信息：</p>
+      <table class="info-table">
+        <tr><th>字段</th><th>说明</th></tr>
+        <tr><td>项目名称</td><td>如：深圳湾滨海商务中心</td></tr>
+        <tr><td>项目地址</td><td>项目所在地</td></tr>
+        <tr><td>建设单位</td><td>甲方/建设单位</td></tr>
+        <tr><td>施工单位</td><td>总包/施工单位</td></tr>
+        <tr><td>监理单位</td><td>监理单位</td></tr>
+        <tr><td>项目经理</td><td>项目经理姓名</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- 技术架构 -->
+  <div class="section" id="sec-tech">
+    <div class="card">
+      <div class="card-title"><span class="icon" style="background:#f3e5f5;">🏗️</span> 技术架构</div>
+      <div class="arch-box">
+        <div class="title">系统架构</div>
+        <div class="arch-layers">
+          <div class="arch-layer front">📱 前端：移动端SPA (HTML/CSS/JS) · 响应式 · PWA</div>
+          <div class="arch-layer back">🖥️ 后端：Node.js + Express · RESTful API</div>
+          <div class="arch-layer data">💾 数据：飞书多维表格 (8张数据表) · 云端附件存储</div>
+          <div class="arch-layer infra">☁️ 部署：腾讯云CloudBase · Docker容器 · 自动CI/CD</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">数据表结构</div>
+      <table class="info-table">
+        <tr><th>模块</th><th>数据表</th><th>核心字段</th></tr>
+        <tr><td>待办事项</td><td>tblyqZTqgmYqtu8I</td><td>任务、状态、优先级</td></tr>
+        <tr><td>考核评分</td><td>tbl0PJbbhZVEXwq2</td><td>五大类评分、扣分明细、照片</td></tr>
+        <tr><td>材料验收</td><td>tblyWhyroY1YUYuu</td><td>材料名称、规格、合格判定</td></tr>
+        <tr><td>工序自检</td><td>tblwCzqncb0z3OCK</td><td>工序名称、检查结果</td></tr>
+        <tr><td>举牌验收</td><td>tblCx7ywWHeSW5nd</td><td>验收部位、结论</td></tr>
+        <tr><td>防水检查</td><td>tblrXxogAyXB7zS8</td><td>检查部位、渗漏情况</td></tr>
+        <tr><td>成品保护</td><td>tblzEnPjqBdSXFzK</td><td>保护措施、损坏情况</td></tr>
+        <tr><td>送检记录</td><td>tblctYgQboo3Qxqm</td><td>送检材料、检测结果</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">平台特性</div>
+      <div class="feature-grid">
+        <div class="feature-item"><span class="emoji">📱</span><span class="name">移动优先</span><span class="desc">手机端优化</span></div>
+        <div class="feature-item"><span class="emoji">📸</span><span class="name">拍照上传</span><span class="desc">云端持久化</span></div>
+        <div class="feature-item"><span class="emoji">☁️</span><span class="name">云端存储</span><span class="desc">飞书多维表格</span></div>
+        <div class="feature-item"><span class="emoji">🔒</span><span class="name">无需登录</span><span class="desc">应用身份模式</span></div>
+        <div class="feature-item"><span class="emoji">📈</span><span class="name">弹性扩容</span><span class="desc">支持200人</span></div>
+        <div class="feature-item"><span class="emoji">🔄</span><span class="desc">自动CI/CD</span><span class="name">持续部署</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">AI能力集成</div>
+      <p style="font-size:13px;color:#666;">平台深度集成AI能力，实现智能辅助：</p>
+      <table class="info-table">
+        <tr><th>能力</th><th>应用场景</th></tr>
+        <tr><td>智能报告生成</td><td>上传Excel自动生成Word质量巡查报告</td></tr>
+        <tr><td>数据智能解析</td><td>自动识别Excel中的扣分项和评分结果</td></tr>
+        <tr><td>照片智能命名</td><td>自动按「章节_问题序号_整改前/后」格式命名</td></tr>
+        <tr><td>标准动态管理</td><td>可编辑考核检查标准，灵活适配不同项目</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.nav-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+    tab.classList.add('active');
+    document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+</script>
+
+</body>
+</html>
