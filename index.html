@@ -428,7 +428,7 @@
 </div>
 <div class="page" id="page-profile-edit"><div class="section"><div class="section-card"><div class="section-title">📝 个人信息</div><div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div><div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div><div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div><div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div></div></div></div>
 <div class="page" id="page-profile-project"><div class="section"><div class="section-card"><div class="section-title">🏗️ 项目信息</div><div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div><div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div><div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div><div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div><div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div><div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div></div><div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div></div>
-<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerImportAssess()">📥 考核表导入</button><input type="file" id="importAssessFile" accept=".xlsx,.xls" style="display:none" onchange="handleImportAssess(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
+<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:8px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerImportAssess()">📥 考核表导入</button><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#ff9800;color:#ff9800;" onclick="openPage('assess-standards')">⚙️ 管理考核标准</button><input type="file" id="importAssessFile" accept=".xlsx,.xls" style="display:none" onchange="handleImportAssess(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
 <div class="page" id="page-assess-form">
   <div class="section" style="padding-bottom:0;">
     <div class="section-card" style="margin-bottom:8px;">
@@ -446,6 +446,7 @@
   <div class="section" style="padding-top:0;"><button class="btn-primary btn-green" onclick="saveAssess()" id="assessSaveBtn">💾 提交考核记录</button></div>
 </div>
 <div class="page" id="page-assess-detail"><div class="section" id="assessDetailContent"></div></div>
+<div class="page" id="page-assess-standards"><div class="section" id="standardsContent"></div></div>
 <div class="page" id="page-material"><div class="section"><div class="section-card"><div class="section-title"><span>📦</span>历史验收记录</div><div id="materialRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('material')">+ 新增验收</button></div></div>
 <div class="page" id="page-process"><div class="section"><div class="section-card"><div class="section-title"><span>🔧</span>历史自检记录</div><div id="processRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('process')">+ 新增自检</button></div></div>
 <div class="page" id="page-signboard"><div class="section"><div class="section-card"><div class="section-title"><span>🪧</span>历史验收记录</div><div id="signboardRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('signboard')">+ 新增验收</button></div></div>
@@ -967,7 +968,7 @@ function goBack() {
 var pageTitles = {
   home:['工程质量管理','质量巡查 · 高效管理'], todo:['待办事项','今日任务一览'], profile:['个人中心','基本信息管理'],
   'profile-edit':['编辑个人信息','填写您的基本资料'], 'profile-project':['项目信息设置','设置后将自动填充'],
-  assess:['考核评分','质量管理考核'], 'assess-form':['考核检查表','五大类逐项评分'], 'assess-detail':['考核详情','查看评分明细'],
+  assess:['考核评分','质量管理考核'], 'assess-form':['考核检查表','五大类逐项评分'], 'assess-detail':['考核详情','查看评分明细'], 'assess-standards':['管理考核标准','编辑检查项和标准'],
   material:['材料验收','进场材料验收'], process:['工序自检','工序质量自检'], signboard:['举牌验收','举牌验收记录'],
   waterproof:['防水重点','防水质量检查'], protect:['成品保护','成品保护检查'], testing:['送检记录','材料送检管理']
 };
@@ -990,6 +991,161 @@ function delTodo(i){todos.splice(i,1);localStorage.setItem('qc_todos',JSON.strin
 function loadHomeStats() { document.getElementById('statTodo').textContent=todos.filter(function(t){return !t.done;}).length; }
 
 // ===== 考核检查表 =====
+// ===== 考核标准管理 =====
+function loadCustomStandards() {
+  try {
+    var saved = localStorage.getItem('customStandards');
+    if(saved) {
+      var custom = JSON.parse(saved);
+      // Merge custom content into checklistData
+      checklistData.forEach(function(cat) {
+        if(!custom[cat.id]) return;
+        cat.items.forEach(function(item) {
+          if(!custom[cat.id][item.id]) return;
+          var ci = custom[cat.id][item.id];
+          if(ci.content !== undefined && item.content !== undefined) item.content = ci.content;
+          if(ci.subItems && item.subItems) {
+            item.subItems.forEach(function(si) {
+              if(ci.subItems[si.id] && ci.subItems[si.id].content) si.content = ci.subItems[si.id].content;
+              if(ci.subItems[si.id] && ci.subItems[si.id].name) si.name = ci.subItems[si.id].name;
+            });
+          }
+        });
+      });
+    }
+  } catch(e) { console.log('loadCustomStandards error:', e); }
+}
+loadCustomStandards();
+
+function renderStandardsPage() {
+  var html = '';
+  html += '<div style="margin-bottom:12px;padding:10px;background:#fff3e0;border-radius:8px;font-size:12px;color:#e65100;">';
+  html += '💡 修改后请点击底部「保存修改」按钮，仅修改文字不影响评分逻辑。修改后新建的考核记录将使用新标准。';
+  html += '</div>';
+
+  checklistData.forEach(function(cat, ci) {
+    html += '<div style="margin-bottom:8px;">';
+    html += '<div style="background:#1a73e8;color:#fff;padding:10px 12px;border-radius:8px 8px 0 0;font-weight:600;font-size:14px;">'+cat.icon+' '+cat.name+' ('+cat.total+'分)</div>';
+    html += '<div style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;padding:8px;">';
+
+    cat.items.forEach(function(item, ii) {
+      if(item.type === 'formula-group') {
+        html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
+        html += '<div style="font-weight:600;font-size:13px;color:#1a73e8;margin-bottom:4px;">'+item.name+' (公式项·'+item.formulaTotal+'分)</div>';
+        html += '<div style="font-size:11px;color:#999;">公式项子项在考核表内管理</div>';
+        html += '</div>';
+        return;
+      }
+
+      html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
+      html += '<div style="font-weight:600;font-size:13px;color:#333;margin-bottom:4px;">'+item.name+' ('+item.score+'分)</div>';
+
+      if(item.subItems && item.subItems.length > 0) {
+        item.subItems.forEach(function(si, sii) {
+          html += '<div style="margin:4px 0 8px;padding:6px 8px;background:#f8f9fa;border-radius:6px;">';
+          html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
+          html += '<span style="font-size:12px;color:#1a73e8;font-weight:500;">子项'+(sii+1)+'</span>';
+          html += '<input style="flex:1;padding:4px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;" value="'+(si.name||'').replace(/"/g,'&quot;')+'" id="std_'+si.id+'_name" placeholder="子项名称" />';
+          html += '</div>';
+          if(si.content) {
+            html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:11px;min-height:40px;resize:vertical;font-family:inherit;" id="std_'+si.id+'_content" placeholder="检查标准">'+si.content+'</textarea>';
+          }
+          html += '<div style="display:flex;gap:4px;margin-top:4px;">';
+          html += '<button style="font-size:10px;padding:2px 8px;border:1px solid #e74c3c;color:#e74c3c;border-radius:4px;background:none;cursor:pointer;" onclick="deleteSubItem(\''+cat.id+'\',\''+item.id+'\',\''+si.id+'\')">🗑️ 删除</button>';
+          html += '</div></div>';
+        });
+        html += '<button style="font-size:11px;padding:4px 10px;border:1px dashed #1a73e8;color:#1a73e8;border-radius:4px;background:none;cursor:pointer;margin-top:4px;" onclick="addSubItem(\''+cat.id+'\',\''+item.id+'\')">+ 添加子项</button>';
+      } else if(item.content) {
+        html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;min-height:50px;resize:vertical;font-family:inherit;" id="std_'+item.id+'_content" placeholder="检查标准">'+item.content+'</textarea>';
+      }
+      html += '</div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  html += '<button class="btn-primary" style="width:100%;margin-top:8px;" onclick="saveCustomStandards()">💾 保存修改</button>';
+  html += '<button class="btn-outline" style="width:100%;margin-top:8px;color:#e74c3c;border-color:#e74c3c;" onclick="resetCustomStandards()">🔄 恢复默认标准</button>';
+
+  document.getElementById('standardsContent').innerHTML = html;
+  openPage('assess-standards');
+}
+
+function saveCustomStandards() {
+  var custom = {};
+  checklistData.forEach(function(cat) {
+    custom[cat.id] = {};
+    cat.items.forEach(function(item) {
+      if(item.type === 'formula-group') return;
+      var ci = {};
+      // Read main item content
+      var mainEl = document.getElementById('std_'+item.id+'_content');
+      if(mainEl) ci.content = mainEl.value;
+      // Read sub items
+      if(item.subItems && item.subItems.length > 0) {
+        ci.subItems = {};
+        item.subItems.forEach(function(si) {
+          var nameEl = document.getElementById('std_'+si.id+'_name');
+          var contentEl = document.getElementById('std_'+si.id+'_content');
+          ci.subItems[si.id] = {};
+          if(nameEl) ci.subItems[si.id].name = nameEl.value;
+          if(contentEl) ci.subItems[si.id].content = contentEl.value;
+        });
+      }
+      custom[cat.id][item.id] = ci;
+    });
+  });
+
+  // Apply changes to checklistData
+  checklistData.forEach(function(cat) {
+    if(!custom[cat.id]) return;
+    cat.items.forEach(function(item) {
+      if(item.type === 'formula-group') return;
+      if(!custom[cat.id][item.id]) return;
+      var ci = custom[cat.id][item.id];
+      if(ci.content !== undefined && item.content !== undefined) item.content = ci.content;
+      if(ci.subItems && item.subItems) {
+        item.subItems.forEach(function(si) {
+          if(ci.subItems[si.id] && ci.subItems[si.id].content) si.content = ci.subItems[si.id].content;
+          if(ci.subItems[si.id] && ci.subItems[si.id].name) si.name = ci.subItems[si.id].name;
+        });
+      }
+    });
+  });
+
+  localStorage.setItem('customStandards', JSON.stringify(custom));
+  showToast('✅ 标准已保存，新建考核将使用新标准');
+}
+
+function addSubItem(catId, itemId) {
+  var cat = checklistData.find(function(c){return c.id===catId;});
+  if(!cat) return;
+  var item = cat.items.find(function(i){return i.id===itemId;});
+  if(!item) return;
+  if(!item.subItems) item.subItems = [];
+  var newId = itemId+'s'+(item.subItems.length+1)+'_'+Date.now();
+  item.subItems.push({id:newId, name:'新子项', maxDeduct:1, content:''});
+  renderStandardsPage();
+  showToast('已添加新子项，请编辑名称和标准');
+}
+
+function deleteSubItem(catId, itemId, subId) {
+  var cat = checklistData.find(function(c){return c.id===catId;});
+  if(!cat) return;
+  var item = cat.items.find(function(i){return i.id===itemId;});
+  if(!item || !item.subItems) return;
+  if(item.subItems.length <= 1) { showToast('至少保留一个子项'); return; }
+  item.subItems = item.subItems.filter(function(si){return si.id!==subId;});
+  renderStandardsPage();
+  showToast('已删除子项');
+}
+
+function resetCustomStandards() {
+  if(!confirm('确定恢复默认考核标准？自定义修改将全部丢失。')) return;
+  localStorage.removeItem('customStandards');
+  location.reload();
+}
+
 function initAssessForm() {
   fillProjectFields();
   document.getElementById('a_date').value = new Date().toISOString().split('T')[0];
