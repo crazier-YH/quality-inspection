@@ -1018,6 +1018,8 @@ function loadCustomStandards() {
 loadCustomStandards();
 
 function renderStandardsPage() {
+  try {
+  function escH(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   var html = '';
   html += '<div style="margin-bottom:12px;padding:10px;background:#fff3e0;border-radius:8px;font-size:12px;color:#e65100;">';
   html += '💡 修改后请点击底部「保存修改」按钮，仅修改文字不影响评分逻辑。修改后新建的考核记录将使用新标准。';
@@ -1031,24 +1033,24 @@ function renderStandardsPage() {
     cat.items.forEach(function(item, ii) {
       if(item.type === 'formula-group') {
         html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
-        html += '<div style="font-weight:600;font-size:13px;color:#1a73e8;margin-bottom:4px;">'+item.name+' (公式项·'+item.formulaTotal+'分)</div>';
+        html += '<div style="font-weight:600;font-size:13px;color:#1a73e8;margin-bottom:4px;">'+escH(item.name)+' (公式项·'+item.formulaTotal+'分)</div>';
         html += '<div style="font-size:11px;color:#999;">公式项子项在考核表内管理</div>';
         html += '</div>';
         return;
       }
 
       html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
-      html += '<div style="font-weight:600;font-size:13px;color:#333;margin-bottom:4px;">'+item.name+' ('+item.score+'分)</div>';
+      html += '<div style="font-weight:600;font-size:13px;color:#333;margin-bottom:4px;">'+escH(item.name)+' ('+item.score+'分)</div>';
 
       if(item.subItems && item.subItems.length > 0) {
         item.subItems.forEach(function(si, sii) {
           html += '<div style="margin:4px 0 8px;padding:6px 8px;background:#f8f9fa;border-radius:6px;">';
           html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
           html += '<span style="font-size:12px;color:#1a73e8;font-weight:500;">子项'+(sii+1)+'</span>';
-          html += '<input style="flex:1;padding:4px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;" value="'+(si.name||'').replace(/"/g,'&quot;')+'" id="std_'+si.id+'_name" placeholder="子项名称" />';
+          html += '<input style="flex:1;padding:4px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;" value="'+escH(si.name||'')+'" id="std_'+si.id+'_name" placeholder="子项名称" />';
           html += '</div>';
           if(si.content) {
-            html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:11px;min-height:40px;resize:vertical;font-family:inherit;" id="std_'+si.id+'_content" placeholder="检查标准">'+si.content+'</textarea>';
+            html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:11px;min-height:40px;resize:vertical;font-family:inherit;" id="std_'+si.id+'_content" placeholder="检查标准">'+escH(si.content)+'</textarea>';
           }
           html += '<div style="display:flex;gap:4px;margin-top:4px;">';
           html += '<button style="font-size:10px;padding:2px 8px;border:1px solid #e74c3c;color:#e74c3c;border-radius:4px;background:none;cursor:pointer;" onclick="deleteSubItem(\''+cat.id+'\',\''+item.id+'\',\''+si.id+'\')">🗑️ 删除</button>';
@@ -1056,7 +1058,7 @@ function renderStandardsPage() {
         });
         html += '<button style="font-size:11px;padding:4px 10px;border:1px dashed #1a73e8;color:#1a73e8;border-radius:4px;background:none;cursor:pointer;margin-top:4px;" onclick="addSubItem(\''+cat.id+'\',\''+item.id+'\')">+ 添加子项</button>';
       } else if(item.content) {
-        html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;min-height:50px;resize:vertical;font-family:inherit;" id="std_'+item.id+'_content" placeholder="检查标准">'+item.content+'</textarea>';
+        html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;min-height:50px;resize:vertical;font-family:inherit;" id="std_'+item.id+'_content" placeholder="检查标准">'+escH(item.content)+'</textarea>';
       }
       html += '</div>';
     });
@@ -1069,6 +1071,7 @@ function renderStandardsPage() {
 
   document.getElementById('standardsContent').innerHTML = html;
   openPage('assess-standards');
+  } catch(e) { showToast('加载标准失败: '+e.message); console.error('renderStandardsPage error:', e); }
 }
 
 function saveCustomStandards() {
