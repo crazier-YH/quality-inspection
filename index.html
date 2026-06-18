@@ -1073,10 +1073,39 @@ function addPhoto(itemId, input) {
   var file = input.files[0];
   if(file.size>10*1024*1024){showToast('图片不能超过10MB');return;}
   var reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
+    var base64 = e.target.result;
+    // 先本地显示
     if(!assessPhotos[itemId]) assessPhotos[itemId]=[];
-    assessPhotos[itemId].push(e.target.result);
+    assessPhotos[itemId].push({base64:base64, file_token:null, uploading:true});
     renderPhotos(itemId);
+    // 异步上传到飞书
+    try {
+      var res = await fetch('/api/upload', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({imageData:base64, fileName:'photo_'+itemId+'_'+Date.now()+'.jpg'})
+      });
+      var data = await res.json();
+      if(data.code===0 && data.file_token) {
+        // 找到刚添加的photo，更新file_token
+        var photos = assessPhotos[itemId];
+        if(photos) {
+          for(var i=photos.length-1;i>=0;i--){
+            if(photos[i].uploading){photos[i].file_token=data.file_token;photos[i].uploading=false;break;}
+          }
+        }
+      } else {
+        // 上传失败，标记
+        var photos2 = assessPhotos[itemId];
+        if(photos2) for(var j=photos2.length-1;j>=0;j--){if(photos2[j].uploading){photos2[j].uploading=false;break;}}
+        console.warn('照片上传失败:', data.msg);
+      }
+    } catch(err) {
+      var photos3 = assessPhotos[itemId];
+      if(photos3) for(var k=photos3.length-1;k>=0;k--){if(photos3[k].uploading){photos3[k].uploading=false;break;}}
+      console.warn('照片上传异常:', err);
+    }
   };
   reader.readAsDataURL(file);
   input.value = '';
@@ -1086,15 +1115,18 @@ function renderPhotos(itemId) {
   var area = document.getElementById('photoArea_'+itemId);
   var photos = assessPhotos[itemId]||[];
   var html = '';
-  photos.forEach(function(src, i) {
-    html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="previewPhoto(\''+itemId+'\','+i+')" /><button class="photo-del" onclick="removePhoto(\''+itemId+'\','+i+')">✕</button></div>';
+  photos.forEach(function(p, i) {
+    var src = p.base64 || ('/api/image?file_token='+p.file_token);
+    var badge = p.uploading ? '<span style="position:absolute;top:-3px;right:-3px;background:#f39c12;color:#fff;border-radius:50%;width:14px;height:14px;font-size:8px;display:flex;align-items:center;justify-content:center;">⏳</span>' : '';
+    html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="previewPhoto(\''+itemId+'\','+i+')" />'+badge+'<button class="photo-del" onclick="removePhoto(\''+itemId+'\','+i+')">✕</button></div>';
   });
   html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+itemId+'\',this)" /></div>';
   area.innerHTML = html;
 }
 function previewPhoto(itemId, idx) {
-  var src = assessPhotos[itemId]&&assessPhotos[itemId][idx];
-  if(!src)return;
+  var p = assessPhotos[itemId]&&assessPhotos[itemId][idx];
+  if(!p)return;
+  var src = p.base64 || ('/api/image?file_token='+p.file_token);
   var overlay = document.createElement('div');
   overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);z-index:999;display:flex;align-items:center;justify-content:center;';
   overlay.onclick=function(){document.body.removeChild(overlay);};
@@ -1107,6 +1139,7 @@ async function saveAssess() {
   var totalScore = document.getElementById('totalScore').textContent;
   var detail = {};
   var photoSummary = {};
+  var allPhotoTokens = [];
   checklistData.forEach(function(cat) {
     cat.items.forEach(function(item) {
       if(item.type === 'formula-group') {
@@ -1120,7 +1153,10 @@ async function saveAssess() {
             var d = parseFloat(document.getElementById('deduct_'+si.id)?.value)||0;
             var r = document.getElementById('remark_'+si.id)?.value||'';
             sgInfo.items[si.id] = {name:si.name, deduct:d, remark:r};
-            if(assessPhotos[si.id]&&assessPhotos[si.id].length>0) photoSummary[si.id]=assessPhotos[si.id].length;
+            if(assessPhotos[si.id]&&assessPhotos[si.id].length>0){
+              photoSummary[si.id]=assessPhotos[si.id].length;
+              assessPhotos[si.id].forEach(function(p){if(p.file_token)allPhotoTokens.push({file_token:p.file_token});});
+            }
           });
           subDetail[sg.id] = sgInfo;
         });
@@ -1130,7 +1166,10 @@ async function saveAssess() {
         var remark = document.getElementById('remark_'+item.id)?.value||'';
         var itemScore = Math.max(0, item.score - deduct);
         detail[item.id] = {name:item.name, score:item.score, deduct:deduct, got:itemScore, remark:remark, content:item.content};
-        if(assessPhotos[item.id]&&assessPhotos[item.id].length>0) photoSummary[item.id]=assessPhotos[item.id].length;
+        if(assessPhotos[item.id]&&assessPhotos[item.id].length>0){
+          photoSummary[item.id]=assessPhotos[item.id].length;
+          assessPhotos[item.id].forEach(function(p){if(p.file_token)allPhotoTokens.push({file_token:p.file_token});});
+        }
       }
     });
   });
@@ -1145,6 +1184,7 @@ async function saveAssess() {
     '总分': parseFloat(totalScore),
     '评分详情': JSON.stringify(detail),
     '照片汇总': JSON.stringify(photoSummary),
+    '照片': allPhotoTokens.length>0 ? allPhotoTokens : undefined,
     '问题清单': Object.keys(detail).filter(function(k){var d=detail[k];return d.deduct>0||d.formulaScore!==undefined;}).map(function(k){var d=detail[k];return d.name+(d.deduct?'(扣'+d.deduct+'分)':'('+d.formulaScore.toFixed(1)+'分)');}).join('；'),
     '创建人': profile.name||''
   };
@@ -1164,6 +1204,15 @@ function viewAssessDetail(recordId) {
   try { detail = JSON.parse(f['评分详情']||'{}'); } catch(e){}
   var photoSummary = {};
   try { photoSummary = JSON.parse(f['照片汇总']||'{}'); } catch(e){}
+  // 缓存附件照片
+  attachPhotosCache = {};
+  if(f['照片'] && f['照片'].length>0) {
+    var allPhotos = f['照片'];
+    Object.keys(photoSummary).forEach(function(itemId) {
+      // 将照片按item分配（简化：所有照片共享，点击任一item可查看全部）
+      attachPhotosCache[itemId] = allPhotos;
+    });
+  }
 
   var html = '';
   html += '<div class="detail-header-card">';
@@ -1241,6 +1290,7 @@ function viewAssessDetail(recordId) {
         var deduct = d ? d.deduct : 0;
         var remark = d ? (d.remark||'') : '';
         var photoCount = photoSummary[item.id]||0;
+        var attachPhotos = (f['照片']||[]).filter(function(att){return att.tmp_url;});
 
         html += '<div class="detail-item">';
         html += '<div class="di-head"><span class="di-name">'+item.name+'</span>';
@@ -1249,7 +1299,7 @@ function viewAssessDetail(recordId) {
         html += '<span class="di-got">'+got+'/'+item.score+'</span>';
         html += '</span></div>';
         if(remark) html += '<div class="di-remark">📝 '+remark+'</div>';
-        if(photoCount>0) html += '<div style="font-size:11px;color:#999;margin-top:2px;">📷 '+photoCount+'张照片</div>';
+        if(photoCount>0) html += '<div style="font-size:11px;color:#999;margin-top:2px;cursor:pointer;" onclick="showAttachPhotos(\''+item.id+'\')">📷 '+photoCount+'张照片</div>';
         html += '<div class="di-content" id="detailContent_'+item.id+'">'+item.content+'</div>';
         html += '<div class="di-toggle" onclick="var c=document.getElementById(\'detailContent_'+item.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起检查标准 ▲\':\'展开检查标准 ▼\';">展开检查标准 ▼</div>';
         html += '</div>';
@@ -1261,6 +1311,41 @@ function viewAssessDetail(recordId) {
 
   document.getElementById('assessDetailContent').innerHTML = html;
   openPage('assess-detail');
+}
+
+// ===== 通用表单照片 =====
+var formPhotos = [];
+async function addFormPhoto(input) {
+  if(!input.files||!input.files[0])return;
+  var file=input.files[0];
+  if(file.size>10*1024*1024){showToast('图片不能超过10MB');return;}
+  var reader=new FileReader();
+  reader.onload=async function(e){
+    var base64=e.target.result;
+    formPhotos.push({base64:base64, file_token:null, uploading:true});
+    renderFormPhotos();
+    try{
+      var res=await fetch('/api/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageData:base64,fileName:'photo_form_'+Date.now()+'.jpg'})});
+      var data=await res.json();
+      if(data.code===0&&data.file_token){for(var i=formPhotos.length-1;i>=0;i--){if(formPhotos[i].uploading){formPhotos[i].file_token=data.file_token;formPhotos[i].uploading=false;break;}}}
+      else{for(var j=formPhotos.length-1;j>=0;j--){if(formPhotos[j].uploading){formPhotos[j].uploading=false;break;}}}
+    }catch(err){for(var k=formPhotos.length-1;k>=0;k--){if(formPhotos[k].uploading){formPhotos[k].uploading=false;break;}}}
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+function removeFormPhoto(idx){formPhotos.splice(idx,1);renderFormPhotos();}
+function renderFormPhotos(){
+  var pa=document.getElementById('formPhotoArea');
+  if(!pa)return;
+  var html='';
+  formPhotos.forEach(function(p,i){
+    var src=p.base64||('/api/image?file_token='+p.file_token);
+    var badge=p.uploading?'<span style="position:absolute;top:-3px;right:-3px;background:#f39c12;color:#fff;border-radius:50%;width:14px;height:14px;font-size:8px;display:flex;align-items:center;justify-content:center;">⏳</span>':'';
+    html+='<div class="item-photo-thumb"><img src="'+src+'" /><>'+badge+'<button class="photo-del" onclick="removeFormPhoto('+i+')">✕</button></div>';
+  });
+  html+='<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addFormPhoto(this)" /></div>';
+  pa.innerHTML=html;
 }
 
 // ===== 通用表单 =====
@@ -1284,7 +1369,13 @@ function showForm(type) {
     else html+='<input id="f_'+f.key+'" placeholder="'+(f.placeholder||'')+'" />';
     html+='</div>';
   });
+  // 添加照片上传区域
+  html+='<div class="field"><label>现场照片</label><div id="formPhotoArea" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;"></div></div>';
   document.getElementById('formBody').innerHTML=html;
+  // 初始化表单照片
+  formPhotos=[];
+  var pa=document.getElementById('formPhotoArea');
+  pa.innerHTML='<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addFormPhoto(this)" /></div>';
   if(profile.name){config.fields.filter(function(f){return f.key.indexOf('人')>=0&&f.type==='text';}).forEach(function(f){var el=document.getElementById('f_'+f.key);if(el&&!el.value)el.value=profile.name;});}
   document.getElementById('formModal').classList.add('show');
 }
@@ -1292,10 +1383,13 @@ async function saveCurrentForm() {
   var config=formConfigs[currentFormType];var fields={};
   config.fields.forEach(function(f){var el=document.getElementById('f_'+f.key);if(el)fields[f.key]=el.value;});
   fields['创建人']=profile.name||'';
+  // 附加照片
+  var photoTokens=formPhotos.filter(function(p){return p.file_token;}).map(function(p){return {file_token:p.file_token};});
+  if(photoTokens.length>0) fields['照片']=photoTokens;
   var btn=document.getElementById('formSaveBtn');btn.disabled=true;btn.textContent='保存中...';
   var res=await API.createRecord(currentFormType,fields);
   btn.disabled=false;btn.textContent='💾 保存记录';
-  if(res.code===0){showToast('✅ 记录已保存');closeModal('formModal');loadRecordList(currentFormType);}
+  if(res.code===0){showToast('✅ 记录已保存');closeModal('formModal');formPhotos=[];loadRecordList(currentFormType);}
   else{showToast('❌ 保存失败：'+(res.msg||'未知错误'));}
 }
 
@@ -1325,9 +1419,27 @@ async function loadRecordList(type) {
       '<div class="ri-info">'+(f['项目名称']||'')+(date?' · '+date:'')+(f['考核人']||f['创建人']?' · '+(f['考核人']||f['创建人']):'')+'</div>'+
       '<div class="ri-actions">'+
       (type==='assess'?'<span style="font-size:11px;color:#1a73e8;">点击查看明细 ›</span><button class="ri-del-btn" onclick="event.stopPropagation();deleteAssess(\''+item.record_id+'\')">删除</button>':'')+
+      (f['照片']&&f['照片'].length>0?'<span style="font-size:11px;color:#999;">📷 '+f['照片'].length+'张</span>':'')+
       '</div>'+
       '</div>';
   }).join('');
+}
+
+var attachPhotosCache = {};
+function showAttachPhotos(itemId) {
+  var photos = attachPhotosCache[itemId];
+  if(!photos || photos.length===0){showToast('照片加载中...');return;}
+  var overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:999;overflow-y:auto;padding:20px;';
+  var html='<div style="text-align:right;"><button onclick="this.parentElement.parentElement.remove()" style="background:#fff;border:none;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;">✕</button></div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">';
+  photos.forEach(function(p){
+    var src = p.tmp_url || ('/api/image?file_token='+p.file_token);
+    html+='<img src="'+src+'" style="max-width:45%;border-radius:8px;cursor:pointer;" onclick="window.open(\''+src+'\',\'_blank\')" />';
+  });
+  html+='</div>';
+  overlay.innerHTML=html;
+  document.body.appendChild(overlay);
 }
 
 // ===== 同步/导出 =====
