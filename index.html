@@ -142,6 +142,16 @@
     .check-item-remark { margin-bottom:8px; }
     .check-item-remark textarea { width:100%; padding:8px 10px; border:1px solid #e0e0e0; border-radius:6px; font-size:12px; resize:vertical; min-height:36px; outline:none; font-family:inherit; }
     .check-item-remark textarea:focus { border-color:#1a73e8; }
+    .sub-items-area { padding:4px 0 4px 8px; border-left:2px solid #1a73e8; margin:6px 0; }
+    .sub-item-row { padding:6px 8px; margin-bottom:4px; background:#f8f9fa; border-radius:6px; }
+    .sub-item-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+    .sub-item-name { font-size:12px; font-weight:500; color:#333; flex:1; }
+    .sub-item-score { font-size:10px; color:#999; white-space:nowrap; margin-left:8px; }
+    .sub-item-content { font-size:11px; color:#666; max-height:0; overflow:hidden; transition:max-height 0.3s; line-height:1.5; }
+    .sub-item-content.open { max-height:200px; }
+    .sub-item-toggle { font-size:10px; color:#1a73e8; cursor:pointer; margin:2px 0; }
+    .sub-item-deduct-row { display:flex; align-items:center; gap:6px; margin:4px 0; }
+    .sub-item-deduct-row input { width:60px; padding:4px 6px; border:1px solid #e0e0e0; border-radius:4px; font-size:12px; text-align:center; }
     .item-photo-area { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .item-photo-add { width:56px; height:56px; border:2px dashed #d0d5dd; border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:10px; color:#999; position:relative; overflow:hidden; }
     .item-photo-add .add-icon { font-size:18px; line-height:1; }
@@ -454,11 +464,27 @@
 var checklistData = [
   { id:'cat1', icon:'📋', name:'一、标准化建设及周检', total:18,
     items: [
-      { id:'c1i1', name:'办公室标准化建设及项目质量管理知识储备', score:2, content:'办公区是否按公司现场管理标准化要求悬挂有关图、牌：组织机构图、岗位职责牌、质量安全方针、晴雨表、形象进度图、项目质量目标。（每缺少一项扣1分）\n项目部需配备基础测量工具（卡尺、2m靠尺、镀锌层测厚仪），每缺少一项扣1分' },
-      { id:'c1i2', name:'档案资料管理', score:5, content:'资料入盒存放，档案盒摆放整齐（未装盒/不整齐扣2分，未装盒但整齐且查找方便扣1分）\n资料台账清晰（无台账或不清晰扣2分，有但不清晰扣1分）含：材料进场台账、隐蔽验收台账、签证变更台账、材料封样台账、品牌报审台账\n收发文记录齐全（无记录扣2分，有但与台账不符扣1分）' },
+      { id:'c1i1', name:'办公室标准化建设及项目质量管理知识储备', score:2,
+        subItems:[
+          {id:'c1i1s1',name:'办公区按标准化要求悬挂图牌',maxDeduct:1,content:'办公区需按公司现场管理标准化要求悬挂有关图、牌：组织机构图、岗位职责牌、质量安全方针、晴雨表、形象进度图、项目质量目标，每缺少一项扣1分'},
+          {id:'c1i1s2',name:'配备基础测量工具',maxDeduct:1,content:'项目部需配备基础测量工具（卡尺、2m靠尺、镀锌层测厚仪），每缺少一项扣1分'}
+        ]
+      },
+      { id:'c1i2', name:'档案资料管理', score:5,
+        subItems:[
+          {id:'c1i2s1',name:'资料入盒存放，档案盒摆放整齐',maxDeduct:2,content:'未装盒/不整齐扣2分，未装盒但整齐且查找方便扣1分'},
+          {id:'c1i2s2',name:'资料台账清晰',maxDeduct:2,content:'无台账或不清晰扣2分，有但不清晰扣1分。含：材料进场台账、隐蔽验收台账、签证变更台账、材料封样台账、品牌报审台账'},
+          {id:'c1i2s3',name:'收发文记录齐全',maxDeduct:1,content:'无记录扣2分（最多扣1分），有但与台账不符扣1分'}
+        ]
+      },
       { id:'c1i3', name:'资料归档目录', score:1, content:'项目有当地施工资料统表软件、归档目录，能编制符合要求的施工资料，了解当地归档要求，广东省项目要使用华软。不符合扣1分' },
       { id:'c1i4', name:'质量周报', score:5, content:'质检员每周上报周报，走OA流程，少一次扣1分' },
-      { id:'c1i5', name:'质量周检', score:5, content:'项目经理组织周检，项目经理未参加每次扣1分；周检内容对考核检查问题覆盖不全扣一半' }
+      { id:'c1i5', name:'质量周检', score:5,
+        subItems:[
+          {id:'c1i5s1',name:'项目经理组织周检并参加',maxDeduct:2,content:'项目经理组织周检，项目经理未参加每次扣1分'},
+          {id:'c1i5s2',name:'周检内容对考核检查问题覆盖全',maxDeduct:3,content:'周检内容对考核检查问题覆盖不全扣一半'}
+        ]
+      }
     ]
   },
   { id:'cat2', icon:'📂', name:'二、方案及资料管理', total:57,
@@ -467,31 +493,77 @@ var checklistData = [
       { id:'c2i2', name:'施工许可证及合同备案手续', score:1, content:'施工许可证、合同备案未办理或已提交未完成（有回执）扣1分。无需办理但无复印件扣0.5分' },
       { id:'c2i3', name:'图纸会审', score:4, content:'图纸会审记录签章需齐全。已会审但未签章齐全视为未完成扣4分，我司公章已盖因其他单位原因未完成扣2分' },
       { id:'c2i4', name:'深化图纸确认', score:2, content:'原建筑设计单位对幕墙深化图的确认。前期未完成扣1分，高峰期及收尾未完成扣2分' },
-      { id:'c2i5', name:'结构、节能计算书', score:2, content:'项目部需保存结构、节能计算书（热工计算书）纸质版。缺少一项扣2分，有但未盖章扣1分' },
+      { id:'c2i5', name:'结构、节能计算书', score:2,
+        subItems:[
+          {id:'c2i5s1',name:'结构计算书',maxDeduct:1,content:'项目部需保存结构计算书纸质版。缺少扣1分，有但未盖章扣1分'},
+          {id:'c2i5s2',name:'节能计算书（热工计算书）',maxDeduct:1,content:'项目部需保存节能计算书（热工计算书）纸质版。缺少扣1分，有但未盖章扣1分'}
+        ]
+      },
       { id:'c2i6', name:'施工组织设计的编制、报审', score:2, content:'出现未编制、未报审、报审未通过、未按审批意见修改、审批人员签字错误等任一项扣2分。需修改应重新报审否则扣2分' },
-      { id:'c2i7', name:'开工报告报审', score:2, content:'开工报审表是否审批，施工现场质量管理检查记录是否审批，未报审或未通过视为未完成扣2分，缺《施工现场质量管理检查记录》扣1分' },
+      { id:'c2i7', name:'开工报告报审', score:2,
+        subItems:[
+          {id:'c2i7s1',name:'开工报审表审批',maxDeduct:1,content:'开工报审表是否审批，未报审或未通过视为未完成扣2分（本项最多扣1分）'},
+          {id:'c2i7s2',name:'施工现场质量管理检查记录',maxDeduct:1,content:'施工现场质量管理检查记录是否审批，缺《施工现场质量管理检查记录》扣1分'}
+        ]
+      },
       { id:'c2i8', name:'材料品牌报审', score:1, content:'合同内要求品牌报审是否完整，品牌库要求报审的材料需进行确认。少一项扣1分' },
       { id:'c2i9', name:'材料封样', score:1, content:'检查主要材料需有封样记录（保存封样色板），品牌型号确认封样，无封样或未完成扣1分' },
       { id:'c2i10', name:'测量放线、控制点移交', score:1, content:'施工前完成测量放线、结构误差复测；每层板块安装需复核标高并留数据记录；板块安装前复核支座标高和进出位，有偏差及时报设计出方案。不符合扣1分' },
       { id:'c2i11', name:'材料进场验收', score:5, content:'材料进场必须自检，未自检发现批量不合格扣5分；有自检但未举牌扣3分；有自检有举牌，核实进场材料少一类型扣2分' },
       { id:'c2i12', name:'进场材料报审', score:10, content:'抽查每种进场材料最近三次报审记录，与现场材料对比，缺少一种材料未报审扣2分，其余单位问题扣分减半' },
-      { id:'c2i13', name:'设计交底', score:2, content:'设计交底文件（无交底扣2分，有但施工员/质检员未知扣1分）；特殊位置节点需反馈设计出方案(未发现扣1分）' },
-      { id:'c2i14', name:'项目质量技术交底', score:3, content:'每月更新交底；根据现场实际工序完成情况进行检查，每缺一项扣1分；需注重现场实操交底，交底仅有纸质版扣1分；需使用质量统表交底（24版GD-C1-3210）' },
+      { id:'c2i13', name:'设计交底', score:2,
+        subItems:[
+          {id:'c2i13s1',name:'设计交底文件',maxDeduct:1,content:'设计交底文件（无交底扣2分，本项最多扣1分），有但施工员/质检员未知扣1分'},
+          {id:'c2i13s2',name:'特殊位置节点反馈设计出方案',maxDeduct:1,content:'特殊位置节点需反馈设计出方案，未发现扣1分'}
+        ]
+      },
+      { id:'c2i14', name:'项目质量技术交底', score:3,
+        subItems:[
+          {id:'c2i14s1',name:'每月更新交底',maxDeduct:1,content:'每月更新交底；根据现场实际工序完成情况进行检查，每缺一项扣1分'},
+          {id:'c2i14s2',name:'现场实操交底',maxDeduct:1,content:'需注重现场实操交底，交底仅有纸质版扣1分'},
+          {id:'c2i14s3',name:'使用质量统表交底',maxDeduct:1,content:'需使用质量统表交底（24版GD-C1-3210），未使用扣1分'}
+        ]
+      },
       { id:'c2i15', name:'隐蔽工程验收记录', score:5, content:'隐蔽工程应验收后方可进入下道工序，验收报审应与施工进度一致；抽查最近三次隐蔽验收，报审后未及时签回扣2分，缺举牌照片扣3分，未及时报审扣5分' },
       { id:'c2i16', name:'检验批划分方案', score:5, content:'未做扣5分，已开始但未完成扣4分，已报至监理未签回扣3分，已完成但缺项每缺一项扣2分；未将施工电梯口和塔吊单独划分扣3分' },
-      { id:'c2i17', name:'检验批验收记录', score:2, content:'根据施工进度完成检验批验收，记录完整，否则每缺1检验批扣1分。缺举牌照片扣2分' },
+      { id:'c2i17', name:'检验批验收记录', score:2,
+        subItems:[
+          {id:'c2i17s1',name:'检验批验收完成情况',maxDeduct:1,content:'根据施工进度完成检验批验收，记录完整，否则每缺1检验批扣1分'},
+          {id:'c2i17s2',name:'举牌照片',maxDeduct:1,content:'缺举牌照片扣2分（本项最多扣1分）'}
+        ]
+      },
       { id:'c2i18', name:'质监站、监理、业主检查整改回复', score:2, content:'对监理通知、业主、质监站提出的问题是否及时整改回复。未回复扣2分' },
-      { id:'c2i19', name:'施工日志', score:3, content:'是否与工程进展同步且记录内容齐全，不同步一项扣1分，填写差3天扣1分' },
+      { id:'c2i19', name:'施工日志', score:3,
+        subItems:[
+          {id:'c2i19s1',name:'与工程进展同步',maxDeduct:1,content:'是否与工程进展同步，不同步一项扣1分'},
+          {id:'c2i19s2',name:'记录及时完整',maxDeduct:2,content:'填写差3天扣1分，记录内容不齐全扣1分'}
+        ]
+      },
       { id:'c2i20', name:'其他资料', score:2, content:'拉索幕墙张拉记录、结构胶现场剥离检测记录、淋水记录、防雷电阻测试记录、幕墙子分部验收记录、验收纪要、室内环境检测报告、消防验收回执、竣工报告。工序到了未开始编制每缺一项扣1分' }
     ]
   },
   { id:'cat3', icon:'🔬', name:'三、检验检测', total:25,
     items: [
-      { id:'c3i1', name:'项目材料送检计划', score:4, content:'是否完成材料送检计划（种类、检测项目、计划送检时间、批次、报告编号、完成时间）未编制扣4分，每缺一项扣1分；已做计划未提交审核扣2分；未做未提交扣4分' },
-      { id:'c3i2', name:'进场材料见证取样送检与流程闭合', score:8, content:'核对送检计划对应检测报告，滞后或漏项一项扣2分；未提交试验流程/费用申请流程，缺一项扣1分' },
+      { id:'c3i1', name:'项目材料送检计划', score:4,
+        subItems:[
+          {id:'c3i1s1',name:'编制材料送检计划',maxDeduct:2,content:'是否完成材料送检计划（种类、检测项目、计划送检时间、批次、报告编号、完成时间），未编制扣4分（本项最多扣2分），每缺一项扣1分；已做计划未提交审核扣2分'},
+          {id:'c3i1s2',name:'送检计划提交审核',maxDeduct:2,content:'已做计划未提交审核扣2分，未做未提交扣4分（本项最多扣2分）'}
+        ]
+      },
+      { id:'c3i2', name:'进场材料见证取样送检与流程闭合', score:8,
+        subItems:[
+          {id:'c3i2s1',name:'送检与检测报告对应',maxDeduct:5,content:'核对送检计划对应检测报告，滞后或漏项一项扣2分'},
+          {id:'c3i2s2',name:'试验流程/费用申请流程',maxDeduct:3,content:'未提交试验流程/费用申请流程，缺一项扣1分'}
+        ]
+      },
       { id:'c3i3', name:'重要的节能资料及参数', score:2, content:'收集建筑节能设计说明、节能计算书、幕墙节能计算书、节能备案文件等。文件缺失或参数不一致扣1分' },
       { id:'c3i4', name:'节能检测', score:3, content:'玻璃、保温棉、浅色饰面板材、隔热型材需及时进行节能检测，检测结果及批次需满足原建筑及幕墙设计和规范要求。未及时检测或检测漏项，一项扣2分' },
-      { id:'c3i5', name:'幕墙及门窗四性试验', score:3, content:'检查四性实验进度，幕墙开工后四性试验未完成扣1分\n检查四性试验检测结果、试验节点与施工节点一致性，参数及材料品牌是否与图纸和技术要求一致，不符合扣2分' },
+      { id:'c3i5', name:'幕墙及门窗四性试验', score:3,
+        subItems:[
+          {id:'c3i5s1',name:'四性试验进度',maxDeduct:1,content:'检查四性实验进度，幕墙开工后四性试验未完成扣1分'},
+          {id:'c3i5s2',name:'四性试验检测结果与施工一致性',maxDeduct:2,content:'检查四性试验检测结果、试验节点与施工节点一致性，参数及材料品牌是否与图纸和技术要求一致，不符合扣2分'}
+        ]
+      },
       { id:'c3i6', name:'现场见证检测', score:5, content:'槽式埋件拉拔、锚栓抗拔、石材背栓拉拔、焊缝探伤、防雷电阻测试等须现场检查试验，施工完成应及时检测并记录。结果需经设计确认或符合图纸要求。未及时检测或不合格每项扣2分' }
     ]
   },
@@ -566,7 +638,12 @@ var checklistData = [
       },
       { id:'c4i2', name:'工序自检（举牌验收）', score:3, maxDeduct:8, content:'需编制表格或打印平面图如实填写自查结果，例①查5-8层预埋件安装情况，6层东面存在3处不合格，需整改；②查2层开启扇48樘，东面第2樘锁点锁座问题，西面第5樘窗扇对角线问题。工序完成进入下道工序施工前（尤其是隐蔽前），应进行举牌验收并记录（由施工队、质检员、监理单位共同进行），无举牌验收且质量问题较多（3个及以上）扣8分，无记录且质量控制较好（质量问题在3个以内）时扣6分。自检记录与现场实际质量不符合扣4分' },
       { id:'c4i3', name:'焊工/打胶工/塞砂浆工/刷防水涂料工考核', score:2, content:'需进行入场考核，考核人数不符少一人扣1分，未考核扣2分' },
-      { id:'c4i4', name:'不合格控制', score:3, maxDeduct:6, content:'是否每月按工地质量情况开具不合格报告/整改通知，并妥善整改、关闭。不开具扣6分，未关闭、关闭不彻底或与整改结果不符扣2分（根据考核表内容查整改单，如有开整改单未闭合视情况处罚劳务队，如未走整改单，双倍对项目部进行扣分）；对考核检查中渗漏隐患和结构受力风险问题，未见管理痕迹扣3分' },
+      { id:'c4i4', name:'不合格控制', score:3, maxDeduct:6,
+        subItems:[
+          {id:'c4i4s1',name:'开具不合格报告/整改通知',maxDeduct:4,content:'是否每月按工地质量情况开具不合格报告/整改通知，并妥善整改、关闭。不开具扣6分（本项最多扣4分），未关闭、关闭不彻底或与整改结果不符扣2分；如未走整改单，双倍对项目部进行扣分'},
+          {id:'c4i4s2',name:'渗漏隐患和结构受力风险问题管理',maxDeduct:2,content:'对考核检查中渗漏隐患和结构受力风险问题，未见管理痕迹扣3分（本项最多扣2分）'}
+        ]
+      },
       { id:'c4i5', name:'预埋件及后置埋件安装质量', score:4, content:'检查预埋件埋设质量及受力情况，后置埋件螺栓埋设深度、位置、露丝不足等。抽查10处不合格超三处扣2分，超五处扣4分' },
       { id:'c4i6', name:'焊接质量', score:3, content:'检查漏焊、焊缝厚度长度外观质量等，抽查10处，超三处扣2分，超五处扣3分。主受力构件焊接问题扣3分' },
       { id:'c4i7', name:'防腐质量', score:3, content:'检查防腐是否到位；是否两道防腐漆，钢铝连接有无防腐垫片。抽查10处，超三处扣2分，超五处扣3分' },
@@ -630,20 +707,42 @@ var checklistData = [
       { id:'c4i9', name:'拉网板、格栅、遮阳板等构件安装固定', score:2, content:'拉网板、格栅、遮阳等幕墙外部构件是否固定牢固可靠，有无坠落隐患，核对图纸节点是否一致，否则扣2分' },
       { id:'c4i10', name:'观感质量、色差', score:4, content:'检查已安装材料是否存在色差、观感质量差等情况（如铝板、石材、不锈钢、玻璃等），存在一处扣2分。面积较多（连续出现）扣4分。有色差但已走不合格报告扣分减半' },
       { id:'c4i11', name:'打胶质量', score:3, content:'检查外露胶缝观感及颜色。出现起鼓、开裂、镂空、不连续等现象扣2分，数量较多扣3分。刮胶顺序需按视觉方向；泡沫棒填充不能有空隙（易导致起泡）；铝板宽幅大于3m后需及时更换速干胶' },
-      { id:'c4i12', name:'材料及成品保护（已完成安装材料）', score:4, content:'完成安装后的材料是否做好成品保护，型材、铝板、玻璃是否存在污染、划伤、烫伤，安装设备是否有做成品保护措施。安装设备未做成品保护措施发现一处扣2分，材料存在污染、划伤、烫伤现象2处以内扣1分，3-5处扣3分，5处以上扣5分' },
+      { id:'c4i12', name:'材料及成品保护（已完成安装材料）', score:4,
+        subItems:[
+          {id:'c4i12s1',name:'安装设备成品保护措施',maxDeduct:2,content:'安装设备是否有做成品保护措施，发现一处扣2分'},
+          {id:'c4i12s2',name:'材料污染、划伤、烫伤',maxDeduct:2,content:'型材、铝板、玻璃是否存在污染、划伤、烫伤，2处以内扣1分，3-5处扣3分（本项最多扣2分），5处以上扣5分（本项最多扣2分）'}
+        ]
+      },
       { id:'c4i13', name:'材料及成品保护（材料堆放）', score:4, content:'堆场材料堆放是否整齐，型材、铝板、玻璃等材料堆放是否做好成品保护，堆放不符合要求出现一处扣2分，整体摆放混乱扣5分' },
-      { id:'c4i14', name:'防火层', score:3, content:'防火棉填充是否密实，是否正确使用；防火钢板、铁皮是否固定，且打钉间距是否在300mm以内；防火胶有无开裂、打钉处有无打胶，与立柱交接有无漏打胶；每项扣1分' },
-      { id:'c4i15', name:'防雷', score:2, content:'焊缝长度、质量、防腐等符合要求，防雷系统上下贯通，分格满足规范要求；导电片接触位置涂层清理干净。门窗、室外栏杆、铝板等有独立接地。否则每项扣2分' }
+      { id:'c4i14', name:'防火层', score:3,
+        subItems:[
+          {id:'c4i14s1',name:'防火棉填充密实',maxDeduct:1,content:'防火棉填充是否密实，是否正确使用，不符合扣1分'},
+          {id:'c4i14s2',name:'防火钢板固定及打钉间距',maxDeduct:1,content:'防火钢板、铁皮是否固定，且打钉间距是否在300mm以内，不符合扣1分'},
+          {id:'c4i14s3',name:'防火胶无开裂漏打',maxDeduct:1,content:'防火胶有无开裂、打钉处有无打胶，与立柱交接有无漏打胶，不符合扣1分'}
+        ]
+      },
+      { id:'c4i15', name:'防雷', score:2,
+        subItems:[
+          {id:'c4i15s1',name:'防雷焊接质量及系统贯通',maxDeduct:1,content:'焊缝长度、质量、防腐等符合要求，防雷系统上下贯通，分格满足规范要求；导电片接触位置涂层清理干净。不符合扣2分（本项最多扣1分）'},
+          {id:'c4i15s2',name:'门窗栏杆等独立接地',maxDeduct:1,content:'门窗、室外栏杆、铝板等有独立接地。不符合扣2分（本项最多扣1分）'}
+        ]
+      }
     ]
   },
   { id:'cat5', icon:'💧', name:'五、防渗漏及整改闭合', total:30,
     items: [
       { id:'c5i1', name:'防水质量', score:10, content:'重点检查：背板、装饰条内部、压顶、排水槽、首层幕墙底部、悬窗、伸缩缝、连桥、单元板块端头、不同幕墙衔接位置、栏杆立柱上口等部位防水打胶及胶条安装质量\n无隐患不扣分，存在渗漏隐患无处理方案扣3分，施工质量问题造成隐患扣5分，未按图施工造成隐患扣10分' },
-      { id:'c5i2', name:'淋水测试', score:15, content:'单元式幕墙：每层进行水槽闭水试验，安装2-3层后必须淋水实验，检查记录及影像资料，无起底横梁水槽闭水实验扣3分；有淋水实验但未按进度执行扣5分，无淋水实验扣15分。无淋水方案扣5分\n住宅门窗系统：大面施工前必须进行样板安装及淋水试验，未进行样板淋水实验就大面施工扣15分。无淋水方案扣5分\n框架式幕墙：需进行工艺样板安装并淋水试验，未进行样板淋水试验已大面施工扣15分。无淋水方案扣5分' },
+      { id:'c5i2', name:'淋水测试', score:15,
+        subItems:[
+          {id:'c5i2s1',name:'淋水方案编制',maxDeduct:5,content:'是否有淋水方案，无淋水方案扣5分'},
+          {id:'c5i2s2',name:'淋水试验执行',maxDeduct:10,content:'单元式幕墙：安装2-3层后必须淋水实验；住宅门窗系统：大面施工前必须进行样板安装及淋水试验；框架式幕墙：需进行工艺样板安装并淋水试验。未进行淋水试验已大面施工扣15分（本项最多扣10分）'}
+        ]
+      },
       { id:'c5i3', name:'公司巡视检查以及流程闭合情况', score:5, content:'流程提交后7个工作日内未回复，每逾期1天扣1分' }
     ]
   }
 ];
+
 
 // ===== API层 =====
 var API = {
@@ -986,12 +1085,37 @@ function renderNormalItem(item, idx) {
   var maxD = item.maxDeduct || item.score;
   var html = '<div class="check-item">';
   html += '<div class="check-item-head"><div class="check-item-name">'+item.name+'</div><div class="check-item-std">'+item.score+'分</div></div>';
-  html += '<div class="check-item-content">'+item.content+'</div>';
-  html += '<div class="check-item-row"><label class="deduct-label">扣分：</label><input type="number" min="0" max="'+maxD+'" value="0" step="0.5" id="deduct_'+item.id+'" onchange="calcAll()" /><label>得分：</label><span class="score-display" id="itemScore_'+item.id+'">'+item.score+'</span></div>';
-  html += '<div class="check-item-remark"><textarea id="remark_'+item.id+'" placeholder="问题说明（选填）"></textarea></div>';
-  html += '<div class="item-photo-area" id="photoArea_'+item.id+'">';
-  html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+item.id+'\',this)" /></div>';
-  html += '</div></div>';
+  
+  if(item.subItems && item.subItems.length > 0) {
+    // 有子项：每个子项单独扣分
+    html += '<div class="sub-items-area">';
+    item.subItems.forEach(function(si, sii) {
+      var siMaxD = si.maxDeduct || 1;
+      html += '<div class="sub-item-row">';
+      html += '<div class="sub-item-head"><span class="sub-item-name">'+(sii+1)+'. '+si.name+'</span><span class="sub-item-score">扣'+siMaxD+'分</span></div>';
+      if(si.content) {
+        html += '<div class="sub-item-content" id="siContent_'+si.id+'">'+si.content+'</div>';
+        html += '<div class="sub-item-toggle" onclick="var c=document.getElementById(\'siContent_'+si.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起 ▲\':\'检查标准 ▼\';">检查标准 ▼</div>';
+      }
+      html += '<div class="sub-item-deduct-row"><label class="deduct-label">扣分：</label><input type="number" min="0" max="'+siMaxD+'" value="0" step="0.5" id="deduct_'+si.id+'" onchange="calcAll()" /></div>';
+      html += '<div class="check-item-remark"><textarea id="remark_'+si.id+'" placeholder="问题说明（选填）" style="font-size:12px;min-height:28px;"></textarea></div>';
+      html += '<div class="item-photo-area" id="photoArea_'+si.id+'">';
+      html += '<div class="item-photo-add" style="transform:scale(0.85);"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+si.id+'\',this)" /></div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
+    // 父项总分显示
+    html += '<div class="check-item-row"><label>小计：</label><span style="color:#1a73e8;font-weight:600;" id="itemScore_'+item.id+'">'+item.score+'</span><label> / '+item.score+'分</label></div>';
+  } else {
+    // 无子项：保持原有逻辑
+    html += '<div class="check-item-content">'+item.content+'</div>';
+    html += '<div class="check-item-row"><label class="deduct-label">扣分：</label><input type="number" min="0" max="'+maxD+'" value="0" step="0.5" id="deduct_'+item.id+'" onchange="calcAll()" /><label>得分：</label><span class="score-display" id="itemScore_'+item.id+'">'+item.score+'</span></div>';
+    html += '<div class="check-item-remark"><textarea id="remark_'+item.id+'" placeholder="问题说明（选填）"></textarea></div>';
+    html += '<div class="item-photo-area" id="photoArea_'+item.id+'">';
+    html += '<div class="item-photo-add"><span class="add-icon">📷</span><span>拍照</span><input type="file" accept="image/*" capture="environment" onchange="addPhoto(\''+item.id+'\',this)" /></div>';
+    html += '</div>';
+  }
+  html += '</div>';
   return html;
 }
 
@@ -1023,6 +1147,22 @@ function toggleIncluded(sgId) {
 }
 
 // ===== 核心计算 =====
+function calcItemDeduction(item) {
+  // 计算单个普通项的扣分（支持子项）
+  if(item.subItems && item.subItems.length > 0) {
+    var totalDeduct = 0;
+    item.subItems.forEach(function(si) {
+      var d = parseFloat(document.getElementById('deduct_'+si.id)?.value)||0;
+      d = Math.min(Math.max(d, 0), si.maxDeduct||1);
+      totalDeduct += d;
+    });
+    return Math.min(totalDeduct, item.score);
+  } else {
+    var deduct = parseFloat(document.getElementById('deduct_'+item.id)?.value)||0;
+    return Math.min(Math.max(deduct, 0), item.maxDeduct||item.score);
+  }
+}
+
 function calcAll() {
   var catScores = [];
   checklistData.forEach(function(cat, ci) {
@@ -1032,8 +1172,8 @@ function calcAll() {
       var catTotal = cat.total;
       var totalDeduct = 0;
       cat.items.forEach(function(item) {
-        var deduct = parseFloat(document.getElementById('deduct_'+item.id)?.value)||0;
-        deduct = Math.min(Math.max(deduct,0), item.maxDeduct||item.score);
+        if(item.type === 'formula-group') return; // 公式项由calcCat4处理
+        var deduct = calcItemDeduction(item);
         var itemScore = Math.max(0, item.score - deduct);
         var el = document.getElementById('itemScore_'+item.id);
         if(el) el.textContent = itemScore;
@@ -1068,8 +1208,7 @@ function calcCat4() {
           panelScore = calcPanelScore(item);
         }
       } else {
-        var deduct = parseFloat(document.getElementById('deduct_'+item.id)?.value)||0;
-        deduct = Math.min(Math.max(deduct,0), item.maxDeduct||item.score);
+        var deduct = calcItemDeduction(item);
         var itemScore = Math.max(0, item.score - deduct);
         var el = document.getElementById('itemScore_'+item.id);
         if(el) el.textContent = itemScore;
@@ -1460,14 +1599,37 @@ async function saveAssess() {
         });
         detail[item.id] = {name:item.name, formulaTotal:item.formulaTotal, formulaType:item.formulaType, formulaScore:formulaScore, subGroups:subDetail};
       } else {
-        var deduct = parseFloat(document.getElementById('deduct_'+item.id)?.value)||0;
-        var remark = document.getElementById('remark_'+item.id)?.value||'';
+        // 普通项（支持子项）
+        var deduct = calcItemDeduction(item);
         var itemScore = Math.max(0, item.score - deduct);
-        detail[item.id] = {name:item.name, score:item.score, deduct:deduct, got:itemScore, remark:remark, content:item.content};
-        if(assessPhotos[item.id]&&assessPhotos[item.id].length>0){
-          photoSummary[item.id]=assessPhotos[item.id].length;
-          assessPhotos[item.id].forEach(function(p){if(p.file_token)allPhotoTokens.push({file_token:p.file_token});});
+        var itemDetail = {name:item.name, score:item.score, deduct:deduct, got:itemScore, remark:'', content:item.content||''};
+        
+        if(item.subItems && item.subItems.length > 0) {
+          // 保存子项详情
+          var subDetail = {};
+          var allRemarks = [];
+          item.subItems.forEach(function(si) {
+            var d = parseFloat(document.getElementById('deduct_'+si.id)?.value)||0;
+            d = Math.min(Math.max(d, 0), si.maxDeduct||1);
+            var r = document.getElementById('remark_'+si.id)?.value||'';
+            subDetail[si.id] = {name:si.name, maxDeduct:si.maxDeduct, deduct:d, remark:r, content:si.content||''};
+            if(r) allRemarks.push(si.name+': '+r);
+            if(assessPhotos[si.id]&&assessPhotos[si.id].length>0){
+              photoSummary[si.id]=assessPhotos[si.id].length;
+              assessPhotos[si.id].forEach(function(p){if(p.file_token)allPhotoTokens.push({file_token:p.file_token});});
+            }
+          });
+          itemDetail.subItems = subDetail;
+          itemDetail.remark = allRemarks.join('；');
+        } else {
+          var remark = document.getElementById('remark_'+item.id)?.value||'';
+          itemDetail.remark = remark;
+          if(assessPhotos[item.id]&&assessPhotos[item.id].length>0){
+            photoSummary[item.id]=assessPhotos[item.id].length;
+            assessPhotos[item.id].forEach(function(p){if(p.file_token)allPhotoTokens.push({file_token:p.file_token});});
+          }
         }
+        detail[item.id] = itemDetail;
       }
     });
   });
@@ -1587,8 +1749,6 @@ function viewAssessDetail(recordId) {
         var got = d ? d.got : item.score;
         var deduct = d ? d.deduct : 0;
         var remark = d ? (d.remark||'') : '';
-        var photoCount = photoSummary[item.id]||0;
-        var attachPhotos = (f['照片']||[]).filter(function(att){return att.tmp_url;});
 
         html += '<div class="detail-item">';
         html += '<div class="di-head"><span class="di-name">'+item.name+'</span>';
@@ -1596,17 +1756,59 @@ function viewAssessDetail(recordId) {
         if(deduct>0) html += '<span class="di-deduct">-'+deduct+'</span> ';
         html += '<span class="di-got">'+got+'/'+item.score+'</span>';
         html += '</span></div>';
-        if(remark) html += '<div class="di-remark">📝 '+remark+'</div>';
-        if(photoCount>0) {
-          html += '<div class="item-photo-area" style="margin-top:4px;">';
-          attachPhotos.forEach(function(p, pi) {
-            var src = '/api/image?file_token='+p.file_token;
-            html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="showAttachPhotos(\''+item.id+'\','+pi+')" /></div>';
+        
+        // 渲染子项
+        if(item.subItems && item.subItems.length > 0) {
+          html += '<div style="padding:0 0 0 8px;">';
+          item.subItems.forEach(function(si, sii) {
+            var siDetail = (d && d.subItems) ? d.subItems[si.id] : null;
+            var siDeduct = siDetail ? siDetail.deduct : 0;
+            var siRemark = siDetail ? (siDetail.remark||'') : '';
+            var siPhotoCount = 0;
+            Object.keys(photoSummary).forEach(function(k){ if(k===si.id) siPhotoCount=photoSummary[k]; });
+            var siAttachPhotos = (f['照片']||[]).filter(function(att){return att.tmp_url;});
+            
+            html += '<div style="padding:4px 0;border-bottom:1px solid #f0f0f0;">';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+            html += '<span style="font-size:12px;color:#333;font-weight:500;">'+(sii+1)+'. '+si.name+'</span>';
+            if(siDeduct > 0) {
+              html += '<span style="font-size:11px;color:#e74c3c;font-weight:600;">扣'+siDeduct+'分</span>';
+            } else {
+              html += '<span style="font-size:11px;color:#27ae60;">✓</span>';
+            }
+            html += '</div>';
+            if(siRemark) html += '<div style="font-size:11px;color:#888;margin:2px 0;">📝 '+siRemark+'</div>';
+            if(siPhotoCount > 0) {
+              html += '<div class="item-photo-area" style="margin-top:4px;">';
+              siAttachPhotos.forEach(function(p, pi) {
+                var src = '/api/image?file_token='+p.file_token;
+                html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="showAttachPhotos(\''+si.id+'\','+pi+')" /></div>';
+              });
+              html += '</div>';
+            }
+            if(si.content) {
+              html += '<div class="di-content" id="detailContent_'+si.id+'" style="font-size:11px;">'+si.content+'</div>';
+              html += '<div class="di-toggle" style="font-size:10px;" onclick="var c=document.getElementById(\'detailContent_'+si.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起 ▲\':\'检查标准 ▼\';">检查标准 ▼</div>';
+            }
+            html += '</div>';
           });
           html += '</div>';
+        } else {
+          // 无子项的普通项
+          var photoCount = photoSummary[item.id]||0;
+          var attachPhotos = (f['照片']||[]).filter(function(att){return att.tmp_url;});
+          if(remark) html += '<div class="di-remark">📝 '+remark+'</div>';
+          if(photoCount>0) {
+            html += '<div class="item-photo-area" style="margin-top:4px;">';
+            attachPhotos.forEach(function(p, pi) {
+              var src = '/api/image?file_token='+p.file_token;
+              html += '<div class="item-photo-thumb"><img src="'+src+'" onclick="showAttachPhotos(\''+item.id+'\','+pi+')" /></div>';
+            });
+            html += '</div>';
+          }
+          html += '<div class="di-content" id="detailContent_'+item.id+'">'+item.content+'</div>';
+          html += '<div class="di-toggle" onclick="var c=document.getElementById(\'detailContent_'+item.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起检查标准 ▲\':\'展开检查标准 ▼\';">展开检查标准 ▼</div>';
         }
-        html += '<div class="di-content" id="detailContent_'+item.id+'">'+item.content+'</div>';
-        html += '<div class="di-toggle" onclick="var c=document.getElementById(\'detailContent_'+item.id+'\');c.classList.toggle(\'open\');this.textContent=c.classList.contains(\'open\')?\'收起检查标准 ▲\':\'展开检查标准 ▼\';">展开检查标准 ▼</div>';
         html += '</div>';
       }
     });
