@@ -1,5 +1,5 @@
 // Service Worker - 工程质量管理 PWA
-const CACHE_NAME = 'qc-v1';
+const CACHE_NAME = 'qc-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
