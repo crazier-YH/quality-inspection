@@ -854,9 +854,9 @@ app.post('/api/standards/save', async (req, res) => {
     const tableId = TABLE_IDS.standards;
     const jsonStr = JSON.stringify(snapshot);
 
-    // 查找已有记录
+    // 查找已有记录（不加filter，取第一条）
     const listRes = await feishuRequest('GET',
-      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?filter=${encodeURIComponent(JSON.stringify({conjunction:'and',conditions:[{field_name:'标识',operator:'is',value:['main']}]}))}&page_size=10`);
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=1`);
     
     if (listRes.code === 0 && listRes.data && listRes.data.items && listRes.data.items.length > 0) {
       // 更新已有记录
@@ -878,12 +878,12 @@ app.post('/api/standards/save', async (req, res) => {
   }
 });
 
-// 加载标准：读取标识='main'的记录
+// 加载标准：读取第一条记录
 app.post('/api/standards/load', async (req, res) => {
   try {
     const tableId = TABLE_IDS.standards;
     const result = await feishuRequest('GET',
-      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?filter=${encodeURIComponent(JSON.stringify({conjunction:'and',conditions:[{field_name:'标识',operator:'is',value:['main']}]}))}&page_size=1`);
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=1`);
     
     if (result.code === 0 && result.data && result.data.items && result.data.items.length > 0) {
       const fields = result.data.items[0].fields;
