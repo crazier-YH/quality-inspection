@@ -1596,7 +1596,6 @@ async function downloadReport() {
     showToast('❌ 请先上传评分表');
     return;
   }
-  showToast('⏳ 正在生成报告...');
 
   var projectInfo = {
     projectName: document.getElementById('rpt_project') ? document.getElementById('rpt_project').value : '',
@@ -1607,40 +1606,24 @@ async function downloadReport() {
     date: document.getElementById('rpt_date') ? document.getElementById('rpt_date').value : ''
   };
 
-  try {
-    var res = await fetch('/api/generate-report', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ fileData: reportExcelBase64, projectInfo: projectInfo })
-    });
-
-    if (!res.ok) {
-      var err = await res.json();
-      showToast('❌ 生成失败：' + (err.msg || '未知错误'));
-      return;
-    }
-
-    var arrayBuf = await res.arrayBuffer();
-    var blob = new Blob([arrayBuf], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    var disposition = res.headers.get('Content-Disposition');
-    var fileName = '质量巡查报告.docx';
-    if (disposition) {
-      var match = disposition.match(/filename\*?=(?:UTF-8'')?(.+)/i);
-      if (match) fileName = decodeURIComponent(match[1]);
-    }
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function() {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 1000);
-    showToast('✅ 报告已生成并下载');
-  } catch(err) {
-    showToast('❌ 下载异常：' + err.message);
+  // 用隐藏form表单提交，浏览器原生下载，WPS可直接打开
+  var form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/api/generate-report';
+  form.style.display = 'none';
+  form.target = '_blank';
+  var fields = { fileData: reportExcelBase64, projectInfo: JSON.stringify(projectInfo), download: '1' };
+  Object.keys(fields).forEach(function(key) {
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = fields[key];
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+  showToast('✅ 报告生成中，请等待下载');
   }
 }
 
