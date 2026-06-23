@@ -1517,6 +1517,11 @@ app.post('/api/generate-report', async (req, res) => {
     // 允许前端覆盖项目信息
     if (projectInfo) Object.assign(data.projectInfo, projectInfo);
 
+    // preview模式：只返回解析数据，不生成Word
+    if (req.body.preview) {
+      return res.json({ code: 0, data: { parsed: true, result: data, message: '解析成功' } });
+    }
+
     const doc = createReportDocx(data);
     const docBuffer = await Packer.toBuffer(doc);
 
