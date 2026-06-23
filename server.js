@@ -1534,8 +1534,13 @@ function createReportDocx(data) {
 // 生成报告API
 app.post('/api/generate-report', async (req, res) => {
   try {
-    const { fileName, fileData, projectInfo } = req.body;
+    let { fileName, fileData, projectInfo, preview, download } = req.body;
     if (!fileData) return res.status(400).json({ code: -1, msg: '缺少文件数据' });
+    
+    // 兼容form表单提交：projectInfo可能是JSON字符串
+    if (typeof projectInfo === 'string') {
+      try { projectInfo = JSON.parse(projectInfo); } catch(e) { projectInfo = null; }
+    }
 
     const buffer = Buffer.from(fileData, 'base64');
     const workbook = new ExcelJS.Workbook();
