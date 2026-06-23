@@ -1162,11 +1162,134 @@ function updateHomeProjectBar() { document.getElementById('homeProjectName').tex
 function fillProjectFields() { if(project.name){var el=document.getElementById('a_project');if(el)el.value=project.name;} }
 
 // ===== 待办 =====
-function renderTodos() { var list=document.getElementById('todoList'),empty=document.getElementById('todoEmpty'); if(todos.length===0){list.innerHTML='';empty.style.display='';return;} empty.style.display='none'; list.innerHTML=todos.map(function(t,i){return '<div class="todo-item"><div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div><span class="todo-text'+(t.done?' done':'')+'">'+t.text+'</span><span class="todo-del" onclick="delTodo('+i+')">✕</span></div>';}).join(''); }
+function renderTodos() { 
+  var list=document.getElementById('todoList'),empty=document.getElementById('todoEmpty'); 
+  if(todos.length===0){list.innerHTML='';empty.style.display='';return;} 
+  empty.style.display='none'; 
+  list.innerHTML=todos.map(function(t,i){
+    var isReport = typeof t._reportIdx === 'number';
+    if (isReport) {
+      // 报告整改待办 - 增强样式
+      var h = '<div class="todo-item" style="flex-direction:column;align-items:stretch;gap:8px;">';
+      // 标题行
+      h += '<div style="display:flex;align-items:center;gap:8px;">';
+      h += '<div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div>';
+      h += '<span class="todo-text'+(t.done?' done':'')+'" style="font-weight:600;">'+t.text+'</span>';
+      h += '<span class="todo-del" onclick="delTodo('+i+')">✕</span>';
+      h += '</div>';
+      // 问题描述
+      if (t._problemDesc) h += '<div style="font-size:11px;color:#888;padding-left:30px;">'+t._problemDesc+'</div>';
+      // 整改回复
+      h += '<div style="padding-left:30px;"><label style="font-size:10px;color:#999;">整改回复</label>';
+      h += '<textarea id="todo_reply_'+i+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;min-height:36px;resize:vertical;" placeholder="填写整改措施..." onchange="saveTodoReply('+i+',this.value)">'+(t._rectifyReply||'')+'</textarea></div>';
+      // 整改前照片
+      h += '<div style="padding-left:30px;"><div style="font-size:10px;color:#999;margin-bottom:4px;">📷 整改前</div>';
+      h += '<div id="todo_before_'+i+'" style="display:flex;flex-wrap:wrap;gap:4px;">'+renderTodoPhotos(t._beforePhotos||[],i,'before')+'</div>';
+      h += '<label style="display:inline-flex;align-items:center;gap:2px;padding:3px 8px;border:1px dashed #e74c3c;border-radius:4px;font-size:10px;color:#e74c3c;cursor:pointer;margin-top:4px;">+ 照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addTodoPhoto('+i+',\'before\',this)" /></label>';
+      h += '</div>';
+      // 整改后照片
+      h += '<div style="padding-left:30px;"><div style="font-size:10px;color:#999;margin-bottom:4px;">✅ 整改后</div>';
+      h += '<div id="todo_after_'+i+'" style="display:flex;flex-wrap:wrap;gap:4px;">'+renderTodoPhotos(t._afterPhotos||[],i,'after')+'</div>';
+      h += '<label style="display:inline-flex;align-items:center;gap:2px;padding:3px 8px;border:1px dashed #4caf50;border-radius:4px;font-size:10px;color:#4caf50;cursor:pointer;margin-top:4px;">+ 照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addTodoPhoto('+i+',\'after\',this)" /></label>';
+      h += '</div>';
+      // 同步到报告按钮
+      if (t.done && (t._afterPhotos||[]).length > 0) {
+        h += '<div style="padding-left:30px;"><button onclick="syncTodoToReport('+i+')" style="padding:4px 10px;border:1px solid #1a73e8;border-radius:4px;background:#1a73e8;color:#fff;font-size:10px;cursor:pointer;">📤 同步照片到报告</button></div>';
+      }
+      h += '</div>';
+      return h;
+    }
+    return '<div class="todo-item"><div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div><span class="todo-text'+(t.done?' done':'')+'">'+t.text+'</span><span class="todo-del" onclick="delTodo('+i+')">✕</span></div>';
+  }).join(''); 
+}
 async function addTodo() { var input=document.getElementById('todoInput'),text=input.value.trim(); if(!text)return; var todo={text:text,done:false,id:Date.now()}; todos.unshift(todo); input.value=''; localStorage.setItem('qc_todos',JSON.stringify(todos)); renderTodos(); if(API.online){var res=await API.createRecord('todo',{'项目名称':project.name||'','待办内容':text,'是否完成':false,'创建人':profile.name||''}); if(res.code===0&&res.data&&res.data.record){todo._recordId=res.data.record.record_id;localStorage.setItem('qc_todos',JSON.stringify(todos));}} updateHomeStats(); }
 function toggleTodo(i){todos[i].done=!todos[i].done;localStorage.setItem('qc_todos',JSON.stringify(todos));renderTodos();}
 function delTodo(i){todos.splice(i,1);localStorage.setItem('qc_todos',JSON.stringify(todos));renderTodos();}
 function loadHomeStats() { document.getElementById('statTodo').textContent=todos.filter(function(t){return !t.done;}).length; }
+
+// ===== 报告整改待办照片管理 =====
+function renderTodoPhotos(photos,todoIdx,type) {
+  if (!photos || photos.length === 0) return '';
+  return photos.map(function(p,pi) {
+    return '<div style="position:relative;width:56px;height:56px;border-radius:4px;overflow:hidden;border:1px solid #eee;">'
+      +'<img src="'+p.dataUrl+'" style="width:100%;height:100%;object-fit:cover;" onclick="previewImage(\''+p.dataUrl+'\')" />'
+      +'<span onclick="removeTodoPhoto('+todoIdx+',\''+type+'\','+pi+')" style="position:absolute;top:1px;right:1px;width:16px;height:16px;background:rgba(0,0,0,0.5);color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;">✕</span>'
+      +'</div>';
+  }).join('');
+}
+
+function addTodoPhoto(todoIdx, type, input) {
+  var files = input.files;
+  if (!files || files.length === 0) return;
+  var todo = todos[todoIdx];
+  if (!todo) return;
+  var key = type === 'before' ? '_beforePhotos' : '_afterPhotos';
+  if (!todo[key]) todo[key] = [];
+  var remaining = files.length;
+  Array.from(files).forEach(function(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      todo[key].push({dataUrl: e.target.result, name: file.name});
+      remaining--;
+      if (remaining === 0) {
+        localStorage.setItem('qc_todos', JSON.stringify(todos));
+        renderTodos();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function removeTodoPhoto(todoIdx, type, photoIdx) {
+  var todo = todos[todoIdx];
+  if (!todo) return;
+  var key = type === 'before' ? '_beforePhotos' : '_afterPhotos';
+  if (todo[key]) { todo[key].splice(photoIdx, 1); localStorage.setItem('qc_todos', JSON.stringify(todos)); renderTodos(); }
+}
+
+function saveTodoReply(todoIdx, value) {
+  var todo = todos[todoIdx];
+  if (!todo) return;
+  todo._rectifyReply = value;
+  localStorage.setItem('qc_todos', JSON.stringify(todos));
+}
+
+function syncTodoToReport(todoIdx) {
+  var todo = todos[todoIdx];
+  if (!todo || typeof todo._reportIdx !== 'number') return;
+  try {
+    var cacheStr = localStorage.getItem('qc_report_cache');
+    if (!cacheStr) { showToast('未找到缓存报告'); return; }
+    var cacheObj = JSON.parse(cacheStr);
+    var rIdx = todo._reportIdx;
+    // 同步整改后照片到报告缓存照片区
+    if (!cacheObj.photos) cacheObj.photos = {};
+    var existingPhotos = cacheObj.photos[rIdx] || [];
+    // 添加整改后照片（避免重复）
+    var afterPhotos = todo._afterPhotos || [];
+    afterPhotos.forEach(function(ap) {
+      var dup = existingPhotos.some(function(ep) { return ep.dataUrl === ap.dataUrl; });
+      if (!dup) existingPhotos.push({dataUrl: ap.dataUrl, name: ap.name || '整改后'});
+    });
+    cacheObj.photos[rIdx] = existingPhotos;
+    // 同步整改回复到问题描述
+    if (cacheObj.parsedData && cacheObj.parsedData.problems && cacheObj.parsedData.problems[rIdx]) {
+      if (todo._rectifyReply) {
+        cacheObj.parsedData.problems[rIdx].rectifyReply = todo._rectifyReply;
+      }
+    }
+    localStorage.setItem('qc_report_cache', JSON.stringify(cacheObj));
+    // 同步到内存中的报告照片
+    if (!_reportPhotos[rIdx]) _reportPhotos[rIdx] = [];
+    afterPhotos.forEach(function(ap) {
+      var dup = _reportPhotos[rIdx].some(function(ep) { return ep.dataUrl === ap.dataUrl; });
+      if (!dup) _reportPhotos[rIdx].push({dataUrl: ap.dataUrl, name: ap.name || '整改后'});
+    });
+    renderReportPhotos(rIdx);
+    showToast('已同步 ' + afterPhotos.length + ' 张照片到报告');
+  } catch(e) { showToast('同步失败: ' + e.message); }
+}
 
 // ===== 考核检查表 =====
 // ===== 考核标准管理 =====
@@ -1569,7 +1692,7 @@ function showReportGenPage() {
   var problems = r.problems || [];
   if (problems.length > 0) {
     html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
-    html += '<div style="font-size:14px;font-weight:600;color:#e74c3c;margin-bottom:8px;">⚠️ 扣分项（'+problems.length+'项）</div>';
+    html += '<div style="font-size:14px;font-weight:600;color:#e74c3c;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;"><span>⚠️ 扣分项（'+problems.length+'项）</span><button onclick="generateTodosFromReport()" style="padding:4px 10px;border:1px solid #1a73e8;border-radius:6px;background:#1a73e8;color:#fff;font-size:11px;cursor:pointer;">📋 生成待办</button></div>';
     problems.forEach(function(item, idx) {
       html += '<div data-problem-idx="'+idx+'" style="padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer;">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
@@ -1599,6 +1722,40 @@ function showReportGenPage() {
   setupReportPaste();
   // 缓存报告数据
   cacheReportData();
+}
+
+// ===== 从报告扣分项生成待办 =====
+function generateTodosFromReport() {
+  var r = reportParsedData;
+  if (!r || !r.problems || r.problems.length === 0) { showToast('无扣分项可生成'); return; }
+  var pi = r.projectInfo || {};
+  var reportName = '';
+  try { var c = JSON.parse(localStorage.getItem('qc_report_cache')); reportName = (c && c.reportName) || ''; } catch(e) {}
+  var count = 0;
+  r.problems.forEach(function(item, idx) {
+    var title = (item.item || item.name || '问题') + '（-' + item.deduction + '分）';
+    // 检查是否已存在同名待办
+    var exists = todos.some(function(t) { return t._reportIdx === idx && t._reportName === reportName; });
+    if (exists) return;
+    var todo = {
+      text: title,
+      done: false,
+      id: Date.now() + idx,
+      _reportIdx: idx,
+      _reportName: reportName,
+      _problemDesc: item.description || '',
+      _rectifyReply: '',
+      _beforePhotos: [],
+      _afterPhotos: []
+    };
+    todos.unshift(todo);
+    count++;
+  });
+  localStorage.setItem('qc_todos', JSON.stringify(todos));
+  renderTodos();
+  updateHomeStats();
+  showToast('已生成 ' + count + ' 条整改待办');
+  openPage('todo');
 }
 
 // ===== 报告缓存 =====
