@@ -1197,10 +1197,33 @@ function loadCustomStandards() {
     .then(function(r){ return r.json(); })
     .then(function(data) {
       if(data.code === 0 && data.data && data.data.snapshot) {
-        applyCustomStandards(data.data.snapshot);
-        // 也缓存到localStorage，离线时可用
-        localStorage.setItem('customStandards', JSON.stringify(data.data.snapshot));
-        console.log('✅ 标准已从服务器同步');
+        var snap = data.data.snapshot;
+        var keys = Object.keys(snap);
+        if(keys.length > 0) {
+          // 服务端有有效数据，应用并缓存
+          applyCustomStandards(snap);
+          localStorage.setItem('customStandards', JSON.stringify(snap));
+          console.log('✅ 标准已从服务器同步');
+        } else {
+          // 服务端快照为空{}，可能是首次使用或被重置
+          // 不要覆盖localStorage，保留本地数据
+          var saved = localStorage.getItem('customStandards');
+          if(saved) {
+            try {
+              var localSnap = JSON.parse(saved);
+              if(Object.keys(localSnap).length > 0) {
+                applyCustomStandards(localSnap);
+                console.log('⚠️ 服务端无数据，使用本地缓存标准，并上传到服务端');
+                // 将本地数据上传到服务端
+                fetch('/api/standards/save', {
+                  method:'POST',
+                  headers:{'Content-Type':'application/json'},
+                  body: JSON.stringify({ snapshot: localSnap, operator: '系统同步', changeNote: '本地数据自动上传到服务端' })
+                }).catch(function(){});
+              }
+            } catch(e) {}
+          }
+        }
       } else {
         // 服务端无数据，尝试localStorage离线缓存
         var saved = localStorage.getItem('customStandards');
@@ -1334,7 +1357,22 @@ function saveCustomStandards() {
   .then(function(data) {
     if(data.code === 0) {
       localStorage.setItem('customStandards', JSON.stringify(snapshot));
-      showToast('✅ 标准已保存并同步，所有设备将使用新标准');
+      // 验证：重新加载确认数据已持久化
+      fetch('/api/standards/load', {method:'POST', headers:{'Content-Type':'application/json'}})
+        .then(function(r2){ return r2.json(); })
+        .then(function(verify) {
+          if(verify.code === 0 && verify.data && verify.data.snapshot) {
+            var serverKeys = Object.keys(verify.data.snapshot);
+            if(serverKeys.length > 0) {
+              showToast('✅ 标准已保存并同步（' + serverKeys.length + '类），所有设备将使用新标准');
+            } else {
+              showToast('⚠️ 保存可能未生效，请重试');
+            }
+          } else {
+            showToast('⚠️ 保存验证失败，请检查网络');
+          }
+        })
+        .catch(function(){ showToast('✅ 标准已保存（验证跳过）'); });
     } else {
       showToast('❌ 保存失败：' + (data.msg || '未知错误'));
     }
