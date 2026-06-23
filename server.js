@@ -11,6 +11,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const ExcelJS = require('exceljs');
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, BorderStyle, VerticalAlign } = require('docx');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -1180,6 +1181,321 @@ app.post('/api/projects/delete', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// ============ 考核报告生成 API ============
+function parseEvaluationSheet(workbook) {
+  const ws = workbook.worksheets[0];
+  if (!ws) return null;
+  
+  const data = { projectInfo: {}, results: [], problems: [], totalScore: 0 };
+  let currentCategory = null;
+  let categoryScore = 0;
+  let categoryTotal = 0;
+  const categoryOrder = ['一', '二', '三', '四', '五'];
+  const categoryNames = {
+    '一': '标准化建设及周检', '二': '方案及资料管理', '三': '检验检测',
+    '四': '实体质量管理', '五': '防渗漏及整改闭合'
+  };
+  const catTotals = { '一': 18, '二': 57, '三': 25, '四': 70, '五': 30 };
+
+  ws.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+    const cellA = row.getCell(1).text.trim();
+    const cellB = row.getCell(2).text.trim();
+    const cellC = row.getCell(3).text.trim();
+    const cellD = row.getCell(4);
+    const cellH = row.getCell(8);
+    const cellI = row.getCell(9);
+    
+    // 提取项目信息
+    const rowText = row.values ? row.values.map(v => String(v||'')).join('') : '';
+    if (rowText.includes('考核项目') || rowText.includes('项目经理')) {
+      if (!data.projectInfo.projectName) {
+        const pnMatch = rowText.match(/考核项目[：:]\s*(\S+)/);
+        if (pnMatch) data.projectInfo.projectName = pnMatch[1];
+        const pmMatch = rowText.match(/项目经理[：:]\s*(\S+)/);
+        if (pmMatch) data.projectInfo.projectManager = pmMatch[1];
+      }
+      const qcMatch = rowText.match(/质检员[：:]\s*(\S+)/);
+      if (qcMatch) data.projectInfo.qualityInspector = qcMatch[1];
+      const cwMatch = rowText.match(/施工员[：:]\s*(\S+)/);
+      if (cwMatch) data.projectInfo.constructionWorker = cwMatch[1];
+      const mtMatch = rowText.match(/材料员[：:]\s*(\S+)/);
+      if (mtMatch) data.projectInfo.materialStaff = mtMatch[1];
+      const dtMatch = rowText.match(/(\d{4})\s*年\s*(\d+)\s*月\s*(\d+)\s*日/);
+      if (dtMatch) data.projectInfo.date = `${dtMatch[1]}年${dtMatch[2]}月${dtMatch[3]}日`;
+    }
+
+    // 检测考核大类
+    for (const key of categoryOrder) {
+      if (cellA === key || cellA.startsWith(key)) {
+        if (currentCategory) {
+          data.results.push({ category: currentCategory, name: categoryNames[currentCategory], score: categoryScore, total: categoryTotal });
+        }
+        currentCategory = cellA;
+        categoryTotal = catTotals[cellA] || 0;
+        categoryScore = 0;
+        break;
+      }
+    }
+
+    // 检测小计行
+    if (cellA === '小计' || cellB === '小计') {
+      const scoreCell = cellH.value || cellI.value;
+      if (scoreCell != null) categoryScore = parseFloat(scoreCell) || 0;
+    }
+
+    // 检测扣分项
+    const deductCell = cellH.value || cellI.value;
+    if (deductCell != null && !isNaN(parseFloat(deductCell)) && parseFloat(deductCell) > 0 && cellB) {
+      data.problems.push({
+        category: currentCategory || '',
+        item: cellB || '',
+        description: cellB || '',
+        deduction: parseFloat(deductCell)
+      });
+    }
+
+    // 检测综合得分
+    if (cellA.includes('综合得分') || cellA.includes('考评')) {
+      const totalCell = cellH.value || cellI.value;
+      if (totalCell != null) data.totalScore = Math.round(parseFloat(totalCell) * 100) / 100;
+    }
+  });
+
+  if (currentCategory) {
+    data.results.push({ category: currentCategory, name: categoryNames[currentCategory], score: categoryScore, total: categoryTotal });
+  }
+
+  data.projectInfo.projectName = data.projectInfo.projectName || '待填写';
+  data.projectInfo.projectManager = data.projectInfo.projectManager || '待填写';
+  data.projectInfo.qualityInspector = data.projectInfo.qualityInspector || '待填写';
+  data.projectInfo.constructionWorker = data.projectInfo.constructionWorker || '待填写';
+  data.projectInfo.materialStaff = data.projectInfo.materialStaff || '待填写';
+  data.projectInfo.date = data.projectInfo.date || '待填写';
+
+  return data;
+}
+
+function createReportDocx(data) {
+  const categoryFullNames = {
+    '一': '一、标准化建设及周检', '二': '二、方案及资料管理', '三': '三、检验检测',
+    '四': '四、实体质量管理', '五': '五、防渗漏及整改闭合'
+  };
+
+  const children = [];
+
+  // 封面
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 2000 },
+    children: [new TextRun({ text: '深圳市方大建科集团有限公司', bold: true, size: 32 })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 200 },
+    children: [new TextRun({ text: '质安部', bold: true, size: 28 })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 200 },
+    children: [new TextRun({ text: '质量巡查报告', bold: true, size: 32 })] }));
+  children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 100 },
+    children: [new TextRun({ text: '【2022版】第一篇 项目启动阶段', size: 24 })] }));
+  children.push(new Paragraph({ children: [] }));
+
+  // 形象进度图
+  children.push(new Paragraph({ text: '形象进度图', heading: HeadingLevel.HEADING_2 }));
+  const borderNone = { style: BorderStyle.SINGLE, size: 1, color: '999999' };
+  const progressRows = [];
+  for (let r = 0; r < 2; r++) {
+    const cells = [];
+    for (let c = 0; c < 2; c++) {
+      cells.push(new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
+        borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+        children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
+          new TextRun({ text: `形象进度照片${r*2+c+1}`, bold: true, size: 20, color: '999999' })
+        ]})]
+      }));
+    }
+    progressRows.push(new TableRow({ children: cells }));
+  }
+  children.push(new Table({ rows: progressRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+  children.push(new Paragraph({ children: [] }));
+
+  // 项目基本信息
+  children.push(new Paragraph({ text: '项目基本信息', heading: HeadingLevel.HEADING_2 }));
+  const infoItems = [
+    ['项目名称', data.projectInfo.projectName],
+    ['所属区域', '区域二部'],
+    ['项目状态', '高峰期'],
+    ['项目经理', data.projectInfo.projectManager],
+    ['质检员', data.projectInfo.qualityInspector],
+    ['施工员', data.projectInfo.constructionWorker],
+    ['材料员', data.projectInfo.materialStaff],
+    ['劳务施工队', '待填写'],
+    ['考核人员', '质安部巡查组'],
+    ['考核日期', data.projectInfo.date]
+  ];
+  infoItems.forEach(([label, value]) => {
+    children.push(new Paragraph({ spacing: { before: 40 },
+      children: [
+        new TextRun({ text: label + '：', bold: true, size: 21 }),
+        new TextRun({ text: value, size: 21 })
+      ]
+    }));
+  });
+  children.push(new Paragraph({ children: [] }));
+
+  // 考核结果表
+  children.push(new Paragraph({ text: '考核结果', heading: HeadingLevel.HEADING_2 }));
+  const resultHeaderRow = new TableRow({
+    children: ['考核项目', '得分', '满分'].map(t =>
+      new TableCell({ width: { size: t === '考核项目' ? 50 : 25, type: WidthType.PERCENTAGE },
+        borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+        shading: { fill: 'E8F0FE' },
+        children: [new Paragraph({ children: [new TextRun({ text, bold: true, size: 20 })] })]
+      })
+    )
+  });
+  const resultRows = [resultHeaderRow];
+  data.results.forEach(r => {
+    const fullName = categoryFullNames[r.category] || `${r.category}、${r.name||''}`;
+    resultRows.push(new TableRow({
+      children: [
+        new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
+          borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+          children: [new Paragraph({ children: [new TextRun({ text: fullName, size: 20 })] })] }),
+        new TableCell({ width: { size: 25, type: WidthType.PERCENTAGE },
+          borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+          children: [new Paragraph({ children: [new TextRun({ text: String(r.score), size: 20 })] })] }),
+        new TableCell({ width: { size: 25, type: WidthType.PERCENTAGE },
+          borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+          children: [new Paragraph({ children: [new TextRun({ text: String(r.total), size: 20 })] })] })
+      ]
+    }));
+  });
+  // 总分行
+  resultRows.push(new TableRow({
+    children: [
+      new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
+        borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+        children: [new Paragraph({ children: [new TextRun({ text: '总分', bold: true, size: 20 })] })] }),
+      new TableCell({ width: { size: 25, type: WidthType.PERCENTAGE },
+        borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+        children: [new Paragraph({ children: [new TextRun({ text: String(data.totalScore), bold: true, size: 20 })] })] }),
+      new TableCell({ width: { size: 25, type: WidthType.PERCENTAGE },
+        borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+        children: [new Paragraph({ children: [new TextRun({ text: '100', bold: true, size: 20 })] })] })
+    ]
+  }));
+  children.push(new Table({ rows: resultRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+  children.push(new Paragraph({ children: [] }));
+
+  // 各考核项目章节
+  data.results.forEach((r, idx) => {
+    const fullName = categoryFullNames[r.category] || `${r.category}、${r.name||''}`;
+    children.push(new Paragraph({ text: fullName, heading: HeadingLevel.HEADING_2 }));
+    const deduct = r.total - r.score;
+    children.push(new Paragraph({ spacing: { before: 40 },
+      children: [new TextRun({ text: `本项考核得分：${r.score}分（满分${r.total}分${deduct > 0 ? '，扣' + deduct + '分' : ''}）`, size: 21 })]
+    }));
+
+    // 该分类的扣分项
+    const catProblems = data.problems.filter(p => p.category === r.category);
+    if (catProblems.length > 0) {
+      children.push(new Paragraph({ spacing: { before: 100 },
+        children: [new TextRun({ text: '问题记录：', bold: true, size: 21 })]
+      }));
+      catProblems.forEach((p, pi) => {
+        // 问题描述行
+        const probRows = [
+          new TableRow({ children: [
+            new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+              children: [new Paragraph({ children: [
+                new TextRun({ text: `问题${pi+1}：${p.description}（-${p.deduction}分）`, bold: true, size: 20 })
+              ]})] }),
+            new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+              children: [new Paragraph({ children: [
+                new TextRun({ text: `问题${pi+1}整改回复：`, bold: true, size: 20 })
+              ]})] })
+          ]})
+        ];
+        children.push(new Table({ rows: probRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+
+        // 照片位置行
+        const photoRows = [
+          new TableRow({ children: [
+            new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
+                new TextRun({ text: '问题照片', bold: true, size: 18, color: '999999' })
+              ]})] }),
+            new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
+              borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
+              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
+                new TextRun({ text: '整改照片', bold: true, size: 18, color: '999999' })
+              ]})] })
+          ]})
+        ];
+        children.push(new Table({ rows: photoRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
+        children.push(new Paragraph({ children: [] }));
+      });
+    } else {
+      children.push(new Paragraph({ spacing: { before: 40 },
+        children: [new TextRun({ text: '检查情况：全部合格', size: 21 })]
+      }));
+    }
+    children.push(new Paragraph({ children: [] }));
+  });
+
+  // 六、改进建议
+  children.push(new Paragraph({ text: '六、改进建议', heading: HeadingLevel.HEADING_2 }));
+  if (data.problems.length > 0) {
+    data.problems.forEach((p, i) => {
+      children.push(new Paragraph({ spacing: { before: 40 },
+        children: [new TextRun({ text: `${i+1}. 针对"${p.description}"问题，建议及时整改并回复`, size: 21 })]
+      }));
+    });
+  } else {
+    children.push(new Paragraph({ children: [new TextRun({ text: '本次考核未发现明显问题，请继续保持。', size: 21 })] }));
+  }
+  children.push(new Paragraph({ children: [] }));
+
+  // 七、附件说明
+  children.push(new Paragraph({ text: '七、附件说明', heading: HeadingLevel.HEADING_2 }));
+  children.push(new Paragraph({ spacing: { before: 40 },
+    children: [new TextRun({ text: '详细考核记录及扣分内容请见建科公司工程质量管理考核评分表。', size: 21 })]
+  }));
+
+  const doc = new Document({
+    sections: [{ properties: {}, children }]
+  });
+  return doc;
+}
+
+// 生成报告API
+app.post('/api/generate-report', async (req, res) => {
+  try {
+    const { fileName, fileData, projectInfo } = req.body;
+    if (!fileData) return res.status(400).json({ code: -1, msg: '缺少文件数据' });
+
+    const buffer = Buffer.from(fileData, 'base64');
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buffer);
+
+    const data = parseEvaluationSheet(workbook);
+    if (!data) return res.status(400).json({ code: -1, msg: '无法解析评分表' });
+
+    // 允许前端覆盖项目信息
+    if (projectInfo) Object.assign(data.projectInfo, projectInfo);
+
+    const doc = createReportDocx(data);
+    const docBuffer = await Packer.toBuffer(doc);
+
+    const reportName = (data.projectInfo.projectName || '考核') + '质量巡查报告.docx';
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(reportName)}"`);
+    res.send(docBuffer);
+  } catch (err) {
+    console.error('生成报告失败:', err);
+    res.status(500).json({ code: -1, msg: '生成报告失败: ' + err.message });
+  }
+});
+
 app.listen(PORT, async () => {
   console.log(`\n🚀 工程质量管理工具已启动（多人协作版）`);
   console.log(`📱 访问地址: http://localhost:${PORT}`);
