@@ -1394,6 +1394,9 @@ function addSubItem(catId, itemId) {
   if(!item.subItems) item.subItems = [];
   var newId = itemId+'s'+(item.subItems.length+1)+'_'+Date.now();
   item.subItems.push({id:newId, name:'新子项', maxDeduct:1, content:''});
+  // 重算分值：分值 = 所有子项 maxDeduct 之和
+  recalcItemScore(item);
+  recalcCategoryTotal(cat);
   renderStandardsPage();
   showToast('已添加新子项，请编辑名称和标准');
 }
@@ -1405,8 +1408,33 @@ function deleteSubItem(catId, itemId, subId) {
   if(!item || !item.subItems) return;
   if(item.subItems.length <= 1) { showToast('至少保留一个子项'); return; }
   item.subItems = item.subItems.filter(function(si){return si.id!==subId;});
+  // 重算分值：分值 = 所有子项 maxDeduct 之和
+  recalcItemScore(item);
+  recalcCategoryTotal(cat);
   renderStandardsPage();
-  showToast('已删除子项');
+  showToast('已删除子项，分数已更新');
+}
+
+// 重算单题分值（有子项时 = 子项maxDeduct之和）
+function recalcItemScore(item) {
+  if(item.subItems && item.subItems.length > 0) {
+    var newScore = 0;
+    item.subItems.forEach(function(si){ newScore += (si.maxDeduct||1); });
+    if(newScore > 0) item.score = newScore;
+  }
+}
+
+// 重算分类总分（= 所有非公式项score之和 + 公式项formulaTotal之和）
+function recalcCategoryTotal(cat) {
+  var total = 0;
+  cat.items.forEach(function(item) {
+    if(item.type === 'formula-group') {
+      total += (item.formulaTotal || 0);
+    } else {
+      total += (item.score || 0);
+    }
+  });
+  if(total > 0) cat.total = total;
 }
 
 function resetCustomStandards() {
