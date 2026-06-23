@@ -1570,13 +1570,19 @@ function showReportGenPage() {
   if (problems.length > 0) {
     html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
     html += '<div style="font-size:14px;font-weight:600;color:#e74c3c;margin-bottom:8px;">⚠️ 扣分项（'+problems.length+'项）</div>';
-    problems.forEach(function(item) {
-      html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
+    problems.forEach(function(item, idx) {
+      html += '<div data-problem-idx="'+idx+'" style="padding:8px;border-bottom:1px solid #f0f0f0;cursor:pointer;">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
       html += '<span style="font-size:13px;color:#333;">'+(item.item||item.name||'')+'</span>';
       html += '<span style="font-size:13px;color:#e74c3c;font-weight:600;">-'+item.deduction+'分</span>';
       html += '</div>';
       if (item.description) html += '<div style="font-size:11px;color:#888;margin-top:2px;">'+item.description+'</div>';
+      // 问题照片区
+      html += '<div id="rpt_photos_'+idx+'" style="margin-top:6px;"></div>';
+      html += '<div style="display:flex;gap:6px;margin-top:6px;align-items:center;">';
+      html += '<label style="display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;font-size:11px;color:#1a73e8;cursor:pointer;white-space:nowrap;">📷 添加照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addReportPhoto('+idx+',this)" /></label>';
+      html += '<span style="font-size:10px;color:#aaa;">支持粘贴截图</span>';
+      html += '</div>';
       html += '</div>';
     });
     html += '</div>';
@@ -1589,9 +1595,101 @@ function showReportGenPage() {
 
   document.getElementById('reportGenContent').innerHTML = html;
   openPage('report-gen');
+  // 启用粘贴监听
+  setupReportPaste();
+}
+// ===== 扣分项照片管理 =====
+var _reportPhotos = {}; // {0: [{dataUrl, name}, ...], 1: [...], ...}
+
+function addReportPhoto(idx, input) {
+  var files = input.files;
+  if (!files || !files.length) return;
+  if (!_reportPhotos[idx]) _reportPhotos[idx] = [];
+  var promises = [];
+  for (var i = 0; i < files.length; i++) {
+    promises.push(readFileAsDataUrl(files[i]));
+  }
+  Promise.all(promises).then(function(results) {
+    results.forEach(function(r) { _reportPhotos[idx].push(r); });
+    renderReportPhotos(idx);
+    input.value = '';
+  });
 }
 
+function readFileAsDataUrl(file) {
+  return new Promise(function(resolve) {
+    var reader = new FileReader();
+    reader.onload = function(e) { resolve({dataUrl: e.target.result, name: file.name}); };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removeReportPhoto(idx, photoIdx) {
+  if (!_reportPhotos[idx]) return;
+  _reportPhotos[idx].splice(photoIdx, 1);
+  renderReportPhotos(idx);
+}
+
+function renderReportPhotos(idx) {
+  var el = document.getElementById('rpt_photos_' + idx);
+  if (!el) return;
+  var photos = _reportPhotos[idx] || [];
+  if (photos.length === 0) { el.innerHTML = ''; return; }
+  var h = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
+  photos.forEach(function(p, pi) {
+    h += '<div style="position:relative;width:70px;height:70px;border-radius:6px;overflow:hidden;border:1px solid #e0e0e0;">';
+    h += '<img src="'+p.dataUrl+'" style="width:100%;height:100%;object-fit:cover;" />';
+    h += '<div onclick="removeReportPhoto('+idx+','+pi+')" style="position:absolute;top:0;right:0;width:20px;height:20px;background:rgba(0,0,0,0.5);color:#fff;text-align:center;line-height:18px;font-size:14px;cursor:pointer;border-radius:0 6px 0 6px;">✕</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+  el.innerHTML = h;
+}
+
+function setupReportPaste() {
+  document.addEventListener('paste', function(e) {
+    // 只在报告生成页面时处理粘贴
+    if (document.getElementById('reportGenPage').style.display === 'none') return;
+    var items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    var imageItems = [];
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        imageItems.push(items[i]);
+      }
+    }
+    if (imageItems.length === 0) return;
+    e.preventDefault();
+    // 确定粘贴到哪个扣分项：找当前聚焦的扣分项，或默认最后一个
+    var targetIdx = _reportPasteTargetIdx;
+    if (targetIdx === undefined) {
+      var problems = (reportParsedData && reportParsedData.problems) || [];
+      targetIdx = problems.length > 0 ? problems.length - 1 : 0;
+    }
+    if (!_reportPhotos[targetIdx]) _reportPhotos[targetIdx] = [];
+    imageItems.forEach(function(item) {
+      var file = item.getAsFile();
+      readFileAsDataUrl(file).then(function(r) {
+        _reportPhotos[targetIdx].push(r);
+        renderReportPhotos(targetIdx);
+      });
+    });
+  });
+  // 点击扣分项时记录目标索引
+  document.addEventListener('click', function(e) {
+    var el = e.target;
+    while (el && el.id !== 'reportGenContent') {
+      if (el.getAttribute && el.getAttribute('data-problem-idx') !== null) {
+        _reportPasteTargetIdx = parseInt(el.getAttribute('data-problem-idx'));
+        return;
+      }
+      el = el.parentElement;
+    }
+  });
+}
+var _reportPasteTargetIdx = 0;
+
 async function downloadReport() {
+
   if (!reportExcelBase64) {
     showToast('❌ 请先上传评分表');
     return;
