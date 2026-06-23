@@ -992,53 +992,68 @@ function loadHomeStats() { document.getElementById('statTodo').textContent=todos
 
 // ===== 考核检查表 =====
 // ===== 考核标准管理 =====
-function loadCustomStandards() {
-  try {
-    var saved = localStorage.getItem('customStandards');
-    if(saved) {
-      var custom = JSON.parse(saved);
-      checklistData.forEach(function(cat) {
-        if(!custom[cat.id]) return;
-        cat.items.forEach(function(item) {
-          if(!custom[cat.id][item.id]) return;
-          var ci = custom[cat.id][item.id];
-          // Restore item name
-          if(ci._name) item.name = ci._name;
-          // Restore item content
-          if(ci.content !== undefined && item.content !== undefined) item.content = ci.content;
-          // Restore subItems structure (handle additions/deletions)
-          if(ci._subItemsOrder && ci.subItems) {
-            var newSubItems = [];
-            ci._subItemsOrder.forEach(function(siId) {
-              if(!ci.subItems[siId]) return;
-              var savedSi = ci.subItems[siId];
-              // Find existing or create new
-              var existing = item.subItems ? item.subItems.find(function(s){return s.id===siId;}) : null;
-              if(existing) {
-                existing.name = savedSi.name;
-                if(savedSi.content !== undefined) existing.content = savedSi.content;
-                if(savedSi.maxDeduct !== undefined) existing.maxDeduct = savedSi.maxDeduct;
-                newSubItems.push(existing);
-              } else {
-                newSubItems.push({id:siId, name:savedSi.name, content:savedSi.content||'', maxDeduct:savedSi.maxDeduct||1});
-              }
-            });
-            item.subItems = newSubItems;
-            // Update item score to match remaining sub-items' maxDeduct sum
-            var newScore = 0;
-            newSubItems.forEach(function(si){ newScore += (si.maxDeduct||1); });
-            if(newScore > 0) item.score = newScore;
-          } else if(ci.subItems && item.subItems) {
-            // Legacy: only content/name changes on existing subItems
-            item.subItems.forEach(function(si) {
-              if(ci.subItems[si.id] && ci.subItems[si.id].content) si.content = ci.subItems[si.id].content;
-              if(ci.subItems[si.id] && ci.subItems[si.id].name) si.name = ci.subItems[si.id].name;
-            });
+function applyCustomStandards(custom) {
+  if(!custom) return;
+  checklistData.forEach(function(cat) {
+    if(!custom[cat.id]) return;
+    cat.items.forEach(function(item) {
+      if(!custom[cat.id][item.id]) return;
+      var ci = custom[cat.id][item.id];
+      if(ci._name) item.name = ci._name;
+      if(ci.content !== undefined && item.content !== undefined) item.content = ci.content;
+      if(ci._subItemsOrder && ci.subItems) {
+        var newSubItems = [];
+        ci._subItemsOrder.forEach(function(siId) {
+          if(!ci.subItems[siId]) return;
+          var savedSi = ci.subItems[siId];
+          var existing = item.subItems ? item.subItems.find(function(s){return s.id===siId;}) : null;
+          if(existing) {
+            existing.name = savedSi.name;
+            if(savedSi.content !== undefined) existing.content = savedSi.content;
+            if(savedSi.maxDeduct !== undefined) existing.maxDeduct = savedSi.maxDeduct;
+            newSubItems.push(existing);
+          } else {
+            newSubItems.push({id:siId, name:savedSi.name, content:savedSi.content||'', maxDeduct:savedSi.maxDeduct||1});
           }
         });
-      });
-    }
-  } catch(e) { console.error('loadCustomStandards error:', e); }
+        item.subItems = newSubItems;
+        var newScore = 0;
+        newSubItems.forEach(function(si){ newScore += (si.maxDeduct||1); });
+        if(newScore > 0) item.score = newScore;
+      } else if(ci.subItems && item.subItems) {
+        item.subItems.forEach(function(si) {
+          if(ci.subItems[si.id] && ci.subItems[si.id].content) si.content = ci.subItems[si.id].content;
+          if(ci.subItems[si.id] && ci.subItems[si.id].name) si.name = ci.subItems[si.id].name;
+        });
+      }
+    });
+  });
+}
+
+function loadCustomStandards() {
+  // 从后端加载标准，所有设备同步
+  fetch('/api/standards/load', {method:'POST', headers:{'Content-Type':'application/json'}})
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if(data.code === 0 && data.data && data.data.snapshot) {
+        applyCustomStandards(data.data.snapshot);
+        // 也缓存到localStorage，离线时可用
+        localStorage.setItem('customStandards', JSON.stringify(data.data.snapshot));
+        console.log('✅ 标准已从服务器同步');
+      } else {
+        // 服务端无数据，尝试localStorage离线缓存
+        var saved = localStorage.getItem('customStandards');
+        if(saved) {
+          applyCustomStandards(JSON.parse(saved));
+          console.log('⚠️ 使用本地缓存标准（服务端无数据）');
+        }
+      }
+    })
+    .catch(function(e) {
+      console.error('加载标准失败，尝试本地缓存:', e);
+      var saved = localStorage.getItem('customStandards');
+      if(saved) applyCustomStandards(JSON.parse(saved));
+    });
 }
 loadCustomStandards();
 
@@ -1046,8 +1061,8 @@ function renderStandardsPage() {
   try {
   function escH(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   var html = '';
-  html += '<div style="margin-bottom:12px;padding:10px;background:#fff3e0;border-radius:8px;font-size:12px;color:#e65100;">';
-  html += '💡 修改后请点击底部「保存修改」按钮，仅修改文字不影响评分逻辑。修改后新建的考核记录将使用新标准。';
+  html += '<div style="margin-bottom:12px;padding:10px;background:#e3f2fd;border-radius:8px;font-size:12px;color:#1565c0;">';
+  html += '☁️ 修改后请点击底部「保存修改」按钮，标准将同步到所有设备。修改后新建的考核记录将使用新标准。';
   html += '</div>';
 
   checklistData.forEach(function(cat, ci) {
@@ -1147,8 +1162,27 @@ function saveCustomStandards() {
     });
   });
 
-  localStorage.setItem('customStandards', JSON.stringify(snapshot));
-  showToast('✅ 标准已保存，新建考核将使用新标准');
+  // 保存到后端，所有设备同步
+  fetch('/api/standards/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ snapshot: snapshot })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if(data.code === 0) {
+      localStorage.setItem('customStandards', JSON.stringify(snapshot));
+      showToast('✅ 标准已保存并同步，所有设备将使用新标准');
+    } else {
+      showToast('❌ 保存失败：' + (data.msg || '未知错误'));
+    }
+  })
+  .catch(function(e) {
+    console.error('saveCustomStandards network error:', e);
+    // 网络失败时回退到本地保存
+    localStorage.setItem('customStandards', JSON.stringify(snapshot));
+    showToast('⚠️ 网络异常，仅保存到本地，其他设备不会同步');
+  });
   } catch(e) { console.error('saveCustomStandards error:', e); showToast('❌ 保存失败：'+e.message); }
 }
 
@@ -1177,6 +1211,12 @@ function deleteSubItem(catId, itemId, subId) {
 
 function resetCustomStandards() {
   if(!confirm('确定恢复默认考核标准？自定义修改将全部丢失。')) return;
+  // 清除后端数据
+  fetch('/api/standards/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ snapshot: {} })
+  }).catch(function(){});
   localStorage.removeItem('customStandards');
   location.reload();
 }
