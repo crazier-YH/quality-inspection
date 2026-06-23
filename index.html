@@ -1508,14 +1508,14 @@ async function handleReportExcel(input) {
   reader.onload = async function(e) {
     try {
       reportExcelBase64 = e.target.result.split(',')[1];
-      // 用已有的 import-assess API 解析Excel
-      var res = await fetch('/api/import-assess', {
+      // 用 generate-report 的 preview 模式解析Excel（与导出Word同逻辑）
+      var res = await fetch('/api/generate-report', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ fileName: file.name, fileData: reportExcelBase64 })
+        body: JSON.stringify({ fileName: file.name, fileData: reportExcelBase64, preview: true })
       });
       var data = await res.json();
-      if (data.code !== 0 || !data.data.parsed) {
+      if (data.code !== 0 || !data.data || !data.data.parsed) {
         showToast('❌ 无法解析评分表，请确认是标准考核评分Excel');
         return;
       }
@@ -1530,19 +1530,20 @@ async function handleReportExcel(input) {
 
 function showReportGenPage() {
   var r = reportParsedData;
+  var pi = r.projectInfo || {};
   var html = '';
 
   // 项目信息编辑区
   html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
   html += '<div style="font-size:14px;font-weight:600;color:#333;margin-bottom:10px;">📋 项目信息（可编辑）</div>';
   html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
-  html += '<div><label style="font-size:11px;color:#999;">项目名称</label><input id="rpt_project" value="'+(r.meta.projectName||project.name||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
-  html += '<div><label style="font-size:11px;color:#999;">考核日期</label><input id="rpt_date" value="'+(r.meta.assessDate||'')+'" placeholder="如：2026-06-18" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
-  html += '<div><label style="font-size:11px;color:#999;">考核人</label><input id="rpt_person" value="'+(r.meta.assessor||profile.name||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
-  html += '<div><label style="font-size:11px;color:#999;">项目经理</label><input id="rpt_mgr" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
-  html += '<div><label style="font-size:11px;color:#999;">质检员</label><input id="rpt_qc" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
-  html += '<div><label style="font-size:11px;color:#999;">施工员</label><input id="rpt_builder" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
-  html += '<div><label style="font-size:11px;color:#999;">材料员</label><input id="rpt_material" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">项目名称</label><input id="rpt_project" value="'+(pi.projectName||project.name||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">考核日期</label><input id="rpt_date" value="'+(pi.date||'')+'" placeholder="如：2026-06-18" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">考核人</label><input id="rpt_person" value="'+(profile.name||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">项目经理</label><input id="rpt_mgr" value="'+(pi.projectManager||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">质检员</label><input id="rpt_qc" value="'+(pi.qualityInspector||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">施工员</label><input id="rpt_builder" value="'+(pi.constructionWorker||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">材料员</label><input id="rpt_material" value="'+(pi.materialStaff||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
   html += '<div><label style="font-size:11px;color:#999;">总分</label><input id="rpt_total" value="'+(r.totalScore||0)+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-weight:600;color:#1a73e8;" /></div>';
   html += '</div></div>';
 
@@ -1550,47 +1551,32 @@ function showReportGenPage() {
   html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
   html += '<div style="font-size:14px;font-weight:600;color:#333;margin-bottom:8px;">📊 考核结果预览</div>';
   html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
-  html += '<tr style="background:#f0f4ff;"><th style="padding:8px;border:1px solid #ddd;text-align:left;">考核项目</th><th style="padding:8px;border:1px solid #ddd;width:60px;">标准分</th><th style="padding:8px;border:1px solid #ddd;width:50px;">扣分</th><th style="padding:8px;border:1px solid #ddd;width:60px;">得分</th></tr>';
+  html += '<tr style="background:#f0f4ff;"><th style="padding:8px;border:1px solid #ddd;text-align:left;">考核项目</th><th style="padding:8px;border:1px solid #ddd;width:60px;">满分</th><th style="padding:8px;border:1px solid #ddd;width:50px;">扣分</th><th style="padding:8px;border:1px solid #ddd;width:60px;">得分</th></tr>';
 
-  var lastCat = '';
-  var catScores = {};
-  r.items.forEach(function(item) {
-    if (item.category && item.category !== lastCat) {
-      lastCat = item.category;
-      if (!catScores[item.category]) catScores[item.category] = {total: 0, deduct: 0, got: 0};
-    }
-    if (item.category) {
-      catScores[item.category] = catScores[item.category] || {total: 0, deduct: 0, got: 0};
-      catScores[item.category].total += item.stdScore || 0;
-      catScores[item.category].deduct += item.deduct || 0;
-      catScores[item.category].got += item.score || 0;
-    }
-  });
-
-  Object.keys(catScores).forEach(function(catName) {
-    var c = catScores[catName];
-    var deductStyle = c.deduct > 0 ? 'color:#e74c3c;font-weight:600;' : '';
+  (r.results || []).forEach(function(cat) {
+    var deduct = cat.total - cat.score;
+    var deductStyle = deduct > 0 ? 'color:#e74c3c;font-weight:600;' : '';
     html += '<tr>';
-    html += '<td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;color:#1a73e8;">'+catName+'</td>';
-    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">'+c.total+'</td>';
-    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;'+deductStyle+'">'+(c.deduct>0?'-'+c.deduct:'0')+'</td>';
-    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;font-weight:600;color:#1a73e8;">'+c.got+'</td>';
+    html += '<td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;color:#1a73e8;">'+cat.category+'、'+cat.name+'</td>';
+    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">'+cat.total+'</td>';
+    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;'+deductStyle+'">'+(deduct>0?'-'+deduct:'0')+'</td>';
+    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;font-weight:600;color:#1a73e8;">'+cat.score+'</td>';
     html += '</tr>';
   });
   html += '</table></div>';
 
   // 扣分项列表
-  var deductItems = r.items.filter(function(it){ return it.deduct > 0; });
-  if (deductItems.length > 0) {
+  var problems = r.problems || [];
+  if (problems.length > 0) {
     html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
-    html += '<div style="font-size:14px;font-weight:600;color:#e74c3c;margin-bottom:8px;">⚠️ 扣分项（'+deductItems.length+'项）</div>';
-    deductItems.forEach(function(item) {
+    html += '<div style="font-size:14px;font-weight:600;color:#e74c3c;margin-bottom:8px;">⚠️ 扣分项（'+problems.length+'项）</div>';
+    problems.forEach(function(item) {
       html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
       html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
-      html += '<span style="font-size:13px;color:#333;">'+item.name+'</span>';
-      html += '<span style="font-size:13px;color:#e74c3c;font-weight:600;">-'+item.deduct+'分</span>';
+      html += '<span style="font-size:13px;color:#333;">'+(item.item||item.name||'')+'</span>';
+      html += '<span style="font-size:13px;color:#e74c3c;font-weight:600;">-'+item.deduction+'分</span>';
       html += '</div>';
-      if (item.remark) html += '<div style="font-size:11px;color:#888;margin-top:2px;">'+item.remark+'</div>';
+      if (item.description) html += '<div style="font-size:11px;color:#888;margin-top:2px;">'+item.description+'</div>';
       html += '</div>';
     });
     html += '</div>';
