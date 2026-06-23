@@ -1227,13 +1227,16 @@ function parseEvaluationSheet(workbook) {
   const catTotals = { '一': 18, '二': 57, '三': 25, '四': 70, '五': 30 };
 
   ws.eachRow({ includeEmpty: false }, function(row, rowNumber) {
-    const cellA = (row.getCell(1).text || '').trim();
-    const cellB = (row.getCell(2).text || '').trim();
-    const cellF = (row.getCell(6).text || '').trim();   // 检查内容
-    const cellG = (row.getCell(7).text || '').trim();   // 考核记录及依据
+    let cellA, cellB, cellF, cellG, hVal;
+    try {
+      cellA = (cellToText(row.getCell(1).value) || '').trim();
+      cellB = (cellToText(row.getCell(2).value) || '').trim();
+      cellF = (cellToText(row.getCell(6).value) || '').trim();
+      cellG = (cellToText(row.getCell(7).value) || '').trim();
+      hVal = parseFloat(cellToText(row.getCell(8).value)) || 0;
+    } catch(e) { return; }  // 跳过无法读取的行
     const cellH = row.getCell(8);
     const cellI = row.getCell(9);
-    const hVal = parseFloat(cellToText(cellH.value)) || 0;
 
     // 提取项目信息（前几行）
     if (rowNumber <= 5) {
