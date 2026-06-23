@@ -997,14 +997,35 @@ function loadCustomStandards() {
     var saved = localStorage.getItem('customStandards');
     if(saved) {
       var custom = JSON.parse(saved);
-      // Merge custom content into checklistData
       checklistData.forEach(function(cat) {
         if(!custom[cat.id]) return;
         cat.items.forEach(function(item) {
           if(!custom[cat.id][item.id]) return;
           var ci = custom[cat.id][item.id];
+          // Restore item name
+          if(ci._name) item.name = ci._name;
+          // Restore item content
           if(ci.content !== undefined && item.content !== undefined) item.content = ci.content;
-          if(ci.subItems && item.subItems) {
+          // Restore subItems structure (handle additions/deletions)
+          if(ci._subItemsOrder && ci.subItems) {
+            var newSubItems = [];
+            ci._subItemsOrder.forEach(function(siId) {
+              if(!ci.subItems[siId]) return;
+              var savedSi = ci.subItems[siId];
+              // Find existing or create new
+              var existing = item.subItems ? item.subItems.find(function(s){return s.id===siId;}) : null;
+              if(existing) {
+                existing.name = savedSi.name;
+                if(savedSi.content !== undefined) existing.content = savedSi.content;
+                if(savedSi.maxDeduct !== undefined) existing.maxDeduct = savedSi.maxDeduct;
+                newSubItems.push(existing);
+              } else {
+                newSubItems.push({id:siId, name:savedSi.name, content:savedSi.content||'', maxDeduct:savedSi.maxDeduct||1});
+              }
+            });
+            item.subItems = newSubItems;
+          } else if(ci.subItems && item.subItems) {
+            // Legacy: only content/name changes on existing subItems
             item.subItems.forEach(function(si) {
               if(ci.subItems[si.id] && ci.subItems[si.id].content) si.content = ci.subItems[si.id].content;
               if(ci.subItems[si.id] && ci.subItems[si.id].name) si.name = ci.subItems[si.id].name;
@@ -1013,7 +1034,7 @@ function loadCustomStandards() {
         });
       });
     }
-  } catch(e) { console.log('loadCustomStandards error:', e); }
+  } catch(e) { console.error('loadCustomStandards error:', e); }
 }
 loadCustomStandards();
 
@@ -1043,15 +1064,19 @@ function renderStandardsPage() {
       html += '<div style="font-weight:600;font-size:13px;color:#333;margin-bottom:4px;">'+escH(item.name)+' ('+item.score+'分)</div>';
 
       if(item.subItems && item.subItems.length > 0) {
+        if(item.content) {
+          html += '<div style="margin-bottom:6px;">';
+          html += '<div style="font-size:11px;color:#999;margin-bottom:2px;">总体说明</div>';
+          html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;min-height:40px;resize:vertical;font-family:inherit;" id="std_'+item.id+'_content" placeholder="检查标准总体说明">'+escH(item.content)+'</textarea>';
+          html += '</div>';
+        }
         item.subItems.forEach(function(si, sii) {
           html += '<div style="margin:4px 0 8px;padding:6px 8px;background:#f8f9fa;border-radius:6px;">';
           html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
           html += '<span style="font-size:12px;color:#1a73e8;font-weight:500;">子项'+(sii+1)+'</span>';
           html += '<input style="flex:1;padding:4px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;" value="'+escH(si.name||'')+'" id="std_'+si.id+'_name" placeholder="子项名称" />';
           html += '</div>';
-          if(si.content) {
-            html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:11px;min-height:40px;resize:vertical;font-family:inherit;" id="std_'+si.id+'_content" placeholder="检查标准">'+escH(si.content)+'</textarea>';
-          }
+          html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:11px;min-height:40px;resize:vertical;font-family:inherit;" id="std_'+si.id+'_content" placeholder="检查标准">'+escH(si.content||'')+'</textarea>';
           html += '<div style="display:flex;gap:4px;margin-top:4px;">';
           html += '<button style="font-size:10px;padding:2px 8px;border:1px solid #e74c3c;color:#e74c3c;border-radius:4px;background:none;cursor:pointer;" onclick="deleteSubItem(\''+cat.id+'\',\''+item.id+'\',\''+si.id+'\')">🗑️ 删除</button>';
           html += '</div></div>';
@@ -1059,6 +1084,9 @@ function renderStandardsPage() {
         html += '<button style="font-size:11px;padding:4px 10px;border:1px dashed #1a73e8;color:#1a73e8;border-radius:4px;background:none;cursor:pointer;margin-top:4px;" onclick="addSubItem(\''+cat.id+'\',\''+item.id+'\')">+ 添加子项</button>';
       } else if(item.content) {
         html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;min-height:50px;resize:vertical;font-family:inherit;" id="std_'+item.id+'_content" placeholder="检查标准">'+escH(item.content)+'</textarea>';
+        html += '<button style="font-size:11px;padding:4px 10px;border:1px dashed #1a73e8;color:#1a73e8;border-radius:4px;background:none;cursor:pointer;margin-top:4px;" onclick="addSubItem(\''+cat.id+'\',\''+item.id+'\')">+ 添加子项</button>';
+      } else {
+        html += '<button style="font-size:11px;padding:4px 10px;border:1px dashed #1a73e8;color:#1a73e8;border-radius:4px;background:none;cursor:pointer;margin-top:4px;" onclick="addSubItem(\''+cat.id+'\',\''+item.id+'\')">+ 添加子项</button>';
       }
       html += '</div>';
     });
@@ -1075,49 +1103,49 @@ function renderStandardsPage() {
 }
 
 function saveCustomStandards() {
-  var custom = {};
+  try {
+  // First: read all current DOM values into checklistData
   checklistData.forEach(function(cat) {
-    custom[cat.id] = {};
     cat.items.forEach(function(item) {
       if(item.type === 'formula-group') return;
-      var ci = {};
-      // Read main item content
       var mainEl = document.getElementById('std_'+item.id+'_content');
-      if(mainEl) ci.content = mainEl.value;
-      // Read sub items
+      if(mainEl && item.content !== undefined) item.content = mainEl.value;
+      var nameEl = document.getElementById('std_'+item.id+'_name');
+      if(nameEl) item.name = nameEl.value;
       if(item.subItems && item.subItems.length > 0) {
+        item.subItems.forEach(function(si) {
+          var siNameEl = document.getElementById('std_'+si.id+'_name');
+          var siContentEl = document.getElementById('std_'+si.id+'_content');
+          if(siNameEl) si.name = siNameEl.value;
+          if(siContentEl) si.content = siContentEl.value;
+        });
+      }
+    });
+  });
+
+  // Save full structure as snapshot (including new/deleted subItems)
+  var snapshot = {};
+  checklistData.forEach(function(cat) {
+    snapshot[cat.id] = {};
+    cat.items.forEach(function(item) {
+      if(item.type === 'formula-group') return;
+      var ci = { _name: item.name, _score: item.score };
+      if(item.content !== undefined) ci.content = item.content;
+      if(item.subItems && item.subItems.length > 0) {
+        ci._subItemsOrder = [];
         ci.subItems = {};
         item.subItems.forEach(function(si) {
-          var nameEl = document.getElementById('std_'+si.id+'_name');
-          var contentEl = document.getElementById('std_'+si.id+'_content');
-          ci.subItems[si.id] = {};
-          if(nameEl) ci.subItems[si.id].name = nameEl.value;
-          if(contentEl) ci.subItems[si.id].content = contentEl.value;
+          ci._subItemsOrder.push(si.id);
+          ci.subItems[si.id] = { name: si.name, content: si.content||'', maxDeduct: si.maxDeduct||1 };
         });
       }
-      custom[cat.id][item.id] = ci;
+      snapshot[cat.id][item.id] = ci;
     });
   });
 
-  // Apply changes to checklistData
-  checklistData.forEach(function(cat) {
-    if(!custom[cat.id]) return;
-    cat.items.forEach(function(item) {
-      if(item.type === 'formula-group') return;
-      if(!custom[cat.id][item.id]) return;
-      var ci = custom[cat.id][item.id];
-      if(ci.content !== undefined && item.content !== undefined) item.content = ci.content;
-      if(ci.subItems && item.subItems) {
-        item.subItems.forEach(function(si) {
-          if(ci.subItems[si.id] && ci.subItems[si.id].content) si.content = ci.subItems[si.id].content;
-          if(ci.subItems[si.id] && ci.subItems[si.id].name) si.name = ci.subItems[si.id].name;
-        });
-      }
-    });
-  });
-
-  localStorage.setItem('customStandards', JSON.stringify(custom));
+  localStorage.setItem('customStandards', JSON.stringify(snapshot));
   showToast('✅ 标准已保存，新建考核将使用新标准');
+  } catch(e) { console.error('saveCustomStandards error:', e); showToast('❌ 保存失败：'+e.message); }
 }
 
 function addSubItem(catId, itemId) {
