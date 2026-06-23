@@ -36,7 +36,8 @@ const TABLE_IDS = {
   signboard: 'tblCx7ywWHeSW5nd',
   waterproof: 'tblrXxogAyXB7zS8',
   protect: 'tblzEnPjqBdSXFzK',
-  testing: 'tblctYgQboo3Qxqm'
+  testing: 'tblctYgQboo3Qxqm',
+  standards: 'tblM2pCg8FgVZxCZ'
 };
 
 // ============ 应用身份Token管理（tenant_access_token）============
@@ -841,6 +842,65 @@ app.post('/api/export-report', async (req, res) => {
   } catch (err) {
     console.error('Word导出失败:', err);
     res.status(500).json({ code: -1, msg: '导出失败: ' + err.message });
+  }
+});
+
+// ============ 考核标准：保存/加载（多人同步） ============
+// 保存标准：upsert一条记录，标识='main'，标准数据=完整JSON snapshot
+app.post('/api/standards/save', async (req, res) => {
+  try {
+    const { snapshot } = req.body;
+    if (!snapshot) return res.status(400).json({ code: -1, msg: '缺少标准数据' });
+    const tableId = TABLE_IDS.standards;
+    const jsonStr = JSON.stringify(snapshot);
+
+    // 查找已有记录
+    const listRes = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?filter=${encodeURIComponent(JSON.stringify({conjunction:'and',conditions:[{field_name:'标识',operator:'is',value:['main']}]}))}&page_size=10`);
+    
+    if (listRes.code === 0 && listRes.data && listRes.data.items && listRes.data.items.length > 0) {
+      // 更新已有记录
+      const recordId = listRes.data.items[0].record_id;
+      const result = await feishuRequest('PUT',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records/${recordId}`,
+        { fields: { '标识': 'main', '标准数据': jsonStr } });
+      res.json(result);
+    } else {
+      // 创建新记录
+      const result = await feishuRequest('POST',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records`,
+        { fields: { '标识': 'main', '标准数据': jsonStr } });
+      res.json(result);
+    }
+  } catch (err) {
+    console.error('保存标准失败:', err);
+    res.status(500).json({ code: -1, msg: '保存标准失败: ' + err.message });
+  }
+});
+
+// 加载标准：读取标识='main'的记录
+app.post('/api/standards/load', async (req, res) => {
+  try {
+    const tableId = TABLE_IDS.standards;
+    const result = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?filter=${encodeURIComponent(JSON.stringify({conjunction:'and',conditions:[{field_name:'标识',operator:'is',value:['main']}]}))}&page_size=1`);
+    
+    if (result.code === 0 && result.data && result.data.items && result.data.items.length > 0) {
+      const fields = result.data.items[0].fields;
+      const jsonStr = fields['标准数据'];
+      try {
+        const snapshot = JSON.parse(jsonStr);
+        res.json({ code: 0, data: { snapshot } });
+      } catch (e) {
+        res.json({ code: -1, msg: '标准数据格式错误' });
+      }
+    } else {
+      // 没有保存过标准，返回空
+      res.json({ code: 0, data: { snapshot: null } });
+    }
+  } catch (err) {
+    console.error('加载标准失败:', err);
+    res.status(500).json({ code: -1, msg: '加载标准失败: ' + err.message });
   }
 });
 
