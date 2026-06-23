@@ -1409,7 +1409,7 @@ function createReportDocx(data) {
       new TableCell({ width: { size: t === '考核项目' ? 50 : 25, type: WidthType.PERCENTAGE },
         borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
         shading: { fill: 'E8F0FE' },
-        children: [new Paragraph({ children: [new TextRun({ text, bold: true, size: 20 })] })]
+        children: [new Paragraph({ children: [new TextRun({ text: t, bold: true, size: 20 })] })]
       })
     )
   });
