@@ -429,7 +429,7 @@
 </div>
 <div class="page" id="page-profile-edit"><div class="section"><div class="section-card"><div class="section-title">📝 个人信息</div><div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div><div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div><div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div><div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div></div></div></div>
 <div class="page" id="page-profile-project"><div class="section"><div class="section-card"><div class="section-title">🏗️ 项目信息</div><div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div><div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div><div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div><div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div><div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div><div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div></div><div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div></div>
-<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:8px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerReportGen()">📄 生成考核报告</button><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#ff9800;color:#ff9800;" onclick="renderStandardsPage()">⚙️ 管理考核标准</button><input type="file" id="reportExcelFile" accept=".xlsx,.xls" style="display:none" onchange="handleReportExcel(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
+<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:8px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerReportGen()">📄 生成考核报告</button><div id="cachedReportCard" style="display:none;background:#fff;border:1px solid #1a73e8;border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;" onclick="openCachedReport()"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#1a73e8;font-weight:600;">📝 继续编辑报告</span><span id="cachedReportProject" style="font-size:11px;color:#888;"></span></div><div id="cachedReportInfo" style="font-size:11px;color:#999;margin-top:4px;"></div></div><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#ff9800;color:#ff9800;" onclick="renderStandardsPage()">⚙️ 管理考核标准</button><input type="file" id="reportExcelFile" accept=".xlsx,.xls" style="display:none" onchange="handleReportExcel(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
 <div class="page" id="page-assess-form">
   <div class="section" style="padding-bottom:0;">
     <div class="section-card" style="margin-bottom:8px;">
@@ -1597,6 +1597,73 @@ function showReportGenPage() {
   openPage('report-gen');
   // 启用粘贴监听
   setupReportPaste();
+  // 缓存报告数据
+  cacheReportData();
+}
+
+// ===== 报告缓存 =====
+function cacheReportData() {
+  try {
+    var cacheObj = {
+      parsedData: reportParsedData,
+      excelBase64: reportExcelBase64,
+      photos: {},
+      savedAt: new Date().toISOString()
+    };
+    // 只缓存照片的dataUrl（不缓存整个对象因为可能很大）
+    for (var k in _reportPhotos) {
+      if (_reportPhotos[k] && _reportPhotos[k].length > 0) {
+        cacheObj.photos[k] = _reportPhotos[k].map(function(p) { return {dataUrl: p.dataUrl, name: p.name}; });
+      }
+    }
+    localStorage.setItem('qc_report_cache', JSON.stringify(cacheObj));
+    updateCachedReportCard();
+  } catch(e) {
+    console.error('缓存报告失败:', e);
+  }
+}
+
+function openCachedReport() {
+  try {
+    var cacheStr = localStorage.getItem('qc_report_cache');
+    if (!cacheStr) { showToast('无缓存报告'); return; }
+    var cacheObj = JSON.parse(cacheStr);
+    reportParsedData = cacheObj.parsedData;
+    reportExcelBase64 = cacheObj.excelBase64;
+    _reportPhotos = cacheObj.photos || {};
+    showReportGenPage();
+    showToast('已加载缓存报告');
+  } catch(e) {
+    console.error('读取缓存报告失败:', e);
+    showToast('❌ 读取缓存失败');
+  }
+}
+
+function updateCachedReportCard() {
+  var card = document.getElementById('cachedReportCard');
+  if (!card) return;
+  try {
+    var cacheStr = localStorage.getItem('qc_report_cache');
+    if (!cacheStr) { card.style.display = 'none'; return; }
+    var cacheObj = JSON.parse(cacheStr);
+    var pi = cacheObj.parsedData && cacheObj.parsedData.projectInfo || {};
+    var projectName = pi.projectName || '';
+    var totalScore = cacheObj.parsedData && cacheObj.parsedData.totalScore || '';
+    var problems = cacheObj.parsedData && cacheObj.parsedData.problems || [];
+    // 照片数
+    var photoCount = 0;
+    for (var k in (cacheObj.photos || {})) { photoCount += (cacheObj.photos[k] || []).length; }
+    
+    document.getElementById('cachedReportProject').textContent = projectName;
+    var info = '总分 ' + totalScore + ' · 扣分 ' + problems.length + ' 项';
+    if (photoCount > 0) info += ' · 📷 ' + photoCount + ' 张';
+    var savedDate = cacheObj.savedAt ? cacheObj.savedAt.substring(0, 16).replace('T', ' ') : '';
+    if (savedDate) info += ' · ' + savedDate;
+    document.getElementById('cachedReportInfo').textContent = info;
+    card.style.display = '';
+  } catch(e) {
+    card.style.display = 'none';
+  }
 }
 // ===== 扣分项照片管理 =====
 var _reportPhotos = {}; // {0: [{dataUrl, name}, ...], 1: [...], ...}
@@ -1612,6 +1679,7 @@ function addReportPhoto(idx, input) {
   Promise.all(promises).then(function(results) {
     results.forEach(function(r) { _reportPhotos[idx].push(r); });
     renderReportPhotos(idx);
+    cacheReportData();
     input.value = '';
   });
 }
@@ -1628,6 +1696,7 @@ function removeReportPhoto(idx, photoIdx) {
   if (!_reportPhotos[idx]) return;
   _reportPhotos[idx].splice(photoIdx, 1);
   renderReportPhotos(idx);
+  cacheReportData();
 }
 
 function renderReportPhotos(idx) {
@@ -1671,6 +1740,7 @@ function setupReportPaste() {
       readFileAsDataUrl(file).then(function(r) {
         _reportPhotos[targetIdx].push(r);
         renderReportPhotos(targetIdx);
+        cacheReportData();
       });
     });
   });
@@ -3351,7 +3421,7 @@ if(profile.name && project.name) {
   // 已有身份和项目，直接进入主应用
   document.getElementById('entryPage').style.display = 'none';
   document.getElementById('mainApp').style.display = '';
-  loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar(); initAdmin();
+  loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar(); initAdmin(); updateCachedReportCard();
 } else {
   // 显示入口页
   document.getElementById('entryPage').style.display = '';
