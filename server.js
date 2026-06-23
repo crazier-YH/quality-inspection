@@ -1226,7 +1226,34 @@ function parseEvaluationSheet(workbook) {
   };
   const catTotals = { '一': 18, '二': 57, '三': 25, '四': 70, '五': 30 };
 
+  // 收集合并单元格的从属行号（非首行），避免扣分项重复计数
+  const mergedSlaveRows = new Set();
+  try {
+    const merges = ws.model && ws.model.merges ? ws.model.merges : (ws._merges ? Object.keys(ws._merges) : []);
+    merges.forEach(m => {
+      // m 可能是 "A110:A114" 格式的字符串，或 {top,bottom,...} 对象
+      let top, bottom;
+      if (typeof m === 'string') {
+        const parts = m.split(':');
+        if (parts.length === 2) {
+          const match = parts[0].match(/(\d+)/);
+          const match2 = parts[1].match(/(\d+)/);
+          if (match && match2) { top = parseInt(match[1]); bottom = parseInt(match2[1]); }
+        }
+      } else if (m && m.top !== undefined) {
+        top = m.top; bottom = m.bottom;
+      } else if (m && m.model) {
+        top = m.model.top; bottom = m.model.bottom;
+      }
+      if (top && bottom) {
+        for (let r = top + 1; r <= bottom; r++) mergedSlaveRows.add(r);
+      }
+    });
+  } catch(e) { /* 合并单元格解析失败不影响主流程 */ }
+
   ws.eachRow({ includeEmpty: false }, function(row, rowNumber) {
+    // 跳过合并单元格的非首行，避免扣分项重复
+    if (mergedSlaveRows.has(rowNumber)) return;
     let cellA, cellB, cellF, cellG, hVal;
     try {
       cellA = (cellToText(row.getCell(1).value) || '').trim();
