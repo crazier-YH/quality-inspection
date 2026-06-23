@@ -3272,24 +3272,8 @@ fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).
 
 <script>
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/service-worker.js').then(function(reg){
-    // 检查SW更新
-    reg.addEventListener('updatefound', function(){
-      var newWorker = reg.installing;
-      newWorker.addEventListener('statechange', function(){
-        if(newWorker.state === 'activated'){
-          // 新SW已激活，强制刷新页面加载新资源
-          console.log('New SW activated, reloading...');
-          location.reload();
-        }
-      });
-    });
-    // 强制检查更新
-    reg.update();
-  }).catch(function(e){console.log('SW注册失败',e)});
+  navigator.serviceWorker.register('/service-worker.js').catch(function(e){console.log('SW注册失败',e)});
 }
-// 版本标记，用于调试
-window.__SW_CHECK = 'qc-v16';
 </script>
 </body>
 </html>
