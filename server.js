@@ -1213,86 +1213,91 @@ const PORT = process.env.PORT || 3000;
 
 // ============ 考核报告生成 API ============
 function parseEvaluationSheet(workbook) {
-  const ws = workbook.worksheets[0];
+  // 优先读取'中、高'工作表，否则取第一个
+  const ws = workbook.getWorksheet('中、高') || workbook.worksheets[0];
   if (!ws) return null;
   
   const data = { projectInfo: {}, results: [], problems: [], totalScore: 0 };
   let currentCategory = null;
   let categoryScore = 0;
-  let categoryTotal = 0;
-  const categoryOrder = ['一', '二', '三', '四', '五'];
   const categoryNames = {
     '一': '标准化建设及周检', '二': '方案及资料管理', '三': '检验检测',
     '四': '实体质量管理', '五': '防渗漏及整改闭合'
   };
   const catTotals = { '一': 18, '二': 57, '三': 25, '四': 70, '五': 30 };
 
-  ws.eachRow({ includeEmpty: true }, function(row, rowNumber) {
-    const cellA = row.getCell(1).text.trim();
-    const cellB = row.getCell(2).text.trim();
-    const cellC = row.getCell(3).text.trim();
-    const cellD = row.getCell(4);
+  ws.eachRow({ includeEmpty: false }, function(row, rowNumber) {
+    const cellA = (row.getCell(1).text || '').trim();
+    const cellB = (row.getCell(2).text || '').trim();
+    const cellF = (row.getCell(6).text || '').trim();   // 检查内容
+    const cellG = (row.getCell(7).text || '').trim();   // 考核记录及依据
     const cellH = row.getCell(8);
     const cellI = row.getCell(9);
-    
-    // 提取项目信息
-    const rowText = row.values ? row.values.map(v => cellToText(v)).join('') : '';
-    if (rowText.includes('考核项目') || rowText.includes('项目经理')) {
+    const hVal = parseFloat(cellToText(cellH.value)) || 0;
+
+    // 提取项目信息（前几行）
+    if (rowNumber <= 5) {
+      const rowText = row.values ? row.values.map(v => cellToText(v)).join('') : '';
       if (!data.projectInfo.projectName) {
-        const pnMatch = rowText.match(/考核项目[：:]\s*(\S+)/);
-        if (pnMatch) data.projectInfo.projectName = pnMatch[1];
-        const pmMatch = rowText.match(/项目经理[：:]\s*(\S+)/);
-        if (pmMatch) data.projectInfo.projectManager = pmMatch[1];
+        const m = rowText.match(/考核项目[：:]\s*(\S+)/);
+        if (m) data.projectInfo.projectName = m[1];
       }
-      const qcMatch = rowText.match(/质检员[：:]\s*(\S+)/);
-      if (qcMatch) data.projectInfo.qualityInspector = qcMatch[1];
+      if (!data.projectInfo.projectManager) {
+        const m = rowText.match(/项目经理[：:]\s*(\S+)/);
+        if (m) data.projectInfo.projectManager = m[1];
+      }
+      const qcMatch = rowText.match(/质检员[：:]\s*([^施工]+?)(?:\s+施工员|$)/);
+      if (qcMatch && !data.projectInfo.qualityInspector) data.projectInfo.qualityInspector = qcMatch[1].trim().replace(/[、]$/, '');
       const cwMatch = rowText.match(/施工员[：:]\s*(\S+)/);
-      if (cwMatch) data.projectInfo.constructionWorker = cwMatch[1];
+      if (cwMatch && !data.projectInfo.constructionWorker) data.projectInfo.constructionWorker = cwMatch[1];
       const mtMatch = rowText.match(/材料员[：:]\s*(\S+)/);
-      if (mtMatch) data.projectInfo.materialStaff = mtMatch[1];
+      if (mtMatch && !data.projectInfo.materialStaff) data.projectInfo.materialStaff = mtMatch[1];
       const dtMatch = rowText.match(/(\d{4})\s*年\s*(\d+)\s*月\s*(\d+)\s*日/);
       if (dtMatch) data.projectInfo.date = `${dtMatch[1]}年${dtMatch[2]}月${dtMatch[3]}日`;
     }
 
-    // 检测考核大类
-    for (const key of categoryOrder) {
-      if (cellA === key || cellA.startsWith(key)) {
-        if (currentCategory) {
-          data.results.push({ category: currentCategory, name: categoryNames[currentCategory], score: categoryScore, total: categoryTotal });
-        }
-        currentCategory = cellA;
-        categoryTotal = catTotals[cellA] || 0;
-        categoryScore = 0;
-        break;
+    // 检测考核大类（A列精确匹配"一二三四五"）
+    if (categoryNames[cellA]) {
+      if (currentCategory) {
+        data.results.push({ category: currentCategory, name: categoryNames[currentCategory], score: categoryScore, total: catTotals[currentCategory] || 0 });
       }
+      currentCategory = cellA;
+      categoryScore = 0;
+      return;
     }
 
     // 检测小计行
-    if (cellA === '小计' || cellB === '小计') {
-      const scoreCell = cellToText(cellH.value) || cellToText(cellI.value);
-      if (scoreCell) categoryScore = parseFloat(scoreCell) || 0;
-    }
-
-    // 检测扣分项
-    const deductCell = cellToText(cellH.value) || cellToText(cellI.value);
-    if (deductCell && !isNaN(parseFloat(deductCell)) && parseFloat(deductCell) > 0 && cellB) {
-      data.problems.push({
-        category: currentCategory || '',
-        item: cellB || '',
-        description: cellB || '',
-        deduction: parseFloat(deductCell)
-      });
+    if (cellA === '小计') {
+      categoryScore = hVal;
+      return;
     }
 
     // 检测综合得分
     if (cellA.includes('综合得分') || cellA.includes('考评')) {
       const totalCell = cellToText(cellH.value) || cellToText(cellI.value);
       if (totalCell) data.totalScore = Math.round(parseFloat(totalCell) * 100) / 100;
+      return;
+    }
+
+    // 检测扣分项：H列>0 且不在表头/小计/大类行
+    if (hVal > 0 && currentCategory && cellA !== '小计' && !categoryNames[cellA]) {
+      // 名称用B列
+      const itemName = cellB || '';
+      // 问题描述优先取G列（考核记录及依据），G列为空则取F列（检查内容）
+      const description = cellG || cellF || itemName;
+      
+      data.problems.push({
+        category: currentCategory,
+        item: itemName,
+        description: description,
+        deduction: hVal
+      });
     }
   });
 
+  // 最后一个分类的结果
   if (currentCategory) {
-    data.results.push({ category: currentCategory, name: categoryNames[currentCategory], score: categoryScore, total: categoryTotal });
+    data.results.push({ category: currentCategory, name: categoryNames[currentCategory], score: categoryScore, total: catTotals[currentCategory] || 0 });
   }
 
   data.projectInfo.projectName = data.projectInfo.projectName || '待填写';
