@@ -3267,7 +3267,7 @@ if(profile.name && project.name) {
   }
 }
 document.querySelectorAll('input[type="date"]').forEach(function(el){if(!el.value)el.value=new Date().toISOString().split('T')[0];});
-fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();if(document.getElementById('mainApp').style.display!=='none'){loadHomeStats();}if(document.getElementById('entryPage').style.display!=='none'){loadEntryProjects();}}).catch(function(){API.online=false;updateSyncBar();});
+fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();if(document.getElementById('mainApp').style.display!=='none'){loadHomeStats();}loadEntryProjects();}).catch(function(){API.online=false;updateSyncBar();loadEntryProjects();});
 </script>
 
 <script>
