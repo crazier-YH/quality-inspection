@@ -429,7 +429,7 @@
 </div>
 <div class="page" id="page-profile-edit"><div class="section"><div class="section-card"><div class="section-title">📝 个人信息</div><div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div><div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div><div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div><div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div></div></div></div>
 <div class="page" id="page-profile-project"><div class="section"><div class="section-card"><div class="section-title">🏗️ 项目信息</div><div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div><div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div><div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div><div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div><div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div><div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div></div><div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div></div>
-<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:8px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerImportAssess()">📥 考核表导入</button><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#ff9800;color:#ff9800;" onclick="renderStandardsPage()">⚙️ 管理考核标准</button><input type="file" id="importAssessFile" accept=".xlsx,.xls" style="display:none" onchange="handleImportAssess(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
+<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:8px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerReportGen()">📄 生成考核报告</button><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#ff9800;color:#ff9800;" onclick="renderStandardsPage()">⚙️ 管理考核标准</button><input type="file" id="reportExcelFile" accept=".xlsx,.xls" style="display:none" onchange="handleReportExcel(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
 <div class="page" id="page-assess-form">
   <div class="section" style="padding-bottom:0;">
     <div class="section-card" style="margin-bottom:8px;">
@@ -449,6 +449,7 @@
 <div class="page" id="page-assess-detail"><div class="section" id="assessDetailContent"></div></div>
 <div class="page" id="page-assess-standards"><div class="section" id="standardsContent"></div></div>
 <div class="page" id="page-standards-history"><div class="section" id="standardsHistoryContent"></div></div>
+<div class="page" id="page-report-gen"><div class="section" id="reportGenContent"></div></div>
 <div class="page" id="page-material"><div class="section"><div class="section-card"><div class="section-title"><span>📦</span>历史验收记录</div><div id="materialRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('material')">+ 新增验收</button></div></div>
 <div class="page" id="page-process"><div class="section"><div class="section-card"><div class="section-title"><span>🔧</span>历史自检记录</div><div id="processRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('process')">+ 新增自检</button></div></div>
 <div class="page" id="page-signboard"><div class="section"><div class="section-card"><div class="section-title"><span>🪧</span>历史验收记录</div><div id="signboardRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('signboard')">+ 新增验收</button></div></div>
@@ -1090,7 +1091,7 @@ function goBack() {
 var pageTitles = {
   home:['工程质量管理','质量巡查 · 高效管理'], todo:['待办事项','今日任务一览'], profile:['个人中心','基本信息管理'],
   'profile-edit':['编辑个人信息','填写您的基本资料'], 'profile-project':['项目信息设置','设置后将自动填充'],
-  assess:['考核评分','质量管理考核'], 'assess-form':['考核检查表','五大类逐项评分'], 'assess-detail':['考核详情','查看评分明细'], 'assess-standards':['管理考核标准','编辑检查项和标准'], 'standards-history':['修改记录','查看和恢复历史版本'],
+  assess:['考核评分','质量管理考核'], 'assess-form':['考核检查表','五大类逐项评分'], 'assess-detail':['考核详情','查看评分明细'], 'assess-standards':['管理考核标准','编辑检查项和标准'], 'standards-history':['修改记录','查看和恢复历史版本'], 'report-gen':['生成考核报告','上传评分表导出Word报告'],
   material:['材料验收','进场材料验收'], process:['工序自检','工序质量自检'], signboard:['举牌验收','举牌验收记录'],
   waterproof:['防水重点','防水质量检查'], protect:['成品保护','成品保护检查'], testing:['送检记录','材料送检管理']
 };
@@ -1105,6 +1106,8 @@ function updateTopbar(name) {
     act.innerHTML = '<button onclick="saveCustomStandards()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">💾保存</button>'
       + '<button onclick="showStandardsHistory()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">📋记录</button>'
       + '<button onclick="resetCustomStandards()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#ffcccc;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">🔄默认</button>';
+  } else if(name === 'report-gen') {
+    act.innerHTML = '<button onclick="downloadReport()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">📥下载报告</button>';
   }
 }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
@@ -1485,6 +1488,171 @@ function onItemScoreChange(catId, itemId) {
   var newScore = parseFloat(scoreEl.value) || 0;
   item.score = newScore;
   recalcCategoryTotal(cat);
+}
+
+// ===== 考核报告生成 =====
+var reportExcelBase64 = null;
+var reportParsedData = null;
+
+function triggerReportGen() {
+  document.getElementById('reportExcelFile').click();
+}
+
+async function handleReportExcel(input) {
+  var file = input.files[0];
+  if (!file) return;
+  input.value = '';
+  showToast('⏳ 正在解析评分表...');
+
+  var reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      reportExcelBase64 = e.target.result.split(',')[1];
+      // 用已有的 import-assess API 解析Excel
+      var res = await fetch('/api/import-assess', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ fileName: file.name, fileData: reportExcelBase64 })
+      });
+      var data = await res.json();
+      if (data.code !== 0 || !data.data.parsed) {
+        showToast('❌ 无法解析评分表，请确认是标准考核评分Excel');
+        return;
+      }
+      reportParsedData = data.data.result;
+      showReportGenPage();
+    } catch(err) {
+      showToast('❌ 解析异常：' + err.message);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function showReportGenPage() {
+  var r = reportParsedData;
+  var html = '';
+
+  // 项目信息编辑区
+  html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="font-size:14px;font-weight:600;color:#333;margin-bottom:10px;">📋 项目信息（可编辑）</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+  html += '<div><label style="font-size:11px;color:#999;">项目名称</label><input id="rpt_project" value="'+(r.meta.projectName||project.name||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">考核日期</label><input id="rpt_date" value="'+(r.meta.assessDate||'')+'" placeholder="如：2026-06-18" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">考核人</label><input id="rpt_person" value="'+(r.meta.assessor||profile.name||'')+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">项目经理</label><input id="rpt_mgr" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">质检员</label><input id="rpt_qc" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">施工员</label><input id="rpt_builder" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">材料员</label><input id="rpt_material" value="" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" /></div>';
+  html += '<div><label style="font-size:11px;color:#999;">总分</label><input id="rpt_total" value="'+(r.totalScore||0)+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;font-weight:600;color:#1a73e8;" /></div>';
+  html += '</div></div>';
+
+  // 考核结果汇总
+  html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
+  html += '<div style="font-size:14px;font-weight:600;color:#333;margin-bottom:8px;">📊 考核结果预览</div>';
+  html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html += '<tr style="background:#f0f4ff;"><th style="padding:8px;border:1px solid #ddd;text-align:left;">考核项目</th><th style="padding:8px;border:1px solid #ddd;width:60px;">标准分</th><th style="padding:8px;border:1px solid #ddd;width:50px;">扣分</th><th style="padding:8px;border:1px solid #ddd;width:60px;">得分</th></tr>';
+
+  var lastCat = '';
+  var catScores = {};
+  r.items.forEach(function(item) {
+    if (item.category && item.category !== lastCat) {
+      lastCat = item.category;
+      if (!catScores[item.category]) catScores[item.category] = {total: 0, deduct: 0, got: 0};
+    }
+    if (item.category) {
+      catScores[item.category] = catScores[item.category] || {total: 0, deduct: 0, got: 0};
+      catScores[item.category].total += item.stdScore || 0;
+      catScores[item.category].deduct += item.deduct || 0;
+      catScores[item.category].got += item.score || 0;
+    }
+  });
+
+  Object.keys(catScores).forEach(function(catName) {
+    var c = catScores[catName];
+    var deductStyle = c.deduct > 0 ? 'color:#e74c3c;font-weight:600;' : '';
+    html += '<tr>';
+    html += '<td style="padding:6px 8px;border:1px solid #ddd;font-weight:600;color:#1a73e8;">'+catName+'</td>';
+    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">'+c.total+'</td>';
+    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;'+deductStyle+'">'+(c.deduct>0?'-'+c.deduct:'0')+'</td>';
+    html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;font-weight:600;color:#1a73e8;">'+c.got+'</td>';
+    html += '</tr>';
+  });
+  html += '</table></div>';
+
+  // 扣分项列表
+  var deductItems = r.items.filter(function(it){ return it.deduct > 0; });
+  if (deductItems.length > 0) {
+    html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
+    html += '<div style="font-size:14px;font-weight:600;color:#e74c3c;margin-bottom:8px;">⚠️ 扣分项（'+deductItems.length+'项）</div>';
+    deductItems.forEach(function(item) {
+      html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+      html += '<span style="font-size:13px;color:#333;">'+item.name+'</span>';
+      html += '<span style="font-size:13px;color:#e74c3c;font-weight:600;">-'+item.deduct+'分</span>';
+      html += '</div>';
+      if (item.remark) html += '<div style="font-size:11px;color:#888;margin-top:2px;">'+item.remark+'</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+
+  // 报告说明
+  html += '<div style="background:#e3f2fd;border-radius:8px;padding:10px;font-size:12px;color:#1565c0;">';
+  html += '📄 点击右上角「📥下载报告」按钮生成Word报告。报告包含封面、项目信息、考核结果、扣分项及照片预留位置。';
+  html += '</div>';
+
+  document.getElementById('reportGenContent').innerHTML = html;
+  openPage('report-gen');
+}
+
+async function downloadReport() {
+  if (!reportExcelBase64) {
+    showToast('❌ 请先上传评分表');
+    return;
+  }
+  showToast('⏳ 正在生成报告...');
+
+  var projectInfo = {
+    projectName: document.getElementById('rpt_project') ? document.getElementById('rpt_project').value : '',
+    projectManager: document.getElementById('rpt_mgr') ? document.getElementById('rpt_mgr').value : '',
+    qualityInspector: document.getElementById('rpt_qc') ? document.getElementById('rpt_qc').value : '',
+    constructionWorker: document.getElementById('rpt_builder') ? document.getElementById('rpt_builder').value : '',
+    materialStaff: document.getElementById('rpt_material') ? document.getElementById('rpt_material').value : '',
+    date: document.getElementById('rpt_date') ? document.getElementById('rpt_date').value : ''
+  };
+
+  try {
+    var res = await fetch('/api/generate-report', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ fileData: reportExcelBase64, projectInfo: projectInfo })
+    });
+
+    if (!res.ok) {
+      var err = await res.json();
+      showToast('❌ 生成失败：' + (err.msg || '未知错误'));
+      return;
+    }
+
+    var blob = await res.blob();
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    var disposition = res.headers.get('Content-Disposition');
+    var fileName = '质量巡查报告.docx';
+    if (disposition) {
+      var match = disposition.match(/filename\*?=(?:UTF-8'')?(.+)/i);
+      if (match) fileName = decodeURIComponent(match[1]);
+    }
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('✅ 报告已生成并下载');
+  } catch(err) {
+    showToast('❌ 下载异常：' + err.message);
+  }
 }
 
 function resetCustomStandards() {
