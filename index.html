@@ -1024,6 +1024,10 @@ function loadCustomStandards() {
               }
             });
             item.subItems = newSubItems;
+            // Update item score to match remaining sub-items' maxDeduct sum
+            var newScore = 0;
+            newSubItems.forEach(function(si){ newScore += (si.maxDeduct||1); });
+            if(newScore > 0) item.score = newScore;
           } else if(ci.subItems && item.subItems) {
             // Legacy: only content/name changes on existing subItems
             item.subItems.forEach(function(si) {
