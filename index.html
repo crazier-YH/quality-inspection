@@ -386,6 +386,7 @@
   <div class="topbar-row">
     <div class="topbar-back" id="backBtn" onclick="goBack()"></div>
     <h1 id="pageTitle">工程质量管理</h1>
+    <div id="topbarActions" style="margin-left:auto;display:flex;gap:6px;align-items:center;"></div>
   </div>
   <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
 </div>
@@ -1061,7 +1062,8 @@ function switchTab(name, el) {
   window.scrollTo(0,0);
 }
 function openPage(name) {
-  pageHistory.push(name);
+  var currentPage = pageHistory[pageHistory.length-1];
+  if(currentPage !== name) pageHistory.push(name);
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.getElementById('page-'+name).classList.add('active');
   document.getElementById('backBtn').style.display = 'inline-block';
@@ -1092,7 +1094,19 @@ var pageTitles = {
   material:['材料验收','进场材料验收'], process:['工序自检','工序质量自检'], signboard:['举牌验收','举牌验收记录'],
   waterproof:['防水重点','防水质量检查'], protect:['成品保护','成品保护检查'], testing:['送检记录','材料送检管理']
 };
-function updateTopbar(name) { var t=pageTitles[name]||['工程质量管理','']; document.getElementById('pageTitle').textContent=t[0]; document.getElementById('pageSub').textContent=t[1]; }
+function updateTopbar(name) { 
+  var t=pageTitles[name]||['工程质量管理','']; 
+  document.getElementById('pageTitle').textContent=t[0]; 
+  document.getElementById('pageSub').textContent=t[1]; 
+  // 右上角操作按钮
+  var act = document.getElementById('topbarActions');
+  act.innerHTML = '';
+  if(name === 'assess-standards') {
+    act.innerHTML = '<button onclick="saveCustomStandards()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">💾保存</button>'
+      + '<button onclick="showStandardsHistory()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#fff;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">📋记录</button>'
+      + '<button onclick="resetCustomStandards()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);color:#ffcccc;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;">🔄默认</button>';
+  }
+}
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
 // ===== 个人/项目信息 =====
@@ -1246,7 +1260,7 @@ function renderStandardsPage() {
   function escH(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   var html = '';
   html += '<div style="margin-bottom:12px;padding:10px;background:#e3f2fd;border-radius:8px;font-size:12px;color:#1565c0;">';
-  html += '☁️ 修改后请点击底部「保存修改」按钮，标准将同步到所有设备。修改后新建的考核记录将使用新标准。';
+  html += '☁️ 修改后请点击右上角「💾保存」按钮，标准将同步到所有设备。';
   html += '</div>';
 
   checklistData.forEach(function(cat, ci) {
@@ -1302,10 +1316,6 @@ function renderStandardsPage() {
 
     html += '</div></div>';
   });
-
-  html += '<button class="btn-primary" style="width:100%;margin-top:8px;" onclick="saveCustomStandards()">💾 保存修改</button>';
-  html += '<button class="btn-outline" style="width:100%;margin-top:8px;" onclick="showStandardsHistory()">📋 查看修改记录</button>';
-  html += '<button class="btn-outline" style="width:100%;margin-top:8px;color:#e74c3c;border-color:#e74c3c;" onclick="resetCustomStandards()">🔄 恢复默认标准</button>';
 
   document.getElementById('standardsContent').innerHTML = html;
   openPage('assess-standards');
