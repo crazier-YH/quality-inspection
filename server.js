@@ -38,6 +38,7 @@ const TABLE_IDS = {
   protect: 'tblzEnPjqBdSXFzK',
   testing: 'tblctYgQboo3Qxqm',
   standards: 'tblM2pCg8FgVZxCZ',
+  standardsHistory: 'tbl2BZCUFEXOlgHK',
   profiles: 'tblUJxzSGRlbNw0e',
   projects: 'tblIlEJYattnrBk8'
 };
@@ -847,19 +848,46 @@ app.post('/api/export-report', async (req, res) => {
   }
 });
 
-// ============ 考核标准：保存/加载（多人同步） ============
+// ============ 考核标准：保存/加载/历史/恢复（多人同步+版本管理） ============
 // 保存标准：upsert一条记录，标识='main'，标准数据=完整JSON snapshot
+// 同时将旧版本写入「标准修改记录」表，实现版本历史
 app.post('/api/standards/save', async (req, res) => {
   try {
-    const { snapshot } = req.body;
+    const { snapshot, operator, changeNote } = req.body;
     if (!snapshot) return res.status(400).json({ code: -1, msg: '缺少标准数据' });
     const tableId = TABLE_IDS.standards;
+    const historyTableId = TABLE_IDS.standardsHistory;
     const jsonStr = JSON.stringify(snapshot);
 
     // 查找已有记录（不加filter，取第一条）
     const listRes = await feishuRequest('GET',
       `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=1`);
     
+    let oldSnapshot = null;
+    if (listRes.code === 0 && listRes.data && listRes.data.items && listRes.data.items.length > 0) {
+      const fields = listRes.data.items[0].fields;
+      try { oldSnapshot = JSON.parse(fields['标准数据'] || 'null'); } catch(e) {}
+    }
+
+    // 如果有旧版本，先写入历史表
+    if (oldSnapshot !== null) {
+      const now = Date.now();
+      const note = changeNote || '更新考核标准';
+      try {
+        await feishuRequest('POST',
+          `/bitable/v1/apps/${config.bitableAppToken}/tables/${historyTableId}/records`,
+          { fields: {
+            '修改时间': now,
+            '修改人': operator || '系统',
+            '修改说明': note,
+            '标准快照': JSON.stringify(oldSnapshot)
+          }});
+        console.log('✅ 旧版标准已写入历史记录');
+      } catch(e) {
+        console.error('写入历史记录失败:', e.message);
+      }
+    }
+
     if (listRes.code === 0 && listRes.data && listRes.data.items && listRes.data.items.length > 0) {
       // 更新已有记录
       const recordId = listRes.data.items[0].record_id;
@@ -877,6 +905,95 @@ app.post('/api/standards/save', async (req, res) => {
   } catch (err) {
     console.error('保存标准失败:', err);
     res.status(500).json({ code: -1, msg: '保存标准失败: ' + err.message });
+  }
+});
+
+// 查询标准修改历史
+app.post('/api/standards/history', async (req, res) => {
+  try {
+    const { pageSize } = req.body;
+    const tableId = TABLE_IDS.standardsHistory;
+    const result = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=${pageSize || 50}`);
+    
+    if (result.code === 0 && result.data && result.data.items) {
+      const history = result.data.items.map(item => ({
+        recordId: item.record_id,
+        time: item.fields['修改时间'] || 0,
+        operator: item.fields['修改人'] || '',
+        note: item.fields['修改说明'] || '',
+        hasSnapshot: !!(item.fields['标准快照'])
+      }));
+      // 按时间倒序
+      history.sort((a, b) => b.time - a.time);
+      res.json({ code: 0, data: { history } });
+    } else {
+      res.json({ code: 0, data: { history: [] } });
+    }
+  } catch (err) {
+    console.error('查询历史失败:', err);
+    res.status(500).json({ code: -1, msg: '查询历史失败: ' + err.message });
+  }
+});
+
+// 恢复到某个历史版本
+app.post('/api/standards/restore', async (req, res) => {
+  try {
+    const { historyRecordId, operator } = req.body;
+    if (!historyRecordId) return res.status(400).json({ code: -1, msg: '缺少历史记录ID' });
+    const historyTableId = TABLE_IDS.standardsHistory;
+    const tableId = TABLE_IDS.standards;
+
+    // 1. 读取历史记录中的快照
+    const histRes = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${historyTableId}/records/${historyRecordId}`);
+    if (histRes.code !== 0 || !histRes.data || !histRes.data.record) {
+      return res.json({ code: -1, msg: '历史记录不存在' });
+    }
+    const histFields = histRes.data.record.fields;
+    const snapshotStr = histFields['标准快照'];
+    if (!snapshotStr) return res.json({ code: -1, msg: '历史快照为空' });
+
+    let restoredSnapshot;
+    try { restoredSnapshot = JSON.parse(snapshotStr); } catch(e) {
+      return res.json({ code: -1, msg: '历史快照数据损坏' });
+    }
+
+    // 2. 先将当前版本保存到历史表
+    const listRes = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=1`);
+    if (listRes.code === 0 && listRes.data && listRes.data.items && listRes.data.items.length > 0) {
+      const curFields = listRes.data.items[0].fields;
+      let curSnapshot = null;
+      try { curSnapshot = JSON.parse(curFields['标准数据'] || 'null'); } catch(e) {}
+      if (curSnapshot !== null) {
+        await feishuRequest('POST',
+          `/bitable/v1/apps/${config.bitableAppToken}/tables/${historyTableId}/records`,
+          { fields: {
+            '修改时间': Date.now(),
+            '修改人': operator || '系统',
+            '修改说明': '恢复前自动备份',
+            '标准快照': JSON.stringify(curSnapshot)
+          }});
+      }
+    }
+
+    // 3. 将历史快照写入当前标准
+    if (listRes.code === 0 && listRes.data && listRes.data.items && listRes.data.items.length > 0) {
+      const recordId = listRes.data.items[0].record_id;
+      await feishuRequest('PUT',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records/${recordId}`,
+        { fields: { '标识': 'main', '标准数据': snapshotStr } });
+    } else {
+      await feishuRequest('POST',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records`,
+        { fields: { '标识': 'main', '标准数据': snapshotStr } });
+    }
+
+    res.json({ code: 0, data: { snapshot: restoredSnapshot } });
+  } catch (err) {
+    console.error('恢复标准失败:', err);
+    res.status(500).json({ code: -1, msg: '恢复标准失败: ' + err.message });
   }
 });
 
