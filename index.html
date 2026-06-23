@@ -3271,8 +3271,13 @@ fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).
 </script>
 
 <script>
+// 注销旧Service Worker，清除缓存
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/service-worker.js').catch(function(e){console.log('SW注册失败',e)});
+  navigator.serviceWorker.getRegistrations().then(function(regs){
+    regs.forEach(function(reg){ reg.unregister(); });
+  });
+  // 清除所有缓存
+  if(caches){caches.keys().then(function(names){names.forEach(function(n){caches.delete(n);});});}
 }
 </script>
 </body>
