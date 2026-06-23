@@ -37,7 +37,9 @@ const TABLE_IDS = {
   waterproof: 'tblrXxogAyXB7zS8',
   protect: 'tblzEnPjqBdSXFzK',
   testing: 'tblctYgQboo3Qxqm',
-  standards: 'tblM2pCg8FgVZxCZ'
+  standards: 'tblM2pCg8FgVZxCZ',
+  profiles: 'tblUJxzSGRlbNw0e',
+  projects: 'tblIlEJYattnrBk8'
 };
 
 // ============ 应用身份Token管理（tenant_access_token）============
@@ -901,6 +903,162 @@ app.post('/api/standards/load', async (req, res) => {
   } catch (err) {
     console.error('加载标准失败:', err);
     res.status(500).json({ code: -1, msg: '加载标准失败: ' + err.message });
+  }
+});
+
+// ============ 用户信息：多人同步 ============
+// 列出所有用户
+app.post('/api/profiles/list', async (req, res) => {
+  try {
+    const tableId = TABLE_IDS.profiles;
+    const result = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=100`);
+    if (result.code === 0 && result.data && result.data.items) {
+      const profiles = result.data.items.map(item => ({
+        recordId: item.record_id,
+        name: item.fields['姓名'] || '',
+        position: item.fields['职务'] || '',
+        company: item.fields['公司'] || '',
+        phone: item.fields['手机号'] || ''
+      }));
+      res.json({ code: 0, data: { profiles } });
+    } else {
+      res.json({ code: 0, data: { profiles: [] } });
+    }
+  } catch (err) {
+    console.error('获取用户列表失败:', err);
+    res.status(500).json({ code: -1, msg: '获取用户列表失败' });
+  }
+});
+
+// 保存用户信息（按手机号去重，无则创建有则更新）
+app.post('/api/profiles/save', async (req, res) => {
+  try {
+    const { name, position, company, phone, recordId } = req.body;
+    if (!name && !phone) return res.status(400).json({ code: -1, msg: '缺少用户信息' });
+    const tableId = TABLE_IDS.profiles;
+    const fields = { '姓名': name || '', '职务': position || '', '公司': company || '', '手机号': phone || '' };
+
+    if (recordId) {
+      // 按recordId更新
+      const result = await feishuRequest('PUT',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records/${recordId}`,
+        { fields });
+      res.json(result);
+    } else if (phone) {
+      // 按手机号查找，有则更新无则创建
+      const listRes = await feishuRequest('GET',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=100`);
+      let existing = null;
+      if (listRes.code === 0 && listRes.data && listRes.data.items) {
+        existing = listRes.data.items.find(item => item.fields['手机号'] === phone);
+      }
+      if (existing) {
+        const result = await feishuRequest('PUT',
+          `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records/${existing.record_id}`,
+          { fields });
+        res.json(result);
+      } else {
+        const result = await feishuRequest('POST',
+          `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records`,
+          { fields });
+        res.json(result);
+      }
+    } else {
+      // 无手机号无recordId，直接创建
+      const result = await feishuRequest('POST',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records`,
+        { fields });
+      res.json(result);
+    }
+  } catch (err) {
+    console.error('保存用户信息失败:', err);
+    res.status(500).json({ code: -1, msg: '保存用户信息失败: ' + err.message });
+  }
+});
+
+// ============ 项目信息：多人同步 ============
+// 列出所有项目
+app.post('/api/projects/list', async (req, res) => {
+  try {
+    const tableId = TABLE_IDS.projects;
+    const result = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=100`);
+    if (result.code === 0 && result.data && result.data.items) {
+      const projects = result.data.items.map(item => ({
+        recordId: item.record_id,
+        name: item.fields['项目名称'] || '',
+        addr: item.fields['项目地址'] || '',
+        dev: item.fields['建设单位'] || '',
+        build: item.fields['施工单位'] || '',
+        sup: item.fields['监理单位'] || '',
+        mgr: item.fields['项目经理'] || ''
+      }));
+      res.json({ code: 0, data: { projects } });
+    } else {
+      res.json({ code: 0, data: { projects: [] } });
+    }
+  } catch (err) {
+    console.error('获取项目列表失败:', err);
+    res.status(500).json({ code: -1, msg: '获取项目列表失败' });
+  }
+});
+
+// 保存项目信息
+app.post('/api/projects/save', async (req, res) => {
+  try {
+    const { name, addr, dev, build, sup, mgr, recordId } = req.body;
+    if (!name) return res.status(400).json({ code: -1, msg: '缺少项目名称' });
+    const tableId = TABLE_IDS.projects;
+    const fields = {
+      '项目名称': name || '', '项目地址': addr || '',
+      '建设单位': dev || '', '施工单位': build || '',
+      '监理单位': sup || '', '项目经理': mgr || ''
+    };
+
+    if (recordId) {
+      const result = await feishuRequest('PUT',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records/${recordId}`,
+        { fields });
+      res.json(result);
+    } else {
+      // 检查同名项目是否存在
+      const listRes = await feishuRequest('GET',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=100`);
+      let existing = null;
+      if (listRes.code === 0 && listRes.data && listRes.data.items) {
+        existing = listRes.data.items.find(item => item.fields['项目名称'] === name);
+      }
+      if (existing) {
+        const result = await feishuRequest('PUT',
+          `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records/${existing.record_id}`,
+          { fields });
+        res.json(result);
+      } else {
+        const result = await feishuRequest('POST',
+          `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records`,
+          { fields });
+        res.json(result);
+      }
+    }
+  } catch (err) {
+    console.error('保存项目信息失败:', err);
+    res.status(500).json({ code: -1, msg: '保存项目信息失败: ' + err.message });
+  }
+});
+
+// 删除项目
+app.post('/api/projects/delete', async (req, res) => {
+  try {
+    const { recordId } = req.body;
+    if (!recordId) return res.status(400).json({ code: -1, msg: '缺少记录ID' });
+    const tableId = TABLE_IDS.projects;
+    const result = await feishuRequest('DELETE',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records/${recordId}`);
+    res.json(result);
+  } catch (err) {
+    console.error('删除项目失败:', err);
+    res.status(500).json({ code: -1, msg: '删除项目失败: ' + err.message });
   }
 });
 
