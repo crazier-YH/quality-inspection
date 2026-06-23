@@ -454,6 +454,34 @@ app.get('/api/image', async (req, res) => {
   }
 });
 
+// ============ Excel单元格值转文本 =============
+function cellToText(val) {
+  if (val == null) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number') return String(val);
+  if (typeof val === 'boolean') return String(val);
+  if (val instanceof Date) return val.toLocaleDateString('zh-CN');
+  // ExcelJS richText: {richText: [{text: '...'}, ...]}
+  if (val && typeof val === 'object' && Array.isArray(val.richText)) {
+    return val.richText.map(r => r.text || '').join('');
+  }
+  // ExcelJS formula: {result: 42, formula: '=A1+B1'}
+  if (val && typeof val === 'object' && val.result !== undefined) {
+    return cellToText(val.result);
+  }
+  // ExcelJS hyperlink: {text: '...', hyperlink: '...'}
+  if (val && typeof val === 'object' && typeof val.text === 'string') {
+    return val.text;
+  }
+  // ExcelJS sharedFormula: {sharedFormula: '...', result: 42}
+  if (val && typeof val === 'object' && val.sharedFormula !== undefined && val.result !== undefined) {
+    return cellToText(val.result);
+  }
+  // Fallback for other objects
+  if (typeof val === 'object') return JSON.stringify(val);
+  return String(val);
+}
+
 // ============ 导入考核评分表 =============
 app.post('/api/import-assess', async (req, res) => {
   try {
@@ -477,7 +505,7 @@ app.post('/api/import-assess', async (req, res) => {
     worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
       const cells = [];
       row.eachCell({ includeEmpty: true }, function(cell, colNumber) {
-        cells.push({ col: colNumber, value: cell.value });
+        cells.push({ col: colNumber, value: cellToText(cell.value) });
       });
       rows.push({ rowNumber, cells });
     });
@@ -521,21 +549,22 @@ app.post('/api/import-assess', async (req, res) => {
     for (let i = 0; i < headerRow; i++) {
       const rowText = rows[i].cells.map(c => String(c.value || '')).join('');
       if (rowText.indexOf('项目名称') >= 0 || rowText.indexOf('项目') >= 0) {
-        rows[i].cells.forEach(c => {
-          const v = String(c.value || '');
-          if (v.indexOf('项目') < 0 && v.trim()) result.meta.projectName = v.trim();
+        // meta extraction - value already text from cellToText
+      rows[i].cells.forEach(c => {
+          const v = (c.value || '').trim();
+          if (v.indexOf('项目') < 0 && v) result.meta.projectName = v;
         });
       }
       if (rowText.indexOf('考核日期') >= 0 || rowText.indexOf('日期') >= 0) {
         rows[i].cells.forEach(c => {
-          const v = String(c.value || '');
-          if (v.indexOf('日期') < 0 && v.trim()) result.meta.assessDate = v.trim();
+          const v = (c.value || '').trim();
+          if (v.indexOf('日期') < 0 && v) result.meta.assessDate = v;
         });
       }
       if (rowText.indexOf('考核人') >= 0) {
         rows[i].cells.forEach(c => {
-          const v = String(c.value || '');
-          if (v.indexOf('考核人') < 0 && v.trim()) result.meta.assessor = v.trim();
+          const v = (c.value || '').trim();
+          if (v.indexOf('考核人') < 0 && v) result.meta.assessor = v;
         });
       }
     }
@@ -545,7 +574,7 @@ app.post('/api/import-assess', async (req, res) => {
     for (let i = headerRow + 1; i < rows.length; i++) {
       const row = rows[i];
       const cellValues = {};
-      row.cells.forEach(c => { cellValues[c.col] = c.value; });
+      row.cells.forEach(c => { cellValues[c.col] = c.value; }); // value already converted by cellToText
 
       const name = String(cellValues[colMap.name] || '').trim();
       const std = parseFloat(cellValues[colMap.std]) || 0;
@@ -1207,7 +1236,7 @@ function parseEvaluationSheet(workbook) {
     const cellI = row.getCell(9);
     
     // 提取项目信息
-    const rowText = row.values ? row.values.map(v => String(v||'')).join('') : '';
+    const rowText = row.values ? row.values.map(v => cellToText(v)).join('') : '';
     if (rowText.includes('考核项目') || rowText.includes('项目经理')) {
       if (!data.projectInfo.projectName) {
         const pnMatch = rowText.match(/考核项目[：:]\s*(\S+)/);
@@ -1240,13 +1269,13 @@ function parseEvaluationSheet(workbook) {
 
     // 检测小计行
     if (cellA === '小计' || cellB === '小计') {
-      const scoreCell = cellH.value || cellI.value;
-      if (scoreCell != null) categoryScore = parseFloat(scoreCell) || 0;
+      const scoreCell = cellToText(cellH.value) || cellToText(cellI.value);
+      if (scoreCell) categoryScore = parseFloat(scoreCell) || 0;
     }
 
     // 检测扣分项
-    const deductCell = cellH.value || cellI.value;
-    if (deductCell != null && !isNaN(parseFloat(deductCell)) && parseFloat(deductCell) > 0 && cellB) {
+    const deductCell = cellToText(cellH.value) || cellToText(cellI.value);
+    if (deductCell && !isNaN(parseFloat(deductCell)) && parseFloat(deductCell) > 0 && cellB) {
       data.problems.push({
         category: currentCategory || '',
         item: cellB || '',
@@ -1257,8 +1286,8 @@ function parseEvaluationSheet(workbook) {
 
     // 检测综合得分
     if (cellA.includes('综合得分') || cellA.includes('考评')) {
-      const totalCell = cellH.value || cellI.value;
-      if (totalCell != null) data.totalScore = Math.round(parseFloat(totalCell) * 100) / 100;
+      const totalCell = cellToText(cellH.value) || cellToText(cellI.value);
+      if (totalCell) data.totalScore = Math.round(parseFloat(totalCell) * 100) / 100;
     }
   });
 
