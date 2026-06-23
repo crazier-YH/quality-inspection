@@ -819,6 +819,19 @@ function selectProject(el, name) {
   el.classList.add('selected');
   entryProjectName = name;
   document.getElementById('entryNewProject').value = '';
+  // 如果服务端有该项目详情，预加载到project对象
+  if(_serverProjects) {
+    var sp = _serverProjects.find(function(p){return p.name===name;});
+    if(sp) {
+      project.name = sp.name;
+      project.addr = sp.addr;
+      project.dev = sp.dev;
+      project.build = sp.build;
+      project.sup = sp.sup;
+      project.mgr = sp.mgr;
+      project.recordId = sp.recordId;
+    }
+  }
   checkEntryReady();
 }
 
@@ -843,8 +856,27 @@ function enterApp() {
   project.name = proj;
   localStorage.setItem('qc_project', JSON.stringify(project));
 
-  // 保存项目到项目列表
-  if(entryProjects.indexOf(proj)===-1) { entryProjects.push(proj); localStorage.setItem('qc_projects_list', JSON.stringify(entryProjects)); }
+  // 保存到后端
+  fetch('/api/profiles/save', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name:name, position:entryRole, company:profile.company||'', phone:profile.phone||'', recordId:profile.recordId})
+  }).then(function(r){return r.json();}).then(function(data){
+    if(data.code===0 && data.data && data.data.record) {
+      profile.recordId = data.data.record.record_id;
+      localStorage.setItem('qc_profile', JSON.stringify(profile));
+    }
+  }).catch(function(){});
+
+  fetch('/api/projects/save', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name:proj, addr:'', dev:'', build:'', sup:'', mgr:''})
+  }).then(function(r){return r.json();}).then(function(data){
+    if(data.code===0 && data.data && data.data.record) {
+      project.recordId = data.data.record.record_id;
+      localStorage.setItem('qc_project', JSON.stringify(project));
+      syncProjectsFromServer();
+    }
+  }).catch(function(){});
 
   // 如果是管理员，初始化
   initAdmin();
@@ -871,23 +903,44 @@ function quickEntry() {
 
 function loadEntryProjects() {
   var el = document.getElementById('projectList');
-  // 从考核记录中提取已有的项目名称
-  var projectNames = entryProjects.slice();
-  if(API.online) {
-    API.listRecords('assess', 100).then(function(res) {
-      if(res.code===0 && res.data && res.data.items) {
-        res.data.items.forEach(function(item) {
-          var pn = item.fields['项目名称'];
-          if(pn && projectNames.indexOf(pn)===-1) projectNames.push(pn);
-        });
-        localStorage.setItem('qc_projects_list', JSON.stringify(projectNames));
-        entryProjects = projectNames;
+  // 优先从服务端项目列表加载
+  fetch('/api/projects/list', {method:'POST', headers:{'Content-Type':'application/json'}})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var projectNames = [];
+      if(data.code===0 && data.data && data.data.projects) {
+        projectNames = data.data.profiles ? data.data.projects.map(function(p){return p.name;}) : [];
+        // wait, the response structure is data.projects not data.profiles
+        projectNames = data.data.projects.map(function(p){return p.name;});
+        _serverProjects = data.data.projects;
       }
+      // 也从考核记录中补充项目名
+      if(API.online) {
+        API.listRecords('assess', 100).then(function(res) {
+          if(res.code===0 && res.data && res.data.items) {
+            res.data.items.forEach(function(item) {
+              var pn = item.fields['项目名称'];
+              if(pn && projectNames.indexOf(pn)===-1) projectNames.push(pn);
+            });
+          }
+          entryProjects = projectNames;
+          renderProjectList(projectNames);
+        });
+      } else {
+        // 离线时用localStorage
+        var localProjects = JSON.parse(localStorage.getItem('qc_projects_list')||'[]');
+        localProjects.forEach(function(pn){if(projectNames.indexOf(pn)===-1)projectNames.push(pn);});
+        entryProjects = projectNames;
+        renderProjectList(projectNames);
+      }
+    })
+    .catch(function(e){
+      // 网络失败，用本地缓存
+      console.error('加载项目列表失败，使用本地缓存:', e);
+      var projectNames = JSON.parse(localStorage.getItem('qc_projects_list')||'[]');
+      entryProjects = projectNames;
       renderProjectList(projectNames);
     });
-  } else {
-    renderProjectList(projectNames);
-  }
 }
 
 function renderProjectList(names) {
@@ -925,6 +978,72 @@ var profile = JSON.parse(localStorage.getItem('qc_profile')||'{}');
 var project = JSON.parse(localStorage.getItem('qc_project')||'{}');
 var todos = JSON.parse(localStorage.getItem('qc_todos')||'[]');
 var currentFormType = '';
+
+// ===== 从后端同步profile和project =====
+var _serverProfiles = []; // 缓存服务端的用户列表
+var _serverProjects = []; // 缓存服务端的项目列表
+
+function syncProfileFromServer() {
+  fetch('/api/profiles/list', {method:'POST', headers:{'Content-Type':'application/json'}})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data.code===0 && data.data && data.data.profiles) {
+        _serverProfiles = data.data.profiles;
+        // 如果本地有手机号，从服务端同步最新数据
+        if(profile.phone) {
+          var serverProfile = _serverProfiles.find(function(p){return p.phone===profile.phone;});
+          if(serverProfile) {
+            profile.name = serverProfile.name || profile.name;
+            profile.position = serverProfile.position || profile.position;
+            profile.company = serverProfile.company || profile.company;
+            profile.recordId = serverProfile.recordId;
+            localStorage.setItem('qc_profile', JSON.stringify(profile));
+          }
+        }
+      }
+    }).catch(function(e){ console.error('同步用户信息失败:', e); });
+}
+
+function syncProjectsFromServer() {
+  fetch('/api/projects/list', {method:'POST', headers:{'Content-Type':'application/json'}})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      if(data.code===0 && data.data && data.data.projects) {
+        _serverProjects = data.data.projects;
+        // 如果本地有项目名，从服务端同步最新项目详情
+        if(project.name) {
+          var serverProject = _serverProjects.find(function(p){return p.name===project.name;});
+          if(serverProject) {
+            project.addr = serverProject.addr || project.addr;
+            project.dev = serverProject.dev || project.dev;
+            project.build = serverProject.build || project.build;
+            project.sup = serverProject.sup || project.sup;
+            project.mgr = serverProject.mgr || project.mgr;
+            project.recordId = serverProject.recordId;
+            localStorage.setItem('qc_project', JSON.stringify(project));
+            updateHomeProjectBar();
+          }
+        }
+        // 更新入口页项目列表
+        entryProjects = _serverProjects.map(function(p){return p.name;});
+        // 也从考核记录中补充项目名
+        if(API.online) {
+          API.listRecords('assess', 100).then(function(res) {
+            if(res.code===0 && res.data && res.data.items) {
+              res.data.items.forEach(function(item) {
+                var pn = item.fields['项目名称'];
+                if(pn && entryProjects.indexOf(pn)===-1) entryProjects.push(pn);
+              });
+            }
+          });
+        }
+      }
+    }).catch(function(e){ console.error('同步项目信息失败:', e); });
+}
+
+// 页面加载时从服务端同步
+syncProfileFromServer();
+syncProjectsFromServer();
 
 // ===== 导航 =====
 var pageHistory = ['home'];
@@ -977,9 +1096,50 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 
 // ===== 个人/项目信息 =====
 function loadProfile() { document.getElementById('pe_name').value=profile.name||''; document.getElementById('pe_position').value=profile.position||''; document.getElementById('pe_company').value=profile.company||''; document.getElementById('pe_phone').value=profile.phone||''; document.getElementById('profileDisplayName').textContent=profile.name||'未设置'; }
-function saveProfile() { profile.name=document.getElementById('pe_name').value; profile.position=document.getElementById('pe_position').value; profile.company=document.getElementById('pe_company').value; profile.phone=document.getElementById('pe_phone').value; localStorage.setItem('qc_profile',JSON.stringify(profile)); document.getElementById('profileDisplayName').textContent=profile.name||'未设置'; if(profile.name){var f=document.getElementById('a_person');if(f&&!f.value)f.value=profile.name;} }
+function saveProfile() { 
+  profile.name=document.getElementById('pe_name').value; 
+  profile.position=document.getElementById('pe_position').value; 
+  profile.company=document.getElementById('pe_company').value; 
+  profile.phone=document.getElementById('pe_phone').value; 
+  localStorage.setItem('qc_profile',JSON.stringify(profile)); 
+  document.getElementById('profileDisplayName').textContent=profile.name||'未设置'; 
+  if(profile.name){var f=document.getElementById('a_person');if(f&&!f.value)f.value=profile.name;}
+  // 保存到后端，多人同步
+  fetch('/api/profiles/save', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name:profile.name, position:profile.position, company:profile.company, phone:profile.phone, recordId:profile.recordId})
+  }).then(function(r){return r.json();}).then(function(data){
+    if(data.code===0 && data.data && data.data.record) {
+      profile.recordId = data.data.record.record_id || profile.recordId;
+      localStorage.setItem('qc_profile', JSON.stringify(profile));
+      console.log('✅ 个人信息已同步到服务器');
+    }
+  }).catch(function(e){ console.error('保存用户信息到服务器失败:', e); });
+}
 function loadProject() { document.getElementById('pj_name').value=project.name||''; document.getElementById('pj_addr').value=project.addr||''; document.getElementById('pj_dev').value=project.dev||''; document.getElementById('pj_build').value=project.build||''; document.getElementById('pj_sup').value=project.sup||''; document.getElementById('pj_mgr').value=project.mgr||''; updateHomeProjectBar(); }
-function saveProject() { project.name=document.getElementById('pj_name').value; project.addr=document.getElementById('pj_addr').value; project.dev=document.getElementById('pj_dev').value; project.build=document.getElementById('pj_build').value; project.sup=document.getElementById('pj_sup').value; project.mgr=document.getElementById('pj_mgr').value; localStorage.setItem('qc_project',JSON.stringify(project)); updateHomeProjectBar(); }
+function saveProject() { 
+  project.name=document.getElementById('pj_name').value; 
+  project.addr=document.getElementById('pj_addr').value; 
+  project.dev=document.getElementById('pj_dev').value; 
+  project.build=document.getElementById('pj_build').value; 
+  project.sup=document.getElementById('pj_sup').value; 
+  project.mgr=document.getElementById('pj_mgr').value; 
+  localStorage.setItem('qc_project',JSON.stringify(project)); 
+  updateHomeProjectBar(); 
+  // 保存到后端，多人同步
+  fetch('/api/projects/save', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name:project.name, addr:project.addr, dev:project.dev, build:project.build, sup:project.sup, mgr:project.mgr, recordId:project.recordId})
+  }).then(function(r){return r.json();}).then(function(data){
+    if(data.code===0 && data.data && data.data.record) {
+      project.recordId = data.data.record.record_id || project.recordId;
+      localStorage.setItem('qc_project', JSON.stringify(project));
+      console.log('✅ 项目信息已同步到服务器');
+      // 刷新服务端项目缓存
+      syncProjectsFromServer();
+    }
+  }).catch(function(e){ console.error('保存项目信息到服务器失败:', e); });
+}
 function updateHomeProjectBar() { document.getElementById('homeProjectName').textContent=project.name||'未设置项目'; var roleEl=document.getElementById('homeUserRole'); if(roleEl) roleEl.textContent=(profile.position||'未设置')+' · '+(profile.name||''); }
 function fillProjectFields() { if(project.name){var el=document.getElementById('a_project');if(el)el.value=project.name;} }
 
