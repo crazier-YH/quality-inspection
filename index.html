@@ -1264,7 +1264,12 @@ function renderStandardsPage() {
       }
 
       html += '<div style="padding:8px;border-bottom:1px solid #f0f0f0;">';
-      html += '<div style="font-weight:600;font-size:13px;color:#333;margin-bottom:4px;">'+escH(item.name)+' ('+item.score+'分)</div>';
+      html += '<div style="font-weight:600;font-size:13px;color:#333;margin-bottom:4px;display:flex;align-items:center;gap:6px;">';
+      html += '<span style="flex:1;">'+escH(item.name)+'</span>';
+      html += '<span style="font-size:12px;color:#999;white-space:nowrap;">';
+      html += '<input type="number" min="0" step="0.5" value="'+item.score+'" id="std_'+item.id+'_score" style="width:40px;padding:2px 4px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;text-align:center;" onchange="onItemScoreChange(\''+cat.id+'\',\''+item.id+'\')" />分';
+      html += '</span>';
+      html += '</div>';
 
       if(item.subItems && item.subItems.length > 0) {
         if(item.content) {
@@ -1278,6 +1283,7 @@ function renderStandardsPage() {
           html += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">';
           html += '<span style="font-size:12px;color:#1a73e8;font-weight:500;">子项'+(sii+1)+'</span>';
           html += '<input style="flex:1;padding:4px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:12px;" value="'+escH(si.name||'')+'" id="std_'+si.id+'_name" placeholder="子项名称" />';
+          html += '<span style="font-size:11px;color:#999;white-space:nowrap;">扣<input type="number" min="0" step="0.5" value="'+(si.maxDeduct||1)+'" id="std_'+si.id+'_maxDeduct" style="width:36px;padding:2px 4px;border:1px solid #e0e0e0;border-radius:4px;font-size:11px;text-align:center;" onchange="onSubItemMaxDeductChange(\''+cat.id+'\',\''+item.id+'\')" />分</span>';
           html += '</div>';
           html += '<textarea style="width:100%;padding:6px 8px;border:1px solid #e0e0e0;border-radius:4px;font-size:11px;min-height:40px;resize:vertical;font-family:inherit;" id="std_'+si.id+'_content" placeholder="检查标准">'+escH(si.content||'')+'</textarea>';
           html += '<div style="display:flex;gap:4px;margin-top:4px;">';
@@ -1316,12 +1322,16 @@ function saveCustomStandards() {
       if(mainEl && item.content !== undefined) item.content = mainEl.value;
       var nameEl = document.getElementById('std_'+item.id+'_name');
       if(nameEl) item.name = nameEl.value;
+      var scoreEl = document.getElementById('std_'+item.id+'_score');
+      if(scoreEl) item.score = parseFloat(scoreEl.value) || item.score;
       if(item.subItems && item.subItems.length > 0) {
         item.subItems.forEach(function(si) {
           var siNameEl = document.getElementById('std_'+si.id+'_name');
           var siContentEl = document.getElementById('std_'+si.id+'_content');
+          var siMaxEl = document.getElementById('std_'+si.id+'_maxDeduct');
           if(siNameEl) si.name = siNameEl.value;
           if(siContentEl) si.content = siContentEl.value;
+          if(siMaxEl) si.maxDeduct = parseFloat(siMaxEl.value) || 1;
         });
       }
     });
@@ -1435,6 +1445,36 @@ function recalcCategoryTotal(cat) {
     }
   });
   if(total > 0) cat.total = total;
+}
+
+// 子项扣分上限改变时，自动重算父项分数和分类总分
+function onSubItemMaxDeductChange(catId, itemId) {
+  var cat = checklistData.find(function(c){return c.id===catId;});
+  if(!cat) return;
+  var item = cat.items.find(function(i){return i.id===itemId;});
+  if(!item || !item.subItems) return;
+  // 先从DOM读取所有子项的maxDeduct
+  item.subItems.forEach(function(si) {
+    var el = document.getElementById('std_'+si.id+'_maxDeduct');
+    if(el) si.maxDeduct = parseFloat(el.value) || 1;
+  });
+  recalcItemScore(item);
+  recalcCategoryTotal(cat);
+  // 更新父项分数输入框
+  var scoreEl = document.getElementById('std_'+item.id+'_score');
+  if(scoreEl) scoreEl.value = item.score;
+}
+
+// 父项分数手动修改时，如果有子项则同步调整子项分数（仅在手动改父项分数时）
+function onItemScoreChange(catId, itemId) {
+  var cat = checklistData.find(function(c){return c.id===catId;});
+  if(!cat) return;
+  var item = cat.items.find(function(i){return i.id===itemId;});
+  if(!item) return;
+  var scoreEl = document.getElementById('std_'+item.id+'_score');
+  var newScore = parseFloat(scoreEl.value) || 0;
+  item.score = newScore;
+  recalcCategoryTotal(cat);
 }
 
 function resetCustomStandards() {
