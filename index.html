@@ -1620,7 +1620,8 @@ async function downloadReport() {
       return;
     }
 
-    var blob = await res.blob();
+    var arrayBuf = await res.arrayBuffer();
+    var blob = new Blob([arrayBuf], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
@@ -1633,8 +1634,10 @@ async function downloadReport() {
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(function() {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 1000);
     showToast('✅ 报告已生成并下载');
   } catch(err) {
     showToast('❌ 下载异常：' + err.message);
