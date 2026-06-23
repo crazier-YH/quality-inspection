@@ -447,6 +447,7 @@
 </div>
 <div class="page" id="page-assess-detail"><div class="section" id="assessDetailContent"></div></div>
 <div class="page" id="page-assess-standards"><div class="section" id="standardsContent"></div></div>
+<div class="page" id="page-standards-history"><div class="section" id="standardsHistoryContent"></div></div>
 <div class="page" id="page-material"><div class="section"><div class="section-card"><div class="section-title"><span>📦</span>历史验收记录</div><div id="materialRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('material')">+ 新增验收</button></div></div>
 <div class="page" id="page-process"><div class="section"><div class="section-card"><div class="section-title"><span>🔧</span>历史自检记录</div><div id="processRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('process')">+ 新增自检</button></div></div>
 <div class="page" id="page-signboard"><div class="section"><div class="section-card"><div class="section-title"><span>🪧</span>历史验收记录</div><div id="signboardRecordList"><div class="loading">加载中...</div></div></div><button class="btn-outline" style="width:100%" onclick="showForm('signboard')">+ 新增验收</button></div></div>
@@ -1087,7 +1088,7 @@ function goBack() {
 var pageTitles = {
   home:['工程质量管理','质量巡查 · 高效管理'], todo:['待办事项','今日任务一览'], profile:['个人中心','基本信息管理'],
   'profile-edit':['编辑个人信息','填写您的基本资料'], 'profile-project':['项目信息设置','设置后将自动填充'],
-  assess:['考核评分','质量管理考核'], 'assess-form':['考核检查表','五大类逐项评分'], 'assess-detail':['考核详情','查看评分明细'], 'assess-standards':['管理考核标准','编辑检查项和标准'],
+  assess:['考核评分','质量管理考核'], 'assess-form':['考核检查表','五大类逐项评分'], 'assess-detail':['考核详情','查看评分明细'], 'assess-standards':['管理考核标准','编辑检查项和标准'], 'standards-history':['修改记录','查看和恢复历史版本'],
   material:['材料验收','进场材料验收'], process:['工序自检','工序质量自检'], signboard:['举牌验收','举牌验收记录'],
   waterproof:['防水重点','防水质量检查'], protect:['成品保护','成品保护检查'], testing:['送检记录','材料送检管理']
 };
@@ -1274,6 +1275,7 @@ function renderStandardsPage() {
   });
 
   html += '<button class="btn-primary" style="width:100%;margin-top:8px;" onclick="saveCustomStandards()">💾 保存修改</button>';
+  html += '<button class="btn-outline" style="width:100%;margin-top:8px;" onclick="showStandardsHistory()">📋 查看修改记录</button>';
   html += '<button class="btn-outline" style="width:100%;margin-top:8px;color:#e74c3c;border-color:#e74c3c;" onclick="resetCustomStandards()">🔄 恢复默认标准</button>';
 
   document.getElementById('standardsContent').innerHTML = html;
@@ -1326,7 +1328,7 @@ function saveCustomStandards() {
   fetch('/api/standards/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ snapshot: snapshot })
+    body: JSON.stringify({ snapshot: snapshot, operator: profile.name || '未知', changeNote: '手动编辑保存' })
   })
   .then(function(r){ return r.json(); })
   .then(function(data) {
@@ -1375,10 +1377,77 @@ function resetCustomStandards() {
   fetch('/api/standards/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ snapshot: {} })
+    body: JSON.stringify({ snapshot: {}, operator: profile.name || '未知', changeNote: '恢复默认标准' })
   }).catch(function(){});
   localStorage.removeItem('customStandards');
   location.reload();
+}
+
+// ============ 标准修改记录：查看与恢复 ============
+function showStandardsHistory() {
+  document.getElementById('standardsHistoryContent').innerHTML = '<div style="text-align:center;padding:40px;color:#999;">加载中...</div>';
+  openPage('standards-history');
+  fetch('/api/standards/history', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({pageSize:50})})
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
+      if(data.code !== 0 || !data.data || !data.data.history) {
+        document.getElementById('standardsHistoryContent').innerHTML = '<div style="text-align:center;padding:40px;color:#e74c3c;">加载失败</div>';
+        return;
+      }
+      var list = data.data.history;
+      var html = '';
+      if(list.length === 0) {
+        html = '<div style="text-align:center;padding:40px;color:#999;">暂无修改记录</div>';
+      } else {
+        html += '<div style="margin-bottom:12px;padding:10px;background:#e3f2fd;border-radius:8px;font-size:12px;color:#1565c0;">';
+        html += '📋 每次保存标准时，旧版本会自动归档。点击「恢复」可回退到对应版本。';
+        html += '</div>';
+        list.forEach(function(item) {
+          var t = item.time ? new Date(item.time).toLocaleString('zh-CN') : '未知时间';
+          html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">';
+          html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+          html += '<span style="font-size:13px;font-weight:600;color:#333;">'+t+'</span>';
+          if(item.note === '恢复前自动备份') {
+            html += '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#fff3e0;color:#f57c00;">自动备份</span>';
+          } else {
+            html += '<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:#e8f5e9;color:#4caf50;">手动保存</span>';
+          }
+          html += '</div>';
+          html += '<div style="font-size:12px;color:#666;margin-bottom:4px;">修改人：'+(item.operator||'未知')+'</div>';
+          html += '<div style="font-size:12px;color:#666;margin-bottom:8px;">说明：'+(item.note||'—')+'</div>';
+          html += '<button style="font-size:12px;padding:6px 14px;border:1px solid #1a73e8;color:#1a73e8;border-radius:6px;background:none;cursor:pointer;" onclick="restoreStandardVersion(\''+item.recordId+'\',\''+t.replace(/'/g,'')+'\')">🔄 恢复此版本</button>';
+          html += '</div>';
+        });
+      }
+      html += '<button class="btn-outline" style="width:100%;margin-top:8px;" onclick="openPage(\'assess-standards\')">← 返回标准编辑</button>';
+      document.getElementById('standardsHistoryContent').innerHTML = html;
+    })
+    .catch(function(e) {
+      document.getElementById('standardsHistoryContent').innerHTML = '<div style="text-align:center;padding:40px;color:#e74c3c;">加载失败: '+e.message+'</div>';
+    });
+}
+
+function restoreStandardVersion(recordId, timeLabel) {
+  if(!confirm('确定恢复到 '+timeLabel+' 的版本？\n当前版本会自动备份到修改记录中。')) return;
+  fetch('/api/standards/restore', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ historyRecordId: recordId, operator: profile.name || '未知' })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if(data.code === 0 && data.data && data.data.snapshot) {
+      localStorage.setItem('customStandards', JSON.stringify(data.data.snapshot));
+      applyCustomStandards(data.data.snapshot);
+      showToast('✅ 已恢复到历史版本，页面将刷新');
+      setTimeout(function(){ location.reload(); }, 1200);
+    } else {
+      showToast('❌ 恢复失败：'+(data.msg||'未知错误'));
+    }
+  })
+  .catch(function(e) {
+    showToast('❌ 恢复失败：'+e.message);
+  });
 }
 
 function initAssessForm() {
