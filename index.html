@@ -429,7 +429,7 @@
 </div>
 <div class="page" id="page-profile-edit"><div class="section"><div class="section-card"><div class="section-title">📝 个人信息</div><div class="field"><label>姓名</label><input id="pe_name" placeholder="请输入姓名" onchange="saveProfile()" /></div><div class="field"><label>职位</label><input id="pe_position" placeholder="如：质量主管" onchange="saveProfile()" /></div><div class="field"><label>公司</label><input id="pe_company" placeholder="公司名称" onchange="saveProfile()" /></div><div class="field"><label>联系电话</label><input id="pe_phone" placeholder="手机号" onchange="saveProfile()" /></div></div></div></div>
 <div class="page" id="page-profile-project"><div class="section"><div class="section-card"><div class="section-title">🏗️ 项目信息</div><div class="field"><label>项目名称</label><input id="pj_name" placeholder="如：广州雷晨项目" onchange="saveProject()" /></div><div class="field"><label>项目地址</label><input id="pj_addr" placeholder="项目所在地" onchange="saveProject()" /></div><div class="field"><label>建设单位</label><input id="pj_dev" placeholder="甲方/建设单位" onchange="saveProject()" /></div><div class="field"><label>施工单位</label><input id="pj_build" placeholder="总包/施工单位" onchange="saveProject()" /></div><div class="field"><label>监理单位</label><input id="pj_sup" placeholder="监理单位" onchange="saveProject()" /></div><div class="field"><label>项目经理</label><input id="pj_mgr" placeholder="项目经理姓名" onchange="saveProject()" /></div></div><div style="font-size:12px;color:#999;text-align:center;margin-top:8px">设置后，各模块将自动填充项目信息</div></div></div>
-<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:8px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerReportGen()">📄 生成考核报告</button><div id="cachedReportCard" style="display:none;background:#fff;border:1px solid #1a73e8;border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;" onclick="openCachedReport()"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:13px;color:#1a73e8;font-weight:600;">📝 继续编辑报告</span><span id="cachedReportProject" style="font-size:11px;color:#888;"></span></div><div style="display:flex;align-items:center;gap:4px;margin-top:4px;" onclick="event.stopPropagation()"><input id="cachedReportName" placeholder="报告名称（可自定义）" style="flex:1;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:12px;color:#333;" onchange="saveReportName(this.value)" /><span style="font-size:10px;color:#1a73e8;cursor:pointer;white-space:nowrap;" onclick="event.stopPropagation();clearReportCache()">🗑️</span></div><div id="cachedReportInfo" style="font-size:11px;color:#999;margin-top:4px;"></div></div><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#ff9800;color:#ff9800;" onclick="renderStandardsPage()">⚙️ 管理考核标准</button><input type="file" id="reportExcelFile" accept=".xlsx,.xls" style="display:none" onchange="handleReportExcel(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
+<div class="page" id="page-assess"><div class="section"><button class="btn-outline" style="width:100%;margin-bottom:8px" onclick="openPage('assess-form')">+ 新增考核</button><button class="btn-outline" style="width:100%;margin-bottom:8px;border-color:#1a73e8;color:#1a73e8;" onclick="triggerReportGen()">📄 生成考核报告</button><div id="reportCacheList" style="margin-bottom:8px;"></div><button class="btn-outline" style="width:100%;margin-bottom:12px;border-color:#ff9800;color:#ff9800;" onclick="renderStandardsPage()">⚙️ 管理考核标准</button><input type="file" id="reportExcelFile" accept=".xlsx,.xls" style="display:none" onchange="handleReportExcel(this)" /><div class="section-card"><div id="assessRecordList"><div class="loading">加载中...</div></div></div></div></div>
 <div class="page" id="page-assess-form">
   <div class="section" style="padding-bottom:0;">
     <div class="section-card" style="margin-bottom:8px;">
@@ -1259,34 +1259,23 @@ function syncTodoToReport(todoIdx) {
   var todo = todos[todoIdx];
   if (!todo || typeof todo._reportIdx !== 'number') return;
   try {
-    var cacheStr = localStorage.getItem('qc_report_cache');
-    if (!cacheStr) { showToast('未找到缓存报告'); return; }
-    var cacheObj = JSON.parse(cacheStr);
+    if (!_reportCacheId) { showToast('未找到已保存的报告，请先保存报告'); return; }
     var rIdx = todo._reportIdx;
-    // 同步整改后照片到报告缓存照片区
-    if (!cacheObj.photos) cacheObj.photos = {};
-    var existingPhotos = cacheObj.photos[rIdx] || [];
-    // 添加整改后照片（避免重复）
+    // 同步整改后照片到内存中的报告照片
+    if (!_reportPhotos[rIdx]) _reportPhotos[rIdx] = [];
     var afterPhotos = todo._afterPhotos || [];
     afterPhotos.forEach(function(ap) {
-      var dup = existingPhotos.some(function(ep) { return ep.dataUrl === ap.dataUrl; });
-      if (!dup) existingPhotos.push({dataUrl: ap.dataUrl, name: ap.name || '整改后'});
-    });
-    cacheObj.photos[rIdx] = existingPhotos;
-    // 同步整改回复到问题描述
-    if (cacheObj.parsedData && cacheObj.parsedData.problems && cacheObj.parsedData.problems[rIdx]) {
-      if (todo._rectifyReply) {
-        cacheObj.parsedData.problems[rIdx].rectifyReply = todo._rectifyReply;
-      }
-    }
-    localStorage.setItem('qc_report_cache', JSON.stringify(cacheObj));
-    // 同步到内存中的报告照片
-    if (!_reportPhotos[rIdx]) _reportPhotos[rIdx] = [];
-    afterPhotos.forEach(function(ap) {
-      var dup = _reportPhotos[rIdx].some(function(ep) { return ep.dataUrl === ap.dataUrl; });
+      var dup = _reportPhotos[rIdx].some(function(ep) { return ep.dataUrl === ap.dataUrl || (ep.file_token && ap.file_token && ep.file_token === ap.file_token); });
       if (!dup) _reportPhotos[rIdx].push({dataUrl: ap.dataUrl, name: ap.name || '整改后'});
     });
+    // 同步整改回复到问题描述
+    if (reportParsedData && reportParsedData.problems && reportParsedData.problems[rIdx]) {
+      if (todo._rectifyReply) {
+        reportParsedData.problems[rIdx].rectifyReply = todo._rectifyReply;
+      }
+    }
     renderReportPhotos(rIdx);
+    debouncedCacheReport();
     showToast('已同步 ' + afterPhotos.length + ' 张照片到报告');
   } catch(e) { showToast('同步失败: ' + e.message); }
 }
@@ -1643,6 +1632,7 @@ async function handleReportExcel(input) {
         return;
       }
       reportParsedData = data.data.result;
+      _reportCacheId = null; _reportCacheExcelToken = null;
       showReportGenPage();
     } catch(err) {
       showToast('❌ 解析异常：' + err.message);
@@ -1655,6 +1645,14 @@ function showReportGenPage() {
   var r = reportParsedData;
   var pi = r.projectInfo || {};
   var html = '';
+
+  // 报告名称 + 保存栏
+  var defaultName = (pi.projectName || project.name || '考核报告') + ' - ' + (pi.date || new Date().toISOString().split('T')[0]);
+  html += '<div style="background:#e3f2fd;border-radius:10px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">';
+  html += '<span style="font-size:13px;color:#1565c0;white-space:nowrap;">📝 报告名称</span>';
+  html += '<input id="rpt_cache_name" value="'+(_reportCacheId ? defaultName : defaultName)+'" placeholder="自定义报告名称" style="flex:1;padding:6px 10px;border:1px solid #bbdefb;border-radius:6px;font-size:13px;color:#333;" onchange="saveReportName(this.value)" />';
+  html += '<button onclick="cacheReportData()" style="background:#1a73e8;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;white-space:nowrap;">💾 保存</button>';
+  html += '</div>';
 
   // 项目信息编辑区
   html += '<div style="background:#fff;border-radius:10px;padding:14px;margin-bottom:10px;">';
@@ -1720,7 +1718,7 @@ function showReportGenPage() {
   openPage('report-gen');
   // 启用粘贴监听
   setupReportPaste();
-  // 缓存报告数据
+  // 缓存报告数据到飞书（异步）
   cacheReportData();
 }
 
@@ -1730,7 +1728,9 @@ function generateTodosFromReport() {
   if (!r || !r.problems || r.problems.length === 0) { showToast('无扣分项可生成'); return; }
   var pi = r.projectInfo || {};
   var reportName = '';
-  try { var c = JSON.parse(localStorage.getItem('qc_report_cache')); reportName = (c && c.reportName) || ''; } catch(e) {}
+  // 获取报告名称
+  var nameInput = document.getElementById('rpt_cache_name');
+  if (nameInput) reportName = nameInput.value;
   var count = 0;
   r.problems.forEach(function(item, idx) {
     var title = (item.item || item.name || '问题') + '（-' + item.deduction + '分）';
@@ -1758,125 +1758,237 @@ function generateTodosFromReport() {
   openPage('todo');
 }
 
-// ===== 报告缓存 =====
-function cacheReportData() {
+// ===== 报告缓存（飞书多维表格，多人实时共享）=====
+var _reportCacheId = null; // 当前编辑的报告缓存recordId
+var _cacheTimer = null; // 缓存防抖定时器
+function debouncedCacheReport() { clearTimeout(_cacheTimer); _cacheTimer = setTimeout(cacheReportData, 2000); }
+var _reportCachePhotoTokens = {}; // 照片file_token映射 {idx: [{file_token, name}]}
+var _reportCacheExcelToken = null; // Excel文件token
+
+// 上传照片到飞书，返回file_token
+async function uploadReportPhoto(dataUrl, fileName) {
+  try {
+    var res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ imageData: dataUrl, fileName: fileName || 'photo_' + Date.now() + '.jpg' })
+    });
+    var data = await res.json();
+    if (data.code === 0) return data.file_token;
+    console.error('上传照片失败:', data.msg);
+    return null;
+  } catch(e) {
+    console.error('上传照片异常:', e);
+    return null;
+  }
+}
+
+// 保存报告缓存到飞书
+async function cacheReportData() {
   try {
     var pi = reportParsedData && reportParsedData.projectInfo || {};
     var defaultName = (pi.projectName || project.name || '考核报告') + ' - ' + (pi.date || new Date().toISOString().split('T')[0]);
-    var existingCache = localStorage.getItem('qc_report_cache');
-    var existingName = existingCache ? (JSON.parse(existingCache).reportName || '') : '';
-    var cacheObj = {
-      reportName: existingName || defaultName,
-      parsedData: reportParsedData,
-      excelBase64: reportExcelBase64,
-      photos: {},
-      savedAt: new Date().toISOString()
-    };
+    // 获取当前名称
+    var nameInput = document.getElementById('rpt_cache_name');
+    var reportName = (nameInput && nameInput.value) || defaultName;
+
+    // 上传Excel文件（如果有新的base64且没有已有token）
+    var excelToken = _reportCacheExcelToken;
+    if (reportExcelBase64 && !excelToken) {
+      try {
+        var excelRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ imageData: 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + reportExcelBase64, fileName: (pi.projectName || '考核') + '_评分表.xlsx' })
+        });
+        var excelData = await excelRes.json();
+        if (excelData.code === 0) excelToken = excelData.file_token;
+      } catch(e) { console.error('上传Excel失败:', e); }
+    }
+
+    // 上传新照片（只上传还没有token的）
+    var photoTokens = [];
+    var photoIndex = {};
     for (var k in _reportPhotos) {
       if (_reportPhotos[k] && _reportPhotos[k].length > 0) {
-        cacheObj.photos[k] = _reportPhotos[k].map(function(p) { return {dataUrl: p.dataUrl, name: p.name}; });
+        var indices = [];
+        for (var j = 0; j < _reportPhotos[k].length; j++) {
+          var p = _reportPhotos[k][j];
+          if (p.file_token) {
+            // 已有token（从飞书加载的）
+            photoTokens.push(p.file_token);
+            indices.push(photoTokens.length - 1);
+          } else if (p.dataUrl) {
+            // 新添加的照片，需要上传
+            var token = await uploadReportPhoto(p.dataUrl, p.name || 'photo_item' + k + '_' + j + '.jpg');
+            if (token) {
+              p.file_token = token; // 记住token避免重复上传
+              photoTokens.push(token);
+              indices.push(photoTokens.length - 1);
+            }
+          }
+        }
+        if (indices.length > 0) photoIndex[k] = indices;
       }
     }
-    // 尝试完整保存（含Excel base64）
-    try {
-      localStorage.setItem('qc_report_cache', JSON.stringify(cacheObj));
-      updateCachedReportCard();
-      return;
-    } catch(qe) {
-      // localStorage满了，尝试不存Excel base64
-      console.warn('缓存空间不足，尝试精简保存:', qe);
-    }
-    // 第二次尝试：不存excelBase64（导出时需重新上传Excel）
-    cacheObj.excelBase64 = null;
-    try {
-      localStorage.setItem('qc_report_cache', JSON.stringify(cacheObj));
-      updateCachedReportCard();
-      showToast('⚠️ 缓存空间不足，已保存解析数据（导出报告需重新上传Excel）');
-      return;
-    } catch(qe2) {
-      console.warn('精简保存仍失败，尝试最小化保存:', qe2);
-    }
-    // 第三次尝试：不存照片
-    cacheObj.photos = {};
-    try {
-      localStorage.setItem('qc_report_cache', JSON.stringify(cacheObj));
-      updateCachedReportCard();
-      showToast('⚠️ 缓存空间不足，已保存基础数据（照片需重新添加）');
-      return;
-    } catch(qe3) {
-      console.error('缓存报告失败:', qe3);
-      showToast('❌ 缓存空间不足，报告数据未能保存');
-    }
-  } catch(e) {
-    console.error('缓存报告异常:', e);
-  }
-}
 
-function openCachedReport() {
-  try {
-    var cacheStr = localStorage.getItem('qc_report_cache');
-    if (!cacheStr) { showToast('无缓存报告'); return; }
-    var cacheObj = JSON.parse(cacheStr);
-    reportParsedData = cacheObj.parsedData;
-    reportExcelBase64 = cacheObj.excelBase64;
-    _reportPhotos = cacheObj.photos || {};
-    showReportGenPage();
-    if (!cacheObj.excelBase64) {
-      showToast('⚠️ 已加载缓存，但Excel未保存（导出报告需重新上传）');
-    } else if (!cacheObj.photos || Object.keys(cacheObj.photos).length === 0) {
-      showToast('已加载缓存报告（照片未保存）');
+    var problems = reportParsedData && reportParsedData.problems || [];
+    var res = await fetch('/api/report-cache/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        recordId: _reportCacheId,
+        reportName: reportName,
+        projectName: pi.projectName || project.name || '',
+        parsedData: reportParsedData,
+        excelFileToken: excelToken,
+        photoTokens: photoTokens,
+        photoIndex: photoIndex,
+        totalScore: reportParsedData && reportParsedData.totalScore || 0,
+        problemCount: problems.length,
+        creator: profile.name || ''
+      })
+    });
+    var data = await res.json();
+    if (data.code === 0) {
+      _reportCacheId = data.data.recordId;
+      _reportCacheExcelToken = excelToken;
+      _reportCachePhotoTokens = photoIndex;
+      showToast('✅ 报告已保存并同步');
+      loadReportCacheList();
     } else {
-      showToast('已加载缓存报告');
+      showToast('❌ 保存失败: ' + (data.msg || ''));
     }
   } catch(e) {
-    console.error('读取缓存报告失败:', e);
-    showToast('❌ 读取缓存失败');
+    console.error('保存报告缓存异常:', e);
+    showToast('❌ 保存异常: ' + e.message);
   }
 }
 
-function updateCachedReportCard() {
-  var card = document.getElementById('cachedReportCard');
-  if (!card) return;
+// 加载报告缓存列表
+async function loadReportCacheList() {
   try {
-    var cacheStr = localStorage.getItem('qc_report_cache');
-    if (!cacheStr) { card.style.display = 'none'; return; }
-    var cacheObj = JSON.parse(cacheStr);
-    var pi = cacheObj.parsedData && cacheObj.parsedData.projectInfo || {};
-    var totalScore = cacheObj.parsedData && cacheObj.parsedData.totalScore || '';
-    var problems = cacheObj.parsedData && cacheObj.parsedData.problems || [];
-    var photoCount = 0;
-    for (var k in (cacheObj.photos || {})) { photoCount += (cacheObj.photos[k] || []).length; }
-    
-    document.getElementById('cachedReportName').value = cacheObj.reportName || '';
-    document.getElementById('cachedReportProject').textContent = pi.projectName || '';
-    var info = '总分 ' + totalScore + ' · 扣分 ' + problems.length + ' 项';
-    if (photoCount > 0) info += ' · 📷 ' + photoCount + ' 张';
-    var savedDate = cacheObj.savedAt ? cacheObj.savedAt.substring(5, 16).replace('T', ' ') : '';
-    if (savedDate) info += ' · ' + savedDate;
-    document.getElementById('cachedReportInfo').textContent = info;
-    card.style.display = '';
+    var res = await fetch('/api/report-cache/list', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({})
+    });
+    var data = await res.json();
+    if (data.code !== 0) return;
+    var list = data.data || [];
+    var container = document.getElementById('reportCacheList');
+    if (!container) return;
+    if (list.length === 0) { container.innerHTML = ''; return; }
+
+    var html = '<div style="font-size:12px;color:#888;margin-bottom:6px;padding-left:2px;">📝 已保存的报告（多人共享）</div>';
+    list.forEach(function(item) {
+      var savedStr = '';
+      if (item.savedAt) {
+        var d = new Date(item.savedAt);
+        savedStr = (d.getMonth()+1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0');
+      }
+      html += '<div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:10px;margin-bottom:6px;cursor:pointer;" onclick="openReportCache(\''+item.recordId+'\')">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+      html += '<span style="font-size:13px;color:#1a73e8;font-weight:600;">'+item.reportName+'</span>';
+      html += '<span style="font-size:10px;color:#999;">'+savedStr+'</span>';
+      html += '</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;margin-top:4px;">';
+      html += '<span style="font-size:11px;color:#666;">'+item.projectName+'</span>';
+      html += '<span style="font-size:11px;color:#999;">总分 '+item.totalScore+'</span>';
+      html += '<span style="font-size:11px;color:#e74c3c;">扣分'+item.problemCount+'项</span>';
+      html += '<span style="font-size:10px;color:#bbb;">'+item.creator+'</span>';
+      html += '<span style="font-size:10px;color:#e74c3c;cursor:pointer;margin-left:auto;" onclick="event.stopPropagation();deleteReportCache(\''+item.recordId+'\',\''+item.reportName.replace(/'/g,"")+'\')">删除</span>';
+      html += '</div></div>';
+    });
+    container.innerHTML = html;
   } catch(e) {
-    card.style.display = 'none';
+    console.error('加载报告缓存列表失败:', e);
   }
 }
 
-function saveReportName(name) {
+// 打开已缓存的报告
+async function openReportCache(recordId) {
   try {
-    var cacheStr = localStorage.getItem('qc_report_cache');
-    if (!cacheStr) return;
-    var cacheObj = JSON.parse(cacheStr);
-    cacheObj.reportName = name;
-    localStorage.setItem('qc_report_cache', JSON.stringify(cacheObj));
+    showToast('⏳ 加载中...');
+    var res = await fetch('/api/report-cache/load', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ recordId: recordId })
+    });
+    var data = await res.json();
+    if (data.code !== 0) { showToast('❌ 加载失败: ' + (data.msg || '')); return; }
+    var d = data.data;
+    _reportCacheId = d.recordId;
+    _reportCacheExcelToken = d.excelFileToken;
+    reportParsedData = d.parsedData;
+    reportExcelBase64 = null; // Excel从飞书附件获取，base64不再本地存
+    // 恢复照片：从飞书附件URL加载
+    _reportPhotos = {};
+    var photoIndex = d.photoIndex || {};
+    var photoFiles = d.photoFiles || [];
+    for (var k in photoIndex) {
+      _reportPhotos[k] = [];
+      (photoIndex[k] || []).forEach(function(fileIdx) {
+        if (photoFiles[fileIdx]) {
+          _reportPhotos[k].push({
+            dataUrl: photoFiles[fileIdx].tmp_url || ('/api/image?file_token=' + photoFiles[fileIdx].file_token),
+            name: photoFiles[fileIdx].name || '',
+            file_token: photoFiles[fileIdx].file_token
+          });
+        }
+      });
+    }
+    showReportGenPage();
+    showToast('✅ 已加载报告');
+  } catch(e) {
+    console.error('打开报告缓存失败:', e);
+    showToast('❌ 加载异常: ' + e.message);
+  }
+}
+
+// 删除报告缓存
+async function deleteReportCache(recordId, name) {
+  if (!confirm('确定删除报告"' + name + '"？此操作不可恢复。')) return;
+  try {
+    var res = await fetch('/api/report-cache/delete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ recordId: recordId })
+    });
+    var data = await res.json();
+    if (data.code === 0) {
+      showToast('已删除');
+      if (_reportCacheId === recordId) {
+        _reportCacheId = null;
+        _reportCacheExcelToken = null;
+      }
+      loadReportCacheList();
+    } else {
+      showToast('❌ 删除失败: ' + (data.msg || ''));
+    }
+  } catch(e) {
+    showToast('❌ 删除异常');
+  }
+}
+
+// 保存报告名称
+async function saveReportName(name) {
+  if (!_reportCacheId) return;
+  try {
+    await fetch('/api/report-cache/update-name', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ recordId: _reportCacheId, reportName: name })
+    });
   } catch(e) {}
 }
 
-function clearReportCache() {
-  if (!confirm('确定删除缓存的报告？')) return;
-  localStorage.removeItem('qc_report_cache');
-  updateCachedReportCard();
-  showToast('已删除缓存报告');
-}
-// ===== 扣分项照片管理 =====
+// 旧函数兼容（保留引用点不报错）
+function updateCachedReportCard() { loadReportCacheList(); }
+function clearReportCache() { if(_reportCacheId) deleteReportCache(_reportCacheId, ''); }
+function openCachedReport() { if(_reportCacheId) openReportCache(_reportCacheId); }
+
+
 var _reportPhotos = {}; // {0: [{dataUrl, name}, ...], 1: [...], ...}
 
 function addReportPhoto(idx, input) {
@@ -1890,7 +2002,7 @@ function addReportPhoto(idx, input) {
   Promise.all(promises).then(function(results) {
     results.forEach(function(r) { _reportPhotos[idx].push(r); });
     renderReportPhotos(idx);
-    cacheReportData();
+    debouncedCacheReport();
     input.value = '';
   });
 }
@@ -1951,7 +2063,7 @@ function setupReportPaste() {
       readFileAsDataUrl(file).then(function(r) {
         _reportPhotos[targetIdx].push(r);
         renderReportPhotos(targetIdx);
-        cacheReportData();
+        debouncedCacheReport();
       });
     });
   });
@@ -1970,6 +2082,24 @@ function setupReportPaste() {
 var _reportPasteTargetIdx = 0;
 
 async function downloadReport() {
+
+  if (!reportExcelBase64 && _reportCacheExcelToken) {
+    // 从飞书附件下载Excel再导出
+    try {
+      showToast('⏳ 正在从云端获取Excel...');
+      var imgRes = await fetch('/api/image?file_token=' + _reportCacheExcelToken);
+      var blob = await imgRes.blob();
+      reportExcelBase64 = await new Promise(function(resolve) {
+        var reader = new FileReader();
+        reader.onload = function() { resolve(reader.result.split(',')[1]); };
+        reader.readAsDataURL(blob);
+      });
+    } catch(e) {
+      showToast('❌ 获取Excel失败，请重新上传评分表');
+      document.getElementById('reportExcelFile').click();
+      return;
+    }
+  }
 
   if (!reportExcelBase64) {
     showToast('⚠️ Excel未缓存，请重新上传评分表后再导出');
@@ -3633,7 +3763,7 @@ if(profile.name && project.name) {
   // 已有身份和项目，直接进入主应用
   document.getElementById('entryPage').style.display = 'none';
   document.getElementById('mainApp').style.display = '';
-  loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar(); initAdmin(); updateCachedReportCard();
+  loadProfile(); loadProject(); renderTodos(); updateHomeProjectBar(); updateSyncBar(); initAdmin(); loadReportCacheList();
 } else {
   // 显示入口页
   document.getElementById('entryPage').style.display = '';

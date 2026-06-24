@@ -41,7 +41,8 @@ const TABLE_IDS = {
   standards: 'tblM2pCg8FgVZxCZ',
   standardsHistory: 'tbl2BZCUFEXOlgHK',
   profiles: 'tblUJxzSGRlbNw0e',
-  projects: 'tblIlEJYattnrBk8'
+  projects: 'tblIlEJYattnrBk8',
+  reportCache: 'tblFoV5rh0Y8OGp0'
 };
 
 // ============ 应用身份Token管理（tenant_access_token）============
@@ -1567,6 +1568,160 @@ app.post('/api/generate-report', async (req, res) => {
   } catch (err) {
     console.error('生成报告失败:', err);
     res.status(500).json({ code: -1, msg: '生成报告失败: ' + err.message });
+  }
+});
+
+
+// ============ 报告缓存（飞书多维表格，多人实时共享）============
+const REPORT_CACHE_TABLE = 'tblFoV5rh0Y8OGp0';
+
+// 列出所有报告缓存
+app.post('/api/report-cache/list', async (req, res) => {
+  try {
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const pageSize = req.body.pageSize || 50;
+    const result = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records?page_size=${pageSize}`);
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    const records = (result.data?.items || []).map(r => {
+      const f = r.fields || {};
+      return {
+        recordId: r.record_id,
+        reportName: f['报告名称'] || '',
+        projectName: f['项目名称'] || '',
+        totalScore: f['总分'] || 0,
+        problemCount: f['扣分项数'] || 0,
+        savedAt: f['保存时间'] || 0,
+        creator: f['创建人'] || ''
+      };
+    });
+    res.json({ code: 0, data: records });
+  } catch (err) {
+    console.error('列出报告缓存失败:', err.message);
+    res.status(500).json({ code: -1, msg: err.message });
+  }
+});
+
+// 加载报告缓存详情
+app.post('/api/report-cache/load', async (req, res) => {
+  try {
+    const { recordId } = req.body;
+    if (!recordId) return res.status(400).json({ code: -1, msg: '缺少recordId' });
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const result = await feishuRequest('GET',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records/${recordId}`);
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    const f = result.data?.record?.fields || {};
+    // 解析报告数据
+    let parsedData = null;
+    try { parsedData = JSON.parse(f['报告数据'] || 'null'); } catch(e) {}
+    // 解析照片索引
+    let photoIndex = {};
+    try { photoIndex = JSON.parse(f['照片索引'] || '{}'); } catch(e) {}
+    // 获取附件URL
+    const excelFiles = f['Excel文件'] || [];
+    const photoFiles = f['照片'] || [];
+    res.json({
+      code: 0,
+      data: {
+        recordId,
+        reportName: f['报告名称'] || '',
+        projectName: f['项目名称'] || '',
+        parsedData,
+        excelFileToken: excelFiles.length > 0 ? excelFiles[0].file_token : null,
+        photoFiles: photoFiles.map(p => ({ file_token: p.file_token, name: p.name || '', tmp_url: p.tmp_url || '' })),
+        photoIndex,
+        totalScore: f['总分'] || 0,
+        problemCount: f['扣分项数'] || 0,
+        savedAt: f['保存时间'] || 0
+      }
+    });
+  } catch (err) {
+    console.error('加载报告缓存失败:', err.message);
+    res.status(500).json({ code: -1, msg: err.message });
+  }
+});
+
+// 保存/更新报告缓存
+app.post('/api/report-cache/save', async (req, res) => {
+  try {
+    const { recordId, reportName, projectName, parsedData, excelFileToken, photoTokens, photoIndex, totalScore, problemCount, creator } = req.body;
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+
+    const fields = {
+      '报告名称': reportName || '',
+      '项目名称': projectName || '',
+      '报告数据': JSON.stringify(parsedData || {}),
+      '总分': totalScore || 0,
+      '扣分项数': problemCount || 0,
+      '保存时间': Date.now(),
+      '创建人': creator || ''
+    };
+    if (excelFileToken) {
+      fields['Excel文件'] = [{ file_token: excelFileToken }];
+    }
+    if (photoTokens && photoTokens.length > 0) {
+      fields['照片'] = photoTokens.map(t => ({ file_token: t }));
+    }
+    if (photoIndex) {
+      fields['照片索引'] = JSON.stringify(photoIndex);
+    }
+
+    let result;
+    if (recordId) {
+      // 更新
+      result = await feishuRequest('PUT',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records/${recordId}`,
+        { fields });
+    } else {
+      // 新建
+      result = await feishuRequest('POST',
+        `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records`,
+        { fields });
+    }
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    res.json({ code: 0, data: { recordId: result.data?.record?.record_id || recordId } });
+  } catch (err) {
+    console.error('保存报告缓存失败:', err.message);
+    res.status(500).json({ code: -1, msg: err.message });
+  }
+});
+
+// 更新报告名称
+app.post('/api/report-cache/update-name', async (req, res) => {
+  try {
+    const { recordId, reportName } = req.body;
+    if (!recordId) return res.status(400).json({ code: -1, msg: '缺少recordId' });
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const result = await feishuRequest('PUT',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records/${recordId}`,
+      { fields: { '报告名称': reportName || '' } });
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    res.json({ code: 0 });
+  } catch (err) {
+    console.error('更新报告名称失败:', err.message);
+    res.status(500).json({ code: -1, msg: err.message });
+  }
+});
+
+// 删除报告缓存
+app.post('/api/report-cache/delete', async (req, res) => {
+  try {
+    const { recordId } = req.body;
+    if (!recordId) return res.status(400).json({ code: -1, msg: '缺少recordId' });
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const result = await feishuRequest('DELETE',
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records/${recordId}`);
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    res.json({ code: 0 });
+  } catch (err) {
+    console.error('删除报告缓存失败:', err.message);
+    res.status(500).json({ code: -1, msg: err.message });
   }
 });
 
