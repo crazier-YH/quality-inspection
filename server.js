@@ -1654,7 +1654,7 @@ app.post('/api/todo/list', async (req, res) => {
     if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
     const pageSize = req.body.pageSize || 100;
     const result = await feishuRequest('GET',
-      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records?page_size=\${pageSize}\`);
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${TABLE_IDS.todo}/records?page_size=${pageSize}`);
     if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
     const records = (result.data?.items || []).map(r => {
       const f = r.fields || {};
@@ -1709,7 +1709,7 @@ app.post('/api/todo/create', async (req, res) => {
       fields['整改后照片'] = afterPhotoTokens.map(t => ({ file_token: t }));
     }
     const result = await feishuRequest('POST',
-      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records\`,
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${TABLE_IDS.todo}/records`,
       { fields }
     );
     if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
@@ -1744,7 +1744,7 @@ app.post('/api/todo/update', async (req, res) => {
       fields['整改后照片'] = (afterPhotoTokens || []).map(t => ({ file_token: typeof t === 'string' ? t : t.file_token }));
     }
     const result = await feishuRequest('PUT',
-      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records/\${recordId}\`,
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${TABLE_IDS.todo}/records/${recordId}`,
       { fields }
     );
     if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
@@ -1763,7 +1763,7 @@ app.post('/api/todo/delete', async (req, res) => {
     const { recordId } = req.body;
     if (!recordId) return res.status(400).json({ code: -1, msg: '缺少recordId' });
     const result = await feishuRequest('DELETE',
-      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records/\${recordId}\`
+      `/bitable/v1/apps/${config.bitableAppToken}/tables/${TABLE_IDS.todo}/records/${recordId}`
     );
     if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
     res.json({ code: 0 });
