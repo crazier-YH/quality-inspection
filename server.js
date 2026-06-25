@@ -1593,6 +1593,7 @@ app.post('/api/generate-report', async (req, res) => {
       return res.json({ code: 0, data: { parsed: true, result: data, message: '解析成功' } });
     }
 
+    console.log('[EXPORT] reportCacheId:', req.body.reportCacheId, 'reportPhotos:', !!req.body.reportPhotos);
     // Fetch photo buffers - either from reportCacheId (preferred) or from reportPhotos URLs
     const photoBuffers = {}; // {idx: {before: [Buffer, ...], after: [Buffer, ...]}}
     const feishuToken = await getTenantAccessToken();
@@ -1600,8 +1601,10 @@ app.post('/api/generate-report', async (req, res) => {
     // Method 1: Load photos directly from Feishu report cache record
     if (req.body.reportCacheId) {
       try {
+        console.log('[EXPORT] Loading photos from cache:', req.body.reportCacheId, 'table:', REPORT_CACHE_TABLE);
         const cacheResult = await feishuRequest('GET',
           `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records/${req.body.reportCacheId}`);
+        console.log('[EXPORT] Cache result code:', cacheResult.code, 'has record:', !!cacheResult.data?.record);
         if (cacheResult.code === 0) {
           const cf = cacheResult.data?.record?.fields || {};
           let photoIndex = {};
