@@ -1591,56 +1591,99 @@ app.post('/api/generate-report', async (req, res) => {
       return res.json({ code: 0, data: { parsed: true, result: data, message: '解析成功' } });
     }
 
-    // Parse reportPhotos from frontend
-    let reportPhotos = {};
-    if (req.body.reportPhotos) {
+    // Fetch photo buffers - either from reportCacheId (preferred) or from reportPhotos URLs
+    const photoBuffers = {}; // {idx: {before: [Buffer, ...], after: [Buffer, ...]}}
+    const feishuToken = await getTenantAccessToken();
+    
+    // Method 1: Load photos directly from Feishu report cache record
+    if (req.body.reportCacheId) {
+      try {
+        const cacheResult = await feishuRequest('GET',
+          `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records/${req.body.reportCacheId}`);
+        if (cacheResult.code === 0) {
+          const cf = cacheResult.data?.record?.fields || {};
+          let photoIndex = {};
+          try { photoIndex = JSON.parse(cf['照片索引'] || '{}'); } catch(e) {}
+          const photoFiles = cf['照片'] || [];
+          for (const idx in photoIndex) {
+            const entry = photoIndex[idx];
+            photoBuffers[idx] = {before: [], after: []};
+            // New format: {before: [fileIdx, ...], after: [fileIdx, ...]}
+            if (entry && entry.before) {
+              for (const fileIdx of (entry.before || [])) {
+                if (photoFiles[fileIdx]) {
+                  try {
+                    const imgRes = await fetch(
+                      `https://open.feishu.cn/open-apis/drive/v1/medias/${photoFiles[fileIdx].file_token}/download`,
+                      { headers: { 'Authorization': 'Bearer ' + feishuToken } }
+                    );
+                    if (imgRes.ok) photoBuffers[idx].before.push(Buffer.from(await imgRes.arrayBuffer()));
+                  } catch(e) { console.error('获取整改前照片失败:', e.message); }
+                }
+              }
+              for (const fileIdx of (entry.after || [])) {
+                if (photoFiles[fileIdx]) {
+                  try {
+                    const imgRes = await fetch(
+                      `https://open.feishu.cn/open-apis/drive/v1/medias/${photoFiles[fileIdx].file_token}/download`,
+                      { headers: { 'Authorization': 'Bearer ' + feishuToken } }
+                    );
+                    if (imgRes.ok) photoBuffers[idx].after.push(Buffer.from(await imgRes.arrayBuffer()));
+                  } catch(e) { console.error('获取整改后照片失败:', e.message); }
+                }
+              }
+            } else if (Array.isArray(entry)) {
+              // Legacy flat format
+              for (const fileIdx of entry) {
+                if (photoFiles[fileIdx]) {
+                  try {
+                    const imgRes = await fetch(
+                      `https://open.feishu.cn/open-apis/drive/v1/medias/${photoFiles[fileIdx].file_token}/download`,
+                      { headers: { 'Authorization': 'Bearer ' + feishuToken } }
+                    );
+                    if (imgRes.ok) photoBuffers[idx].before.push(Buffer.from(await imgRes.arrayBuffer()));
+                  } catch(e) {}
+                }
+              }
+            }
+          }
+        }
+      } catch(e) { console.error('从缓存加载照片失败:', e.message); }
+    }
+    
+    // Method 2: Fallback - parse reportPhotos from frontend (for non-cached reports)
+    if (Object.keys(photoBuffers).length === 0 && req.body.reportPhotos) {
+      let reportPhotos = {};
       try {
         reportPhotos = typeof req.body.reportPhotos === 'string' ? JSON.parse(req.body.reportPhotos) : req.body.reportPhotos;
       } catch(e) { console.error('解析reportPhotos失败:', e); }
-    }
-    // Fetch photo images from URLs and convert to buffers
-    const photoBuffers = {}; // {idx: {before: [Buffer, ...], after: [Buffer, ...]}}
-    console.log('[DEBUG] reportPhotos keys:', Object.keys(reportPhotos));
-    for (const idx in reportPhotos) {
-      const entry = reportPhotos[idx];
-      photoBuffers[idx] = {before: [], after: []};
-      for (const type of ['before', 'after']) {
-        const urls = entry[type] || [];
-        console.log(`[DEBUG] Processing idx=${idx} type=${type} urls=${urls.length}`);
-        for (const url of urls) {
-          try {
-            let imgBuf = null;
-            if (url.startsWith('data:')) {
-              // base64 data URL
-              const b64 = url.split(',')[1];
-              if (b64) imgBuf = Buffer.from(b64, 'base64');
-              console.log(`[DEBUG] base64 photo: ${b64.length} chars`);
-            } else if (url.startsWith('/api/image?file_token=')) {
-              // Server-relative URL - fetch from Feishu
-              const fileToken = url.split('file_token=')[1];
-              console.log(`[DEBUG] Fetching file_token=${fileToken}`);
-              if (fileToken) {
-                const token = await getTenantAccessToken();
-                const imgRes = await fetch(
-                  `https://open.feishu.cn/open-apis/drive/v1/medias/${fileToken}/download`,
-                  { headers: { 'Authorization': 'Bearer ' + token } }
-                );
-                console.log(`[DEBUG] Feishu response: status=${imgRes.status} ok=${imgRes.ok}`);
-                if (imgRes.ok) {
-                  imgBuf = Buffer.from(await imgRes.arrayBuffer());
-                  console.log(`[DEBUG] Downloaded image: ${imgBuf.length} bytes`);
+      for (const idx in reportPhotos) {
+        const entry = reportPhotos[idx];
+        photoBuffers[idx] = {before: [], after: []};
+        for (const type of ['before', 'after']) {
+          const urls = entry[type] || [];
+          for (const url of urls) {
+            try {
+              let imgBuf = null;
+              if (url.startsWith('data:')) {
+                const b64 = url.split(',')[1];
+                if (b64) imgBuf = Buffer.from(b64, 'base64');
+              } else if (url.startsWith('/api/image?file_token=')) {
+                const fileToken = url.split('file_token=')[1];
+                if (fileToken) {
+                  const imgRes = await fetch(
+                    `https://open.feishu.cn/open-apis/drive/v1/medias/${fileToken}/download`,
+                    { headers: { 'Authorization': 'Bearer ' + feishuToken } }
+                  );
+                  if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
                 }
               }
-            } else {
-              console.log(`[DEBUG] Unknown URL format: ${url.substring(0, 50)}`);
-            }
-            if (imgBuf) photoBuffers[idx][type].push(imgBuf);
-            else console.log(`[DEBUG] No imgBuf for idx=${idx} type=${type}`);
-          } catch(e) { console.error('获取照片失败:', e.message); }
+              if (imgBuf) photoBuffers[idx][type].push(imgBuf);
+            } catch(e) { console.error('获取照片失败:', e.message); }
+          }
         }
       }
     }
-    console.log('[DEBUG] photoBuffers summary:', Object.keys(photoBuffers).map(k => `${k}: before=${photoBuffers[k].before.length} after=${photoBuffers[k].after.length}`).join(', '));
 
     const doc = createReportDocx(data, photoBuffers);
     const docBuffer = await Packer.toBuffer(doc);
@@ -1939,82 +1982,10 @@ app.post('/api/report-cache/delete', async (req, res) => {
 });
 
 
-// Debug: test photo download
-app.get('/api/debug-photo', async (req, res) => {
-  try {
-    const fileToken = req.query.file_token;
-    if (!fileToken) return res.json({ error: 'no file_token' });
-    const token = await getTenantAccessToken();
-    if (!token) return res.json({ error: 'no tenant token' });
-    const imgRes = await fetch(
-      'https://open.feishu.cn/open-apis/drive/v1/medias/' + fileToken + '/download',
-      { headers: { 'Authorization': 'Bearer ' + token } }
-    );
-    const buf = await imgRes.buffer();
-    res.json({ 
-      status: imgRes.status, 
-      ok: imgRes.ok,
-      size: buf.length,
-      contentType: imgRes.headers.get('content-type'),
-      firstBytes: buf.slice(0, 4).toString('hex')
-    });
-  } catch(e) {
-    res.json({ error: e.message, stack: e.stack });
-  }
-});
 
 
-// Debug: test report photo embedding
-app.post('/api/debug-generate-report', async (req, res) => {
-  try {
-    let reportPhotos = req.body.reportPhotos;
-    console.log('[DEBUG-GEN] raw reportPhotos type:', typeof reportPhotos, 'value:', JSON.stringify(reportPhotos).substring(0, 300));
-    
-    if (typeof reportPhotos === 'string') {
-      try { reportPhotos = JSON.parse(reportPhotos); } catch(e) { console.log('[DEBUG-GEN] parse failed:', e.message); }
-    }
-    
-    const result = { reportPhotosType: typeof reportPhotos, keys: Object.keys(reportPhotos || {}) };
-    
-    for (const idx in reportPhotos) {
-      const entry = reportPhotos[idx];
-      result['idx_' + idx] = { before: (entry.before || []).length, after: (entry.after || []).length };
-      for (const type of ['before', 'after']) {
-        const urls = entry[type] || [];
-        for (let i = 0; i < urls.length; i++) {
-          const url = urls[i];
-          result['idx_' + idx + '_' + type + '_' + i] = { 
-            urlStart: url.substring(0, 60),
-            isData: url.startsWith('data:'),
-            isApi: url.startsWith('/api/')
-          };
-          
-          // Try to fetch
-          try {
-            let imgBuf = null;
-            if (url.startsWith('/api/image?file_token=')) {
-              const fileToken = url.split('file_token=')[1];
-              const token = await getTenantAccessToken();
-              const imgRes = await fetch(
-                'https://open.feishu.cn/open-apis/drive/v1/medias/' + fileToken + '/download',
-                { headers: { 'Authorization': 'Bearer ' + token } }
-              );
-              if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
-            }
-            result['idx_' + idx + '_' + type + '_' + i].fetchOk = !!imgBuf;
-            result['idx_' + idx + '_' + type + '_' + i].fetchSize = imgBuf ? imgBuf.length : 0;
-          } catch(e) {
-            result['idx_' + idx + '_' + type + '_' + i].fetchError = e.message;
-          }
-        }
-      }
-    }
-    
-    res.json(result);
-  } catch(e) {
-    res.json({ error: e.message });
-  }
-});
+
+
 
 app.listen(PORT, async () => {
   console.log(`\n🚀 工程质量管理工具已启动（多人协作版）`);
