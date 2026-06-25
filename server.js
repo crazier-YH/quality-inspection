@@ -1600,11 +1600,13 @@ app.post('/api/generate-report', async (req, res) => {
     }
     // Fetch photo images from URLs and convert to buffers
     const photoBuffers = {}; // {idx: {before: [Buffer, ...], after: [Buffer, ...]}}
+    console.log('[DEBUG] reportPhotos keys:', Object.keys(reportPhotos));
     for (const idx in reportPhotos) {
       const entry = reportPhotos[idx];
       photoBuffers[idx] = {before: [], after: []};
       for (const type of ['before', 'after']) {
         const urls = entry[type] || [];
+        console.log(`[DEBUG] Processing idx=${idx} type=${type} urls=${urls.length}`);
         for (const url of urls) {
           try {
             let imgBuf = null;
@@ -1612,23 +1614,33 @@ app.post('/api/generate-report', async (req, res) => {
               // base64 data URL
               const b64 = url.split(',')[1];
               if (b64) imgBuf = Buffer.from(b64, 'base64');
+              console.log(`[DEBUG] base64 photo: ${b64.length} chars`);
             } else if (url.startsWith('/api/image?file_token=')) {
               // Server-relative URL - fetch from Feishu
               const fileToken = url.split('file_token=')[1];
+              console.log(`[DEBUG] Fetching file_token=${fileToken}`);
               if (fileToken) {
                 const token = await getTenantAccessToken();
                 const imgRes = await fetch(
                   `https://open.feishu.cn/open-apis/drive/v1/medias/${fileToken}/download`,
                   { headers: { 'Authorization': 'Bearer ' + token } }
                 );
-                if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
+                console.log(`[DEBUG] Feishu response: status=${imgRes.status} ok=${imgRes.ok}`);
+                if (imgRes.ok) {
+                  imgBuf = Buffer.from(await imgRes.arrayBuffer());
+                  console.log(`[DEBUG] Downloaded image: ${imgBuf.length} bytes`);
+                }
               }
+            } else {
+              console.log(`[DEBUG] Unknown URL format: ${url.substring(0, 50)}`);
             }
             if (imgBuf) photoBuffers[idx][type].push(imgBuf);
+            else console.log(`[DEBUG] No imgBuf for idx=${idx} type=${type}`);
           } catch(e) { console.error('获取照片失败:', e.message); }
         }
       }
     }
+    console.log('[DEBUG] photoBuffers summary:', Object.keys(photoBuffers).map(k => `${k}: before=${photoBuffers[k].before.length} after=${photoBuffers[k].after.length}`).join(', '));
 
     const doc = createReportDocx(data, photoBuffers);
     const docBuffer = await Packer.toBuffer(doc);
