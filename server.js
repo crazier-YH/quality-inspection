@@ -1488,6 +1488,7 @@ function createReportDocx(data, photoBuffers) {
         const photos = (photoBuffers && photoBuffers[problemIdx]) || {before: [], after: []};
         const beforeImgs = photos.before || [];
         const afterImgs = photos.after || [];
+        console.log('[EMBED] problemIdx=' + problemIdx + ' has before=' + beforeImgs.length + ' after=' + afterImgs.length + ' photoBuffers keys=' + Object.keys(photoBuffers || {}).join(','));
 
         // Build before photo cell content
         const beforeChildren = [];
