@@ -1644,6 +1644,135 @@ app.post('/api/generate-report', async (req, res) => {
 });
 
 
+
+// ============ 待办事项多人同步（飞书多维表格）============
+
+// 列出待办事项
+app.post('/api/todo/list', async (req, res) => {
+  try {
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const pageSize = req.body.pageSize || 100;
+    const result = await feishuRequest('GET',
+      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records?page_size=\${pageSize}\`);
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    const records = (result.data?.items || []).map(r => {
+      const f = r.fields || {};
+      let reportIndex = {};
+      try { reportIndex = JSON.parse(f['报告索引'] || '{}'); } catch(e) {}
+      return {
+        recordId: r.record_id,
+        text: f['待办内容'] || f['任务内容'] || '',
+        done: f['完成状态'] === 'done' || f['是否完成'] === true || f['是否完成'] === 'true',
+        _problemDesc: f['问题描述'] || '',
+        _rectifyReply: f['整改回复'] || '',
+        _beforePhotoTokens: (f['整改前照片'] || []).map(p => ({ file_token: p.file_token, name: p.name || '', tmp_url: p.tmp_url || '' })),
+        _afterPhotoTokens: (f['整改后照片'] || []).map(p => ({ file_token: p.file_token, name: p.name || '', tmp_url: p.tmp_url || '' })),
+        _reportIdx: reportIndex.reportIdx,
+        _reportName: reportIndex.reportName || '',
+        creator: f['创建人'] || '',
+        createdAt: f['创建时间'] || f['日期'] || 0,
+        projectName: f['项目名称'] || ''
+      };
+    });
+    res.json({ code: 0, data: records });
+  } catch (err) {
+    console.error('列出待办失败:', err);
+    res.status(500).json({ code: -1, msg: '列出待办失败' });
+  }
+});
+
+// 创建待办事项
+app.post('/api/todo/create', async (req, res) => {
+  try {
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const { text, done, problemDesc, rectifyReply, beforePhotoTokens, afterPhotoTokens, reportIdx, reportName, creator, projectName } = req.body;
+    let reportIndex = {};
+    if (reportIdx !== undefined && reportIdx !== null) {
+      reportIndex = { reportIdx, reportName: reportName || '' };
+    }
+    const fields = {
+      '待办内容': text || '',
+      '完成状态': done ? 'done' : '',
+      '是否完成': done ? true : false,
+      '问题描述': problemDesc || '',
+      '整改回复': rectifyReply || '',
+      '报告索引': JSON.stringify(reportIndex),
+      '创建人': creator || '',
+      '项目名称': projectName || ''
+    };
+    if (beforePhotoTokens && beforePhotoTokens.length > 0) {
+      fields['整改前照片'] = beforePhotoTokens.map(t => ({ file_token: t }));
+    }
+    if (afterPhotoTokens && afterPhotoTokens.length > 0) {
+      fields['整改后照片'] = afterPhotoTokens.map(t => ({ file_token: t }));
+    }
+    const result = await feishuRequest('POST',
+      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records\`,
+      { fields }
+    );
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    res.json({ code: 0, data: { recordId: result.data?.record?.record_id } });
+  } catch (err) {
+    console.error('创建待办失败:', err);
+    res.status(500).json({ code: -1, msg: '创建待办失败' });
+  }
+});
+
+// 更新待办事项
+app.post('/api/todo/update', async (req, res) => {
+  try {
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const { recordId, text, done, problemDesc, rectifyReply, beforePhotoTokens, afterPhotoTokens, reportIdx, reportName } = req.body;
+    if (!recordId) return res.status(400).json({ code: -1, msg: '缺少recordId' });
+    let reportIndex = {};
+    if (reportIdx !== undefined && reportIdx !== null) {
+      reportIndex = { reportIdx, reportName: reportName || '' };
+    }
+    const fields = {};
+    if (text !== undefined) fields['待办内容'] = text;
+    if (done !== undefined) { fields['完成状态'] = done ? 'done' : ''; fields['是否完成'] = !!done; }
+    if (problemDesc !== undefined) fields['问题描述'] = problemDesc;
+    if (rectifyReply !== undefined) fields['整改回复'] = rectifyReply;
+    if (reportIdx !== undefined) fields['报告索引'] = JSON.stringify(reportIndex);
+    if (beforePhotoTokens !== undefined) {
+      fields['整改前照片'] = (beforePhotoTokens || []).map(t => ({ file_token: typeof t === 'string' ? t : t.file_token }));
+    }
+    if (afterPhotoTokens !== undefined) {
+      fields['整改后照片'] = (afterPhotoTokens || []).map(t => ({ file_token: typeof t === 'string' ? t : t.file_token }));
+    }
+    const result = await feishuRequest('PUT',
+      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records/\${recordId}\`,
+      { fields }
+    );
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    res.json({ code: 0 });
+  } catch (err) {
+    console.error('更新待办失败:', err);
+    res.status(500).json({ code: -1, msg: '更新待办失败' });
+  }
+});
+
+// 删除待办事项
+app.post('/api/todo/delete', async (req, res) => {
+  try {
+    const token = await getTenantAccessToken();
+    if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
+    const { recordId } = req.body;
+    if (!recordId) return res.status(400).json({ code: -1, msg: '缺少recordId' });
+    const result = await feishuRequest('DELETE',
+      \`/bitable/v1/apps/\${config.bitableAppToken}/tables/\${TABLE_IDS.todo}/records/\${recordId}\`
+    );
+    if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
+    res.json({ code: 0 });
+  } catch (err) {
+    console.error('删除待办失败:', err);
+    res.status(500).json({ code: -1, msg: '删除待办失败' });
+  }
+});
+
 // ============ 报告缓存（飞书多维表格，多人实时共享）============
 const REPORT_CACHE_TABLE = 'tblFoV5rh0Y8OGp0';
 
