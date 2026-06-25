@@ -1992,6 +1992,47 @@ app.post('/api/report-cache/delete', async (req, res) => {
 
 
 
+
+// Test: load photos from report cache
+app.post('/api/test-export-photos', async (req, res) => {
+  try {
+    const { recordId } = req.body;
+    if (!recordId) return res.json({ error: 'no recordId' });
+    const token = await getTenantAccessToken();
+    if (!token) return res.json({ error: 'no token' });
+    
+    const result = await feishuRequest('GET',
+      '/bitable/v1/apps/' + config.bitableAppToken + '/tables/' + REPORT_CACHE_TABLE + '/records/' + recordId);
+    
+    if (result.code !== 0) return res.json({ error: 'feishu error', code: result.code, msg: result.msg });
+    
+    const f = result.data?.record?.fields || {};
+    let photoIndex = {};
+    try { photoIndex = JSON.parse(f['照片索引'] || '{}'); } catch(e) {}
+    const photoFiles = f['照片'] || [];
+    
+    const result2 = { 
+      photoIndexKeys: Object.keys(photoIndex),
+      photoFilesCount: photoFiles.length,
+      photoFiles: photoFiles.map(p => ({ file_token: p.file_token, name: p.name }))
+    };
+    
+    // Try downloading the first photo
+    if (photoFiles.length > 0) {
+      const ft = photoFiles[0].file_token;
+      const imgRes = await fetch(
+        'https://open.feishu.cn/open-apis/drive/v1/medias/' + ft + '/download',
+        { headers: { 'Authorization': 'Bearer ' + token } }
+      );
+      result2.downloadTest = { status: imgRes.status, ok: imgRes.ok, size: imgRes.ok ? (await imgRes.buffer()).length : 0 };
+    }
+    
+    res.json(result2);
+  } catch(e) {
+    res.json({ error: e.message });
+  }
+});
+
 app.listen(PORT, async () => {
   console.log(`\n🚀 工程质量管理工具已启动（多人协作版）`);
   console.log(`📱 访问地址: http://localhost:${PORT}`);
