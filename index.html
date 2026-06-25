@@ -1212,7 +1212,7 @@ function renderTodoPhotos(photos,todoIdx,type) {
   if (!photos || photos.length === 0) return '';
   return photos.map(function(p,pi) {
     return '<div style="position:relative;width:56px;height:56px;border-radius:4px;overflow:hidden;border:1px solid #eee;">'
-      +'<img src="'+p.dataUrl+'" style="width:100%;height:100%;object-fit:cover;" onclick="previewImage(\''+p.dataUrl+'\')" />'
+      +'<img src="'+(p.dataUrl || ('/api/image?file_token=' + p.file_token))+'" style="width:100%;height:100%;object-fit:cover;" onclick="previewImage(\''+(p.dataUrl || ('/api/image?file_token=' + p.file_token))+'\')" />'
       +'<span onclick="removeTodoPhoto('+todoIdx+',\''+type+'\','+pi+')" style="position:absolute;top:1px;right:1px;width:16px;height:16px;background:rgba(0,0,0,0.5);color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;">✕</span>'
       +'</div>';
   }).join('');
@@ -1259,14 +1259,20 @@ function syncTodoToReport(todoIdx) {
   var todo = todos[todoIdx];
   if (!todo || typeof todo._reportIdx !== 'number') return;
   try {
-    if (!_reportCacheId) { showToast('未找到已保存的报告，请先保存报告'); return; }
     var rIdx = todo._reportIdx;
-    // 同步整改后照片到内存中的报告照片
     if (!_reportPhotos[rIdx]) _reportPhotos[rIdx] = [];
+    var syncCount = 0;
+    // 同步整改前照片
+    var beforePhotos = todo._beforePhotos || [];
+    beforePhotos.forEach(function(bp) {
+      var dup = _reportPhotos[rIdx].some(function(ep) { return ep.dataUrl === bp.dataUrl || (ep.file_token && bp.file_token && ep.file_token === bp.file_token); });
+      if (!dup) { _reportPhotos[rIdx].push({dataUrl: bp.dataUrl, file_token: bp.file_token, name: bp.name || '整改前'}); syncCount++; }
+    });
+    // 同步整改后照片
     var afterPhotos = todo._afterPhotos || [];
     afterPhotos.forEach(function(ap) {
       var dup = _reportPhotos[rIdx].some(function(ep) { return ep.dataUrl === ap.dataUrl || (ep.file_token && ap.file_token && ep.file_token === ap.file_token); });
-      if (!dup) _reportPhotos[rIdx].push({dataUrl: ap.dataUrl, name: ap.name || '整改后'});
+      if (!dup) { _reportPhotos[rIdx].push({dataUrl: ap.dataUrl, file_token: ap.file_token, name: ap.name || '整改后'}); syncCount++; }
     });
     // 同步整改回复到问题描述
     if (reportParsedData && reportParsedData.problems && reportParsedData.problems[rIdx]) {
@@ -1275,8 +1281,8 @@ function syncTodoToReport(todoIdx) {
       }
     }
     renderReportPhotos(rIdx);
-    debouncedCacheReport();
-    showToast('已同步 ' + afterPhotos.length + ' 张照片到报告');
+    if (_reportCacheId) debouncedCacheReport();
+    showToast('已同步 ' + syncCount + ' 张照片到报告');
   } catch(e) { showToast('同步失败: ' + e.message); }
 }
 
@@ -1718,6 +1724,12 @@ function showReportGenPage() {
   openPage('report-gen');
   // 启用粘贴监听
   setupReportPaste();
+  // 渲染已有的报告照片
+  for (var k in _reportPhotos) {
+    if (_reportPhotos[k] && _reportPhotos[k].length > 0) {
+      renderReportPhotos(parseInt(k));
+    }
+  }
   // 缓存报告数据到飞书（异步）
   cacheReportData();
 }
@@ -2029,8 +2041,10 @@ function renderReportPhotos(idx) {
   if (photos.length === 0) { el.innerHTML = ''; return; }
   var h = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
   photos.forEach(function(p, pi) {
+    var src = p.dataUrl || ('/api/image?file_token=' + p.file_token);
+    var label = p.name || '';
     h += '<div style="position:relative;width:70px;height:70px;border-radius:6px;overflow:hidden;border:1px solid #e0e0e0;">';
-    h += '<img src="'+p.dataUrl+'" style="width:100%;height:100%;object-fit:cover;" />';
+    h += '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;" title="'+label+'" />';
     h += '<div onclick="removeReportPhoto('+idx+','+pi+')" style="position:absolute;top:0;right:0;width:20px;height:20px;background:rgba(0,0,0,0.5);color:#fff;text-align:center;line-height:18px;font-size:14px;cursor:pointer;border-radius:0 6px 0 6px;">✕</div>';
     h += '</div>';
   });
