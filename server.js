@@ -1341,7 +1341,7 @@ function parseEvaluationSheet(workbook) {
   return data;
 }
 
-function createReportDocx(data) {
+function createReportDocx(data, photoBuffers) {
   const categoryFullNames = {
     '一': '一、标准化建设及周检', '二': '二、方案及资料管理', '三': '三、检验检测',
     '四': '四、实体质量管理', '五': '五、防渗漏及整改闭合'
@@ -1481,19 +1481,52 @@ function createReportDocx(data) {
         ];
         children.push(new Table({ rows: probRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
 
-        // 照片位置行
+        // 照片行：嵌入实际照片
+        const problemIdx = data.problems.indexOf(p);
+        const photos = (photoBuffers && photoBuffers[problemIdx]) || {before: [], after: []};
+        const beforeImgs = photos.before || [];
+        const afterImgs = photos.after || [];
+
+        // Build before photo cell content
+        const beforeChildren = [];
+        if (beforeImgs.length > 0) {
+          beforeImgs.forEach(imgBuf => {
+            try {
+              beforeChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
+                new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } })
+              ]}));
+            } catch(e) {}
+          });
+        } else {
+          beforeChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
+            new TextRun({ text: '（整改前照片）', size: 18, color: '999999' })
+          ]}));
+        }
+
+        // Build after photo cell content
+        const afterChildren = [];
+        if (afterImgs.length > 0) {
+          afterImgs.forEach(imgBuf => {
+            try {
+              afterChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
+                new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } })
+              ]}));
+            } catch(e) {}
+          });
+        } else {
+          afterChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
+            new TextRun({ text: '（整改后照片）', size: 18, color: '999999' })
+          ]}));
+        }
+
         const photoRows = [
           new TableRow({ children: [
             new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
               borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
-              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
-                new TextRun({ text: '问题照片', bold: true, size: 18, color: '999999' })
-              ]})] }),
+              children: beforeChildren }),
             new TableCell({ width: { size: 50, type: WidthType.PERCENTAGE },
               borders: { top: borderNone, bottom: borderNone, left: borderNone, right: borderNone },
-              children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
-                new TextRun({ text: '整改照片', bold: true, size: 18, color: '999999' })
-              ]})] })
+              children: afterChildren })
           ]})
         ];
         children.push(new Table({ rows: photoRows, width: { size: 100, type: WidthType.PERCENTAGE } }));
@@ -1558,7 +1591,46 @@ app.post('/api/generate-report', async (req, res) => {
       return res.json({ code: 0, data: { parsed: true, result: data, message: '解析成功' } });
     }
 
-    const doc = createReportDocx(data);
+    // Parse reportPhotos from frontend
+    let reportPhotos = {};
+    if (req.body.reportPhotos) {
+      try {
+        reportPhotos = typeof req.body.reportPhotos === 'string' ? JSON.parse(req.body.reportPhotos) : req.body.reportPhotos;
+      } catch(e) { console.error('解析reportPhotos失败:', e); }
+    }
+    // Fetch photo images from URLs and convert to buffers
+    const photoBuffers = {}; // {idx: {before: [Buffer, ...], after: [Buffer, ...]}}
+    for (const idx in reportPhotos) {
+      const entry = reportPhotos[idx];
+      photoBuffers[idx] = {before: [], after: []};
+      for (const type of ['before', 'after']) {
+        const urls = entry[type] || [];
+        for (const url of urls) {
+          try {
+            let imgBuf = null;
+            if (url.startsWith('data:')) {
+              // base64 data URL
+              const b64 = url.split(',')[1];
+              if (b64) imgBuf = Buffer.from(b64, 'base64');
+            } else if (url.startsWith('/api/image?file_token=')) {
+              // Server-relative URL - fetch from Feishu
+              const fileToken = url.split('file_token=')[1];
+              if (fileToken) {
+                const token = await getTenantAccessToken();
+                const imgRes = await fetch(
+                  `https://open.feishu.cn/open-apis/drive/v1/medias/${fileToken}/download`,
+                  { headers: { 'Authorization': 'Bearer ' + token } }
+                );
+                if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
+              }
+            }
+            if (imgBuf) photoBuffers[idx][type].push(imgBuf);
+          } catch(e) { console.error('获取照片失败:', e.message); }
+        }
+      }
+    }
+
+    const doc = createReportDocx(data, photoBuffers);
     const docBuffer = await Packer.toBuffer(doc);
 
     const reportName = (data.projectInfo.projectName || '考核') + '质量巡查报告.docx';
