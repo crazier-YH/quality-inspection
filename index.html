@@ -887,7 +887,7 @@ function enterApp() {
   // 切换到主应用
   document.getElementById('entryPage').style.display = 'none';
   document.getElementById('mainApp').style.display = '';
-  loadProfile(); loadProject(); updateHomeProjectBar(); renderTodos(); updateSyncBar();
+  loadProfile(); loadProject(); updateHomeProjectBar(); loadTodos(); updateSyncBar();
   if(API.online) { API.initFields(); loadHomeStats(); }
   showToast('👋 欢迎，' + name);
 }
@@ -897,7 +897,7 @@ function quickEntry() {
   if(profile.name && project.name) {
     document.getElementById('entryPage').style.display = 'none';
     document.getElementById('mainApp').style.display = '';
-    loadProfile(); loadProject(); updateHomeProjectBar(); renderTodos(); updateSyncBar();
+    loadProfile(); loadProject(); updateHomeProjectBar(); loadTodos(); updateSyncBar();
     if(API.online) { API.initFields(); loadHomeStats(); }
     return;
   }
@@ -979,7 +979,7 @@ function switchProject() {
 }
 var profile = JSON.parse(localStorage.getItem('qc_profile')||'{}');
 var project = JSON.parse(localStorage.getItem('qc_project')||'{}');
-var todos = JSON.parse(localStorage.getItem('qc_todos')||'[]');
+var todos = []; // loaded from server
 var currentFormType = '';
 
 // ===== 从后端同步profile和project =====
@@ -1202,9 +1202,34 @@ function renderTodos() {
     return '<div class="todo-item"><div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div><span class="todo-text'+(t.done?' done':'')+'">'+t.text+'</span><span class="todo-del" onclick="delTodo('+i+')">✕</span></div>';
   }).join(''); 
 }
-async function addTodo() { var input=document.getElementById('todoInput'),text=input.value.trim(); if(!text)return; var todo={text:text,done:false,id:Date.now()}; todos.unshift(todo); input.value=''; localStorage.setItem('qc_todos',JSON.stringify(todos)); renderTodos(); if(API.online){var res=await API.createRecord('todo',{'项目名称':project.name||'','待办内容':text,'是否完成':false,'创建人':profile.name||''}); if(res.code===0&&res.data&&res.data.record){todo._recordId=res.data.record.record_id;localStorage.setItem('qc_todos',JSON.stringify(todos));}} updateHomeStats(); }
-function toggleTodo(i){todos[i].done=!todos[i].done;localStorage.setItem('qc_todos',JSON.stringify(todos));renderTodos();}
-function delTodo(i){todos.splice(i,1);localStorage.setItem('qc_todos',JSON.stringify(todos));renderTodos();}
+async function addTodo() {
+  var input=document.getElementById('todoInput'),text=input.value.trim(); if(!text)return;
+  var todo={text:text,done:false,id:Date.now(),_problemDesc:'',_rectifyReply:'',_beforePhotos:[],_afterPhotos:[],_recordId:null};
+  todos.unshift(todo); input.value=''; renderTodos(); updateHomeStats();
+  try {
+    var res = await fetch('/api/todo/create', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({text:text,done:false,creator:profile.name||'',projectName:project.name||''})
+    });
+    var data = await res.json();
+    if(data.code===0 && data.data) { todo._recordId = data.data.recordId; }
+  } catch(e) { console.error('创建待办同步失败:', e); }
+}
+function toggleTodo(i){
+  todos[i].done=!todos[i].done; renderTodos(); updateHomeStats();
+  if(todos[i]._recordId) {
+    fetch('/api/todo/update',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:todos[i]._recordId,done:todos[i].done})}).catch(function(){});
+  }
+}
+function delTodo(i){
+  var recId=todos[i]._recordId;
+  todos.splice(i,1); renderTodos(); updateHomeStats();
+  if(recId) {
+    fetch('/api/todo/delete',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:recId})}).catch(function(){});
+  }
+}
 function loadHomeStats() { document.getElementById('statTodo').textContent=todos.filter(function(t){return !t.done;}).length; }
 
 // ===== 报告整改待办照片管理 =====
@@ -1225,15 +1250,26 @@ function addTodoPhoto(todoIdx, type, input) {
   if (!todo) return;
   var key = type === 'before' ? '_beforePhotos' : '_afterPhotos';
   if (!todo[key]) todo[key] = [];
-  var remaining = files.length;
   Array.from(files).forEach(function(file) {
     var reader = new FileReader();
     reader.onload = function(e) {
       todo[key].push({dataUrl: e.target.result, name: file.name});
-      remaining--;
-      if (remaining === 0) {
-        localStorage.setItem('qc_todos', JSON.stringify(todos));
-        renderTodos();
+      renderTodos();
+      // Upload to Feishu and update record
+      if (todo._recordId) {
+        uploadReportPhoto(e.target.result, (type==='before'?'before_':'after_') + file.name).then(function(token) {
+          if (token) {
+            var photoKey = type === 'before' ? '_beforePhotoTokens' : '_afterPhotoTokens';
+            if (!todo[photoKey]) todo[photoKey] = [];
+            todo[photoKey].push(token);
+            // Update Feishu record
+            var updateData = {recordId: todo._recordId};
+            if (type === 'before') updateData.beforePhotoTokens = todo._beforePhotoTokens || [];
+            else updateData.afterPhotoTokens = todo._afterPhotoTokens || [];
+            fetch('/api/todo/update',{method:'POST',headers:{'Content-Type':'application/json'},
+              body:JSON.stringify(updateData)}).catch(function(){});
+          }
+        });
       }
     };
     reader.readAsDataURL(file);
@@ -1245,14 +1281,65 @@ function removeTodoPhoto(todoIdx, type, photoIdx) {
   var todo = todos[todoIdx];
   if (!todo) return;
   var key = type === 'before' ? '_beforePhotos' : '_afterPhotos';
-  if (todo[key]) { todo[key].splice(photoIdx, 1); localStorage.setItem('qc_todos', JSON.stringify(todos)); renderTodos(); }
+  var tokenKey = type === 'before' ? '_beforePhotoTokens' : '_afterPhotoTokens';
+  if (todo[key]) { todo[key].splice(photoIdx, 1); }
+  if (todo[tokenKey]) { todo[tokenKey].splice(photoIdx, 1); }
+  renderTodos();
+  if (todo._recordId) {
+    var updateData = {recordId: todo._recordId};
+    if (type === 'before') updateData.beforePhotoTokens = todo._beforePhotoTokens || [];
+    else updateData.afterPhotoTokens = todo._afterPhotoTokens || [];
+    fetch('/api/todo/update',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(updateData)}).catch(function(){});
+  }
 }
 
 function saveTodoReply(todoIdx, value) {
   var todo = todos[todoIdx];
   if (!todo) return;
   todo._rectifyReply = value;
-  localStorage.setItem('qc_todos', JSON.stringify(todos));
+  if(todo._recordId) {
+    fetch('/api/todo/update',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({recordId:todo._recordId,rectifyReply:value})}).catch(function(){});
+  }
+}
+
+
+// ===== 从服务端加载待办列表 =====
+async function loadTodos() {
+  try {
+    var res = await fetch('/api/todo/list', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({})});
+    var data = await res.json();
+    if (data.code !== 0) { console.error('加载待办失败:', data.msg); return; }
+    var serverTodos = data.data || [];
+    // Convert server format to local format
+    todos = serverTodos.map(function(item) {
+      var beforePhotos = (item._beforePhotoTokens || []).map(function(p) {
+        return {dataUrl: '/api/image?file_token=' + p.file_token, name: p.name || '', file_token: p.file_token};
+      });
+      var afterPhotos = (item._afterPhotoTokens || []).map(function(p) {
+        return {dataUrl: '/api/image?file_token=' + p.file_token, name: p.name || '', file_token: p.file_token};
+      });
+      return {
+        text: item.text || '',
+        done: item.done || false,
+        id: Date.now() + Math.random(),
+        _recordId: item.recordId,
+        _problemDesc: item._problemDesc || '',
+        _rectifyReply: item._rectifyReply || '',
+        _beforePhotos: beforePhotos,
+        _afterPhotos: afterPhotos,
+        _beforePhotoTokens: (item._beforePhotoTokens || []).map(function(p) { return p.file_token; }),
+        _afterPhotoTokens: (item._afterPhotoTokens || []).map(function(p) { return p.file_token; }),
+        _reportIdx: item._reportIdx,
+        _reportName: item._reportName || ''
+      };
+    });
+    renderTodos();
+    updateHomeStats();
+  } catch(e) {
+    console.error('加载待办异常:', e);
+  }
 }
 
 function syncTodoToReport(todoIdx) {
@@ -1771,8 +1858,23 @@ function generateTodosFromReport() {
     };
     todos.unshift(todo);
     count++;
+    // Create on server
+    (function(t, idx) {
+      fetch('/api/todo/create', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          text: t.text, done: false,
+          problemDesc: t._problemDesc,
+          reportIdx: t._reportIdx,
+          reportName: t._reportName,
+          creator: profile.name || '',
+          projectName: project.name || ''
+        })
+      }).then(function(r){return r.json();}).then(function(d){
+        if(d.code===0 && d.data) t._recordId = d.data.recordId;
+      }).catch(function(){});
+    })(todo, idx);
   });
-  localStorage.setItem('qc_todos', JSON.stringify(todos));
   renderTodos();
   updateHomeStats();
   showToast('已生成 ' + count + ' 条整改待办');
@@ -3869,7 +3971,7 @@ if(profile.name && project.name) {
   }
 }
 document.querySelectorAll('input[type="date"]').forEach(function(el){if(!el.value)el.value=new Date().toISOString().split('T')[0];});
-fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();if(document.getElementById('mainApp').style.display!=='none'){loadHomeStats();}loadEntryProjects();}).catch(function(){API.online=false;updateSyncBar();loadEntryProjects();});
+fetch(window.location.origin+'/api/health').then(function(r){return r.json();}).then(function(data){API.online=true;updateSyncBar();API.initFields();if(document.getElementById('mainApp').style.display!=='none'){loadHomeStats();loadTodos();}loadEntryProjects();}).catch(function(){API.online=false;updateSyncBar();loadEntryProjects();});
 </script>
 
 <script>
