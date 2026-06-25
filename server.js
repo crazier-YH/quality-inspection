@@ -1938,6 +1938,31 @@ app.post('/api/report-cache/delete', async (req, res) => {
   }
 });
 
+
+// Debug: test photo download
+app.get('/api/debug-photo', async (req, res) => {
+  try {
+    const fileToken = req.query.file_token;
+    if (!fileToken) return res.json({ error: 'no file_token' });
+    const token = await getTenantAccessToken();
+    if (!token) return res.json({ error: 'no tenant token' });
+    const imgRes = await fetch(
+      'https://open.feishu.cn/open-apis/drive/v1/medias/' + fileToken + '/download',
+      { headers: { 'Authorization': 'Bearer ' + token } }
+    );
+    const buf = await imgRes.buffer();
+    res.json({ 
+      status: imgRes.status, 
+      ok: imgRes.ok,
+      size: buf.length,
+      contentType: imgRes.headers.get('content-type'),
+      firstBytes: buf.slice(0, 4).toString('hex')
+    });
+  } catch(e) {
+    res.json({ error: e.message, stack: e.stack });
+  }
+});
+
 app.listen(PORT, async () => {
   console.log(`\n🚀 工程质量管理工具已启动（多人协作版）`);
   console.log(`📱 访问地址: http://localhost:${PORT}`);
