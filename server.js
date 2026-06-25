@@ -1963,6 +1963,59 @@ app.get('/api/debug-photo', async (req, res) => {
   }
 });
 
+
+// Debug: test report photo embedding
+app.post('/api/debug-generate-report', async (req, res) => {
+  try {
+    let reportPhotos = req.body.reportPhotos;
+    console.log('[DEBUG-GEN] raw reportPhotos type:', typeof reportPhotos, 'value:', JSON.stringify(reportPhotos).substring(0, 300));
+    
+    if (typeof reportPhotos === 'string') {
+      try { reportPhotos = JSON.parse(reportPhotos); } catch(e) { console.log('[DEBUG-GEN] parse failed:', e.message); }
+    }
+    
+    const result = { reportPhotosType: typeof reportPhotos, keys: Object.keys(reportPhotos || {}) };
+    
+    for (const idx in reportPhotos) {
+      const entry = reportPhotos[idx];
+      result['idx_' + idx] = { before: (entry.before || []).length, after: (entry.after || []).length };
+      for (const type of ['before', 'after']) {
+        const urls = entry[type] || [];
+        for (let i = 0; i < urls.length; i++) {
+          const url = urls[i];
+          result['idx_' + idx + '_' + type + '_' + i] = { 
+            urlStart: url.substring(0, 60),
+            isData: url.startsWith('data:'),
+            isApi: url.startsWith('/api/')
+          };
+          
+          // Try to fetch
+          try {
+            let imgBuf = null;
+            if (url.startsWith('/api/image?file_token=')) {
+              const fileToken = url.split('file_token=')[1];
+              const token = await getTenantAccessToken();
+              const imgRes = await fetch(
+                'https://open.feishu.cn/open-apis/drive/v1/medias/' + fileToken + '/download',
+                { headers: { 'Authorization': 'Bearer ' + token } }
+              );
+              if (imgRes.ok) imgBuf = Buffer.from(await imgRes.arrayBuffer());
+            }
+            result['idx_' + idx + '_' + type + '_' + i].fetchOk = !!imgBuf;
+            result['idx_' + idx + '_' + type + '_' + i].fetchSize = imgBuf ? imgBuf.length : 0;
+          } catch(e) {
+            result['idx_' + idx + '_' + type + '_' + i].fetchError = e.message;
+          }
+        }
+      }
+    }
+    
+    res.json(result);
+  } catch(e) {
+    res.json({ error: e.message });
+  }
+});
+
 app.listen(PORT, async () => {
   console.log(`\n🚀 工程质量管理工具已启动（多人协作版）`);
   console.log(`📱 访问地址: http://localhost:${PORT}`);
