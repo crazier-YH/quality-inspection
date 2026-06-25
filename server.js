@@ -45,6 +45,8 @@ const TABLE_IDS = {
   reportCache: 'tblFoV5rh0Y8OGp0'
 };
 
+const REPORT_CACHE_TABLE = TABLE_IDS.reportCache;
+
 // ============ 应用身份Token管理（tenant_access_token）============
 let tenantToken = null;
 let tenantTokenExpiry = 0;
@@ -1829,7 +1831,7 @@ app.post('/api/todo/delete', async (req, res) => {
 });
 
 // ============ 报告缓存（飞书多维表格，多人实时共享）============
-const REPORT_CACHE_TABLE = 'tblFoV5rh0Y8OGp0';
+
 
 // 列出所有报告缓存
 app.post('/api/report-cache/list', async (req, res) => {
