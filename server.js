@@ -1690,6 +1690,19 @@ app.post('/api/generate-report', async (req, res) => {
       }
     }
 
+    // Debug mode: return diagnostic JSON
+    if (req.body.debug === '1') {
+      return res.json({
+        code: 0,
+        debug: {
+          reportCacheId: req.body.reportCacheId || '',
+          problemsCount: data.problems.length,
+          photoBuffersKeys: Object.keys(photoBuffers),
+          photoBuffersSummary: Object.fromEntries(Object.entries(photoBuffers).map(([k,v]) => [k, {before: v.before.length, after: v.after.length, beforeSizes: v.before.map(b => b.length), afterSizes: v.after.map(b => b.length)}]))
+        }
+      });
+    }
+
     const doc = createReportDocx(data, photoBuffers);
     const docBuffer = await Packer.toBuffer(doc);
 
