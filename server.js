@@ -11,7 +11,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const ExcelJS = require('exceljs');
-const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, BorderStyle, VerticalAlign } = require('docx');
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel, BorderStyle, VerticalAlign, ImageRun } = require('docx');
 
 const app = express();
 app.use(express.json({ limit: '50mb' }));
@@ -1488,18 +1488,18 @@ function createReportDocx(data, photoBuffers) {
         const photos = (photoBuffers && photoBuffers[problemIdx]) || {before: [], after: []};
         const beforeImgs = photos.before || [];
         const afterImgs = photos.after || [];
-        console.log('[EMBED] problemIdx=' + problemIdx + ' has before=' + beforeImgs.length + ' after=' + afterImgs.length + ' photoBuffers keys=' + Object.keys(photoBuffers || {}).join(','));
+        
 
         // Build before photo cell content
         const beforeChildren = [];
         if (beforeImgs.length > 0) {
           beforeImgs.forEach((imgBuf, imgI) => {
             try {
-              console.log('[EMBED] Creating before ImageRun, buffer size:', imgBuf.length, 'first 4 bytes:', imgBuf.slice(0,4).toString('hex'));
+              
               const imgRun = new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } });
-              console.log('[EMBED] ImageRun created successfully');
+              
               beforeChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [imgRun] }));
-            } catch(e) { console.error('[EMBED] ImageRun FAILED:', e.message); }
+            } catch(e) { console.error('ImageRun失败:', e.message); }
           });
         } else {
           beforeChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
@@ -1512,11 +1512,11 @@ function createReportDocx(data, photoBuffers) {
         if (afterImgs.length > 0) {
           afterImgs.forEach((imgBuf, imgI) => {
             try {
-              console.log('[EMBED] Creating after ImageRun, buffer size:', imgBuf.length, 'first 4 bytes:', imgBuf.slice(0,4).toString('hex'));
+              
               const imgRun = new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } });
-              console.log('[EMBED] after ImageRun created successfully');
+              
               afterChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [imgRun] }));
-            } catch(e) { console.error('[EMBED] after ImageRun FAILED:', e.message); }
+            } catch(e) { console.error('ImageRun失败:', e.message); }
           });
         } else {
           afterChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
@@ -1596,7 +1596,6 @@ app.post('/api/generate-report', async (req, res) => {
       return res.json({ code: 0, data: { parsed: true, result: data, message: '解析成功' } });
     }
 
-    console.log('[EXPORT] reportCacheId:', req.body.reportCacheId, 'reportPhotos:', !!req.body.reportPhotos);
     // Fetch photo buffers - either from reportCacheId (preferred) or from reportPhotos URLs
     const photoBuffers = {}; // {idx: {before: [Buffer, ...], after: [Buffer, ...]}}
     const feishuToken = await getTenantAccessToken();
@@ -1604,10 +1603,8 @@ app.post('/api/generate-report', async (req, res) => {
     // Method 1: Load photos directly from Feishu report cache record
     if (req.body.reportCacheId) {
       try {
-        console.log('[EXPORT] Loading photos from cache:', req.body.reportCacheId, 'table:', REPORT_CACHE_TABLE);
         const cacheResult = await feishuRequest('GET',
           `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records/${req.body.reportCacheId}`);
-        console.log('[EXPORT] Cache result code:', cacheResult.code, 'has record:', !!cacheResult.data?.record);
         if (cacheResult.code === 0) {
           const cf = cacheResult.data?.record?.fields || {};
           let photoIndex = {};
@@ -1693,32 +1690,6 @@ app.post('/api/generate-report', async (req, res) => {
       }
     }
 
-    // Debug mode: return diagnostic JSON
-    if (req.body.debug === '1') {
-      // Test ImageRun creation
-      let imageRunTest = 'not_tested';
-      try {
-        const testBuf = photoBuffers['8']?.before?.[0];
-        if (testBuf) {
-          const testRun = new ImageRun({ data: testBuf, transformation: { width: 200, height: 150 } });
-          imageRunTest = 'success, type: ' + typeof testRun;
-        } else {
-          imageRunTest = 'no buffer for key 8';
-        }
-      } catch(e) {
-        imageRunTest = 'FAILED: ' + e.message;
-      }
-      return res.json({
-        code: 0,
-        debug: {
-          reportCacheId: req.body.reportCacheId || '',
-          problemsCount: data.problems.length,
-          photoBuffersKeys: Object.keys(photoBuffers),
-          photoBuffersSummary: Object.fromEntries(Object.entries(photoBuffers).map(([k,v]) => [k, {before: v.before.length, after: v.after.length, beforeSizes: v.before.map(b => b.length), afterSizes: v.after.map(b => b.length)}])),
-          imageRunTest
-        }
-      });
-    }
 
     const doc = createReportDocx(data, photoBuffers);
     const docBuffer = await Packer.toBuffer(doc);
@@ -2023,45 +1994,7 @@ app.post('/api/report-cache/delete', async (req, res) => {
 
 
 
-// Test: load photos from report cache
-app.post('/api/test-export-photos', async (req, res) => {
-  try {
-    const { recordId } = req.body;
-    if (!recordId) return res.json({ error: 'no recordId' });
-    const token = await getTenantAccessToken();
-    if (!token) return res.json({ error: 'no token' });
-    
-    const result = await feishuRequest('GET',
-      '/bitable/v1/apps/' + config.bitableAppToken + '/tables/' + REPORT_CACHE_TABLE + '/records/' + recordId);
-    
-    if (result.code !== 0) return res.json({ error: 'feishu error', code: result.code, msg: result.msg });
-    
-    const f = result.data?.record?.fields || {};
-    let photoIndex = {};
-    try { photoIndex = JSON.parse(f['照片索引'] || '{}'); } catch(e) {}
-    const photoFiles = f['照片'] || [];
-    
-    const result2 = { 
-      photoIndexKeys: Object.keys(photoIndex),
-      photoFilesCount: photoFiles.length,
-      photoFiles: photoFiles.map(p => ({ file_token: p.file_token, name: p.name }))
-    };
-    
-    // Try downloading the first photo
-    if (photoFiles.length > 0) {
-      const ft = photoFiles[0].file_token;
-      const imgRes = await fetch(
-        'https://open.feishu.cn/open-apis/drive/v1/medias/' + ft + '/download',
-        { headers: { 'Authorization': 'Bearer ' + token } }
-      );
-      result2.downloadTest = { status: imgRes.status, ok: imgRes.ok, size: imgRes.ok ? (await imgRes.buffer()).length : 0 };
-    }
-    
-    res.json(result2);
-  } catch(e) {
-    res.json({ error: e.message });
-  }
-});
+
 
 app.listen(PORT, async () => {
   console.log(`\n🚀 工程质量管理工具已启动（多人协作版）`);
