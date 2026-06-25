@@ -1695,13 +1695,27 @@ app.post('/api/generate-report', async (req, res) => {
 
     // Debug mode: return diagnostic JSON
     if (req.body.debug === '1') {
+      // Test ImageRun creation
+      let imageRunTest = 'not_tested';
+      try {
+        const testBuf = photoBuffers['8']?.before?.[0];
+        if (testBuf) {
+          const testRun = new ImageRun({ data: testBuf, transformation: { width: 200, height: 150 } });
+          imageRunTest = 'success, type: ' + typeof testRun;
+        } else {
+          imageRunTest = 'no buffer for key 8';
+        }
+      } catch(e) {
+        imageRunTest = 'FAILED: ' + e.message;
+      }
       return res.json({
         code: 0,
         debug: {
           reportCacheId: req.body.reportCacheId || '',
           problemsCount: data.problems.length,
           photoBuffersKeys: Object.keys(photoBuffers),
-          photoBuffersSummary: Object.fromEntries(Object.entries(photoBuffers).map(([k,v]) => [k, {before: v.before.length, after: v.after.length, beforeSizes: v.before.map(b => b.length), afterSizes: v.after.map(b => b.length)}]))
+          photoBuffersSummary: Object.fromEntries(Object.entries(photoBuffers).map(([k,v]) => [k, {before: v.before.length, after: v.after.length, beforeSizes: v.before.map(b => b.length), afterSizes: v.after.map(b => b.length)}])),
+          imageRunTest
         }
       });
     }
