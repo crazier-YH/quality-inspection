@@ -1493,12 +1493,13 @@ function createReportDocx(data, photoBuffers) {
         // Build before photo cell content
         const beforeChildren = [];
         if (beforeImgs.length > 0) {
-          beforeImgs.forEach(imgBuf => {
+          beforeImgs.forEach((imgBuf, imgI) => {
             try {
-              beforeChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
-                new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } })
-              ]}));
-            } catch(e) {}
+              console.log('[EMBED] Creating before ImageRun, buffer size:', imgBuf.length, 'first 4 bytes:', imgBuf.slice(0,4).toString('hex'));
+              const imgRun = new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } });
+              console.log('[EMBED] ImageRun created successfully');
+              beforeChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [imgRun] }));
+            } catch(e) { console.error('[EMBED] ImageRun FAILED:', e.message); }
           });
         } else {
           beforeChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
@@ -1509,12 +1510,13 @@ function createReportDocx(data, photoBuffers) {
         // Build after photo cell content
         const afterChildren = [];
         if (afterImgs.length > 0) {
-          afterImgs.forEach(imgBuf => {
+          afterImgs.forEach((imgBuf, imgI) => {
             try {
-              afterChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
-                new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } })
-              ]}));
-            } catch(e) {}
+              console.log('[EMBED] Creating after ImageRun, buffer size:', imgBuf.length, 'first 4 bytes:', imgBuf.slice(0,4).toString('hex'));
+              const imgRun = new ImageRun({ data: imgBuf, transformation: { width: 200, height: 150 } });
+              console.log('[EMBED] after ImageRun created successfully');
+              afterChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [imgRun] }));
+            } catch(e) { console.error('[EMBED] after ImageRun FAILED:', e.message); }
           });
         } else {
           afterChildren.push(new Paragraph({ alignment: AlignmentType.CENTER, children: [
