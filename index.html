@@ -2316,7 +2316,8 @@ async function downloadReport() {
     fileData: reportExcelBase64,
     projectInfo: JSON.stringify(projectInfo),
     download: '1',
-    reportPhotos: JSON.stringify(reportPhotos)
+    reportPhotos: JSON.stringify(reportPhotos),
+    reportCacheId: _reportCacheId || ''
   };
   Object.keys(fields).forEach(function(key) {
     var input = document.createElement('input');
