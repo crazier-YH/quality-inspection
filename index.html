@@ -1260,19 +1260,20 @@ function syncTodoToReport(todoIdx) {
   if (!todo || typeof todo._reportIdx !== 'number') return;
   try {
     var rIdx = todo._reportIdx;
-    if (!_reportPhotos[rIdx]) _reportPhotos[rIdx] = [];
+    if (!_reportPhotos[rIdx]) _reportPhotos[rIdx] = {before:[], after:[]};
+    if (Array.isArray(_reportPhotos[rIdx])) _reportPhotos[rIdx] = {before: _reportPhotos[rIdx], after: []};
     var syncCount = 0;
     // 同步整改前照片
     var beforePhotos = todo._beforePhotos || [];
     beforePhotos.forEach(function(bp) {
-      var dup = _reportPhotos[rIdx].some(function(ep) { return ep.dataUrl === bp.dataUrl || (ep.file_token && bp.file_token && ep.file_token === bp.file_token); });
-      if (!dup) { _reportPhotos[rIdx].push({dataUrl: bp.dataUrl, file_token: bp.file_token, name: bp.name || '整改前'}); syncCount++; }
+      var dup = _reportPhotos[rIdx].before.some(function(ep) { return ep.dataUrl === bp.dataUrl || (ep.file_token && bp.file_token && ep.file_token === bp.file_token); });
+      if (!dup) { _reportPhotos[rIdx].before.push({dataUrl: bp.dataUrl, file_token: bp.file_token, name: bp.name || '整改前'}); syncCount++; }
     });
     // 同步整改后照片
     var afterPhotos = todo._afterPhotos || [];
     afterPhotos.forEach(function(ap) {
-      var dup = _reportPhotos[rIdx].some(function(ep) { return ep.dataUrl === ap.dataUrl || (ep.file_token && ap.file_token && ep.file_token === ap.file_token); });
-      if (!dup) { _reportPhotos[rIdx].push({dataUrl: ap.dataUrl, file_token: ap.file_token, name: ap.name || '整改后'}); syncCount++; }
+      var dup = _reportPhotos[rIdx].after.some(function(ep) { return ep.dataUrl === ap.dataUrl || (ep.file_token && ap.file_token && ep.file_token === ap.file_token); });
+      if (!dup) { _reportPhotos[rIdx].after.push({dataUrl: ap.dataUrl, file_token: ap.file_token, name: ap.name || '整改后'}); syncCount++; }
     });
     // 同步整改回复到问题描述
     if (reportParsedData && reportParsedData.problems && reportParsedData.problems[rIdx]) {
@@ -1704,11 +1705,18 @@ function showReportGenPage() {
       html += '<span style="font-size:13px;color:#e74c3c;font-weight:600;">-'+item.deduction+'分</span>';
       html += '</div>';
       if (item.description) html += '<div style="font-size:11px;color:#888;margin-top:2px;">'+item.description+'</div>';
-      // 问题照片区
-      html += '<div id="rpt_photos_'+idx+'" style="margin-top:6px;"></div>';
-      html += '<div style="display:flex;gap:6px;margin-top:6px;align-items:center;">';
-      html += '<label style="display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border:1px dashed #1a73e8;border-radius:6px;font-size:11px;color:#1a73e8;cursor:pointer;white-space:nowrap;">📷 添加照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addReportPhoto('+idx+',this)" /></label>';
-      html += '<span style="font-size:10px;color:#aaa;">支持粘贴截图</span>';
+      // 问题照片区 - 整改前/后分开
+      html += '<div style="display:flex;gap:12px;margin-top:8px;">';
+      html += '<div style="flex:1;">';
+      html += '<div style="font-size:11px;color:#e74c3c;font-weight:600;margin-bottom:4px;">📷 整改前照片</div>';
+      html += '<div id="rpt_photos_before_'+idx+'" style="display:flex;flex-wrap:wrap;gap:4px;"></div>';
+      html += '<label style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border:1px dashed #e74c3c;border-radius:4px;font-size:10px;color:#e74c3c;cursor:pointer;margin-top:4px;">+ 照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addReportPhoto('+idx+',\'before\',this)" /></label>';
+      html += '</div>';
+      html += '<div style="flex:1;">';
+      html += '<div style="font-size:11px;color:#4caf50;font-weight:600;margin-bottom:4px;">📷 整改后照片</div>';
+      html += '<div id="rpt_photos_after_'+idx+'" style="display:flex;flex-wrap:wrap;gap:4px;"></div>';
+      html += '<label style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border:1px dashed #4caf50;border-radius:4px;font-size:10px;color:#4caf50;cursor:pointer;margin-top:4px;">+ 照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addReportPhoto('+idx+',\'after\',this)" /></label>';
+      html += '</div>';
       html += '</div>';
       html += '</div>';
     });
@@ -1726,7 +1734,8 @@ function showReportGenPage() {
   setupReportPaste();
   // 渲染已有的报告照片
   for (var k in _reportPhotos) {
-    if (_reportPhotos[k] && _reportPhotos[k].length > 0) {
+    var ph = _reportPhotos[k];
+    if (ph && ((ph.before && ph.before.length > 0) || (ph.after && ph.after.length > 0) || (Array.isArray(ph) && ph.length > 0))) {
       renderReportPhotos(parseInt(k));
     }
   }
@@ -1822,25 +1831,37 @@ async function cacheReportData() {
     var photoTokens = [];
     var photoIndex = {};
     for (var k in _reportPhotos) {
-      if (_reportPhotos[k] && _reportPhotos[k].length > 0) {
-        var indices = [];
-        for (var j = 0; j < _reportPhotos[k].length; j++) {
-          var p = _reportPhotos[k][j];
-          if (p.file_token) {
-            // 已有token（从飞书加载的）
-            photoTokens.push(p.file_token);
-            indices.push(photoTokens.length - 1);
-          } else if (p.dataUrl) {
-            // 新添加的照片，需要上传
-            var token = await uploadReportPhoto(p.dataUrl, p.name || 'photo_item' + k + '_' + j + '.jpg');
-            if (token) {
-              p.file_token = token; // 记住token避免重复上传
-              photoTokens.push(token);
-              indices.push(photoTokens.length - 1);
-            }
-          }
+      var ph = _reportPhotos[k];
+      if (!ph) continue;
+      // Normalize to before/after structure
+      var beforeList = ph.before || (Array.isArray(ph) ? ph : []);
+      var afterList = ph.after || [];
+      var beforeIdx = [];
+      var afterIdx = [];
+      // Upload before photos
+      for (var j = 0; j < beforeList.length; j++) {
+        var p = beforeList[j];
+        if (p.file_token) {
+          photoTokens.push(p.file_token);
+          beforeIdx.push(photoTokens.length - 1);
+        } else if (p.dataUrl) {
+          var token = await uploadReportPhoto(p.dataUrl, p.name || 'before_' + k + '_' + j + '.jpg');
+          if (token) { p.file_token = token; photoTokens.push(token); beforeIdx.push(photoTokens.length - 1); }
         }
-        if (indices.length > 0) photoIndex[k] = indices;
+      }
+      // Upload after photos
+      for (var j = 0; j < afterList.length; j++) {
+        var p = afterList[j];
+        if (p.file_token) {
+          photoTokens.push(p.file_token);
+          afterIdx.push(photoTokens.length - 1);
+        } else if (p.dataUrl) {
+          var token = await uploadReportPhoto(p.dataUrl, p.name || 'after_' + k + '_' + j + '.jpg');
+          if (token) { p.file_token = token; photoTokens.push(token); afterIdx.push(photoTokens.length - 1); }
+        }
+      }
+      if (beforeIdx.length > 0 || afterIdx.length > 0) {
+        photoIndex[k] = {before: beforeIdx, after: afterIdx};
       }
     }
 
@@ -1939,16 +1960,41 @@ async function openReportCache(recordId) {
     var photoIndex = d.photoIndex || {};
     var photoFiles = d.photoFiles || [];
     for (var k in photoIndex) {
-      _reportPhotos[k] = [];
-      (photoIndex[k] || []).forEach(function(fileIdx) {
-        if (photoFiles[fileIdx]) {
-          _reportPhotos[k].push({
-            dataUrl: photoFiles[fileIdx].tmp_url || ('/api/image?file_token=' + photoFiles[fileIdx].file_token),
-            name: photoFiles[fileIdx].name || '',
-            file_token: photoFiles[fileIdx].file_token
-          });
-        }
-      });
+      var entry = photoIndex[k];
+      // Support both old format (flat array) and new format ({before:[], after:[]})
+      if (entry && entry.before) {
+        _reportPhotos[k] = {before: [], after: []};
+        (entry.before || []).forEach(function(fileIdx) {
+          if (photoFiles[fileIdx]) {
+            _reportPhotos[k].before.push({
+              dataUrl: '/api/image?file_token=' + photoFiles[fileIdx].file_token,
+              name: photoFiles[fileIdx].name || '',
+              file_token: photoFiles[fileIdx].file_token
+            });
+          }
+        });
+        (entry.after || []).forEach(function(fileIdx) {
+          if (photoFiles[fileIdx]) {
+            _reportPhotos[k].after.push({
+              dataUrl: '/api/image?file_token=' + photoFiles[fileIdx].file_token,
+              name: photoFiles[fileIdx].name || '',
+              file_token: photoFiles[fileIdx].file_token
+            });
+          }
+        });
+      } else if (Array.isArray(entry)) {
+        // Legacy flat format - put all in 'before'
+        _reportPhotos[k] = {before: [], after: []};
+        entry.forEach(function(fileIdx) {
+          if (photoFiles[fileIdx]) {
+            _reportPhotos[k].before.push({
+              dataUrl: '/api/image?file_token=' + photoFiles[fileIdx].file_token,
+              name: photoFiles[fileIdx].name || '',
+              file_token: photoFiles[fileIdx].file_token
+            });
+          }
+        });
+      }
     }
     showReportGenPage();
     showToast('✅ 已加载报告');
@@ -2001,20 +2047,21 @@ function clearReportCache() { if(_reportCacheId) deleteReportCache(_reportCacheI
 function openCachedReport() { if(_reportCacheId) openReportCache(_reportCacheId); }
 
 
-var _reportPhotos = {}; // {0: [{dataUrl, name}, ...], 1: [...], ...}
+var _reportPhotos = {}; // {0: {before:[{dataUrl, name, file_token?},...], after:[...]}, 1: ...}
 
-function addReportPhoto(idx, input) {
+function addReportPhoto(idx, type, input) {
   var files = input.files;
   if (!files || !files.length) return;
-  if (!_reportPhotos[idx]) _reportPhotos[idx] = [];
+  if (!_reportPhotos[idx]) _reportPhotos[idx] = {before:[], after:[]};
+  if (Array.isArray(_reportPhotos[idx])) _reportPhotos[idx] = {before: _reportPhotos[idx], after: []};
   var promises = [];
   for (var i = 0; i < files.length; i++) {
     promises.push(readFileAsDataUrl(files[i]));
   }
   Promise.all(promises).then(function(results) {
-    results.forEach(function(r) { _reportPhotos[idx].push(r); });
+    results.forEach(function(r) { r.name = (type==='before'?'整改前':'整改后') + '_' + (r.name||''); _reportPhotos[idx][type].push(r); });
     renderReportPhotos(idx);
-    debouncedCacheReport();
+    if (_reportCacheId) debouncedCacheReport();
     input.value = '';
   });
 }
@@ -2027,29 +2074,36 @@ function readFileAsDataUrl(file) {
   });
 }
 
-function removeReportPhoto(idx, photoIdx) {
+function removeReportPhoto(idx, type, photoIdx) {
   if (!_reportPhotos[idx]) return;
-  _reportPhotos[idx].splice(photoIdx, 1);
+  var photos = _reportPhotos[idx];
+  if (photos[type]) { photos[type].splice(photoIdx, 1); }
+  else if (Array.isArray(photos)) { photos.splice(photoIdx, 1); }
   renderReportPhotos(idx);
-  cacheReportData();
+  if (_reportCacheId) debouncedCacheReport();
 }
 
 function renderReportPhotos(idx) {
-  var el = document.getElementById('rpt_photos_' + idx);
-  if (!el) return;
-  var photos = _reportPhotos[idx] || [];
-  if (photos.length === 0) { el.innerHTML = ''; return; }
-  var h = '<div style="display:flex;flex-wrap:wrap;gap:6px;">';
-  photos.forEach(function(p, pi) {
-    var src = p.dataUrl || ('/api/image?file_token=' + p.file_token);
-    var label = p.name || '';
-    h += '<div style="position:relative;width:70px;height:70px;border-radius:6px;overflow:hidden;border:1px solid #e0e0e0;">';
-    h += '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;" title="'+label+'" />';
-    h += '<div onclick="removeReportPhoto('+idx+','+pi+')" style="position:absolute;top:0;right:0;width:20px;height:20px;background:rgba(0,0,0,0.5);color:#fff;text-align:center;line-height:18px;font-size:14px;cursor:pointer;border-radius:0 6px 0 6px;">✕</div>';
-    h += '</div>';
-  });
-  h += '</div>';
-  el.innerHTML = h;
+  var beforeEl = document.getElementById('rpt_photos_before_' + idx);
+  var afterEl = document.getElementById('rpt_photos_after_' + idx);
+  var photos = _reportPhotos[idx] || {before:[], after:[]};
+  if (!photos.before) photos = {before: Array.isArray(photos) ? photos : [], after: []};
+  function renderList(el, list, type) {
+    if (!el) return;
+    if (list.length === 0) { el.innerHTML = ''; return; }
+    var h = '';
+    list.forEach(function(p, pi) {
+      var src = p.dataUrl || ('/api/image?file_token=' + p.file_token);
+      var label = p.name || '';
+      h += '<div style="position:relative;width:56px;height:56px;border-radius:4px;overflow:hidden;border:1px solid #eee;">';
+      h += '<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;" title="'+label+'" />';
+      h += '<span onclick="removeReportPhoto('+idx+',\''+type+'\','+pi+')" style="position:absolute;top:1px;right:1px;width:16px;height:16px;background:rgba(0,0,0,0.5);color:#fff;border-radius:50%;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;">✕</span>';
+      h += '</div>';
+    });
+    el.innerHTML = h;
+  }
+  renderList(beforeEl, photos.before || [], 'before');
+  renderList(afterEl, photos.after || [], 'after');
 }
 
 function setupReportPaste() {
@@ -2071,13 +2125,14 @@ function setupReportPaste() {
       var problems = (reportParsedData && reportParsedData.problems) || [];
       targetIdx = problems.length > 0 ? problems.length - 1 : 0;
     }
-    if (!_reportPhotos[targetIdx]) _reportPhotos[targetIdx] = [];
+    if (!_reportPhotos[targetIdx]) _reportPhotos[targetIdx] = {before:[], after:[]};
+    if (Array.isArray(_reportPhotos[targetIdx])) _reportPhotos[targetIdx] = {before: _reportPhotos[targetIdx], after: []};
     imageItems.forEach(function(item) {
       var file = item.getAsFile();
       readFileAsDataUrl(file).then(function(r) {
-        _reportPhotos[targetIdx].push(r);
+        _reportPhotos[targetIdx].before.push(r);
         renderReportPhotos(targetIdx);
-        debouncedCacheReport();
+        if (_reportCacheId) debouncedCacheReport();
       });
     });
   });
@@ -2130,13 +2185,37 @@ async function downloadReport() {
     date: document.getElementById('rpt_date') ? document.getElementById('rpt_date').value : ''
   };
 
+  // 收集照片数据（base64格式，用于嵌入Word）
+  var reportPhotos = {};
+  for (var k in _reportPhotos) {
+    var ph = _reportPhotos[k];
+    if (!ph) continue;
+    var beforeList = ph.before || (Array.isArray(ph) ? ph : []);
+    var afterList = ph.after || [];
+    var entry = {before: [], after: []};
+    beforeList.forEach(function(p) {
+      if (p.dataUrl && p.dataUrl.startsWith('data:')) entry.before.push(p.dataUrl);
+      else if (p.dataUrl && p.dataUrl.startsWith('/api/')) entry.before.push(p.dataUrl);
+    });
+    afterList.forEach(function(p) {
+      if (p.dataUrl && p.dataUrl.startsWith('data:')) entry.after.push(p.dataUrl);
+      else if (p.dataUrl && p.dataUrl.startsWith('/api/')) entry.after.push(p.dataUrl);
+    });
+    if (entry.before.length > 0 || entry.after.length > 0) reportPhotos[k] = entry;
+  }
+
   // 用隐藏form表单提交，浏览器原生下载，WPS可直接打开
   var form = document.createElement('form');
   form.method = 'POST';
   form.action = '/api/generate-report';
   form.style.display = 'none';
   form.target = '_blank';
-  var fields = { fileData: reportExcelBase64, projectInfo: JSON.stringify(projectInfo), download: '1' };
+  var fields = {
+    fileData: reportExcelBase64,
+    projectInfo: JSON.stringify(projectInfo),
+    download: '1',
+    reportPhotos: JSON.stringify(reportPhotos)
+  };
   Object.keys(fields).forEach(function(key) {
     var input = document.createElement('input');
     input.type = 'hidden';
