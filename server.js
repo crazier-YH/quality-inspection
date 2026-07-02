@@ -205,12 +205,22 @@ async function feishuRequest(method, urlPath, body) {
 // 记录列表
 app.post('/api/records/list', async (req, res) => {
   try {
-    const { tableKey, pageSize, filter } = req.body;
+    const { tableKey, pageSize, filter, projectName } = req.body;
     const tableId = TABLE_IDS[tableKey];
     if (!tableId) return res.status(400).json({ error: '无效的表标识' });
     let urlPath = `/bitable/v1/apps/${config.bitableAppToken}/tables/${tableId}/records?page_size=${pageSize || 100}`;
-    if (filter) {
-      urlPath += `&filter=${encodeURIComponent(JSON.stringify(filter))}`;
+    // Support projectName filter
+    let finalFilter = filter;
+    if (projectName && !filter) {
+      finalFilter = {
+        conjunction: 'and',
+        conditions: [
+          { field_name: '项目名称', operator: 'is', value: [projectName] }
+        ]
+      };
+    }
+    if (finalFilter) {
+      urlPath += `&filter=${encodeURIComponent(JSON.stringify(finalFilter))}`;
     }
     const result = await feishuRequest('GET', urlPath);
     res.json(result);
@@ -294,7 +304,12 @@ app.post('/api/fields/create', async (req, res) => {
 const TABLE_FIELDS = {
   todo: [
     { field_name: '项目名称', type: 1 }, { field_name: '待办内容', type: 1 },
-    { field_name: '是否完成', type: 7 }, { field_name: '创建人', type: 1 }, { field_name: '备注', type: 1 }
+    { field_name: '是否完成', type: 7 }, { field_name: '完成状态', type: 1 },
+    { field_name: '创建人', type: 1 }, { field_name: '备注', type: 1 },
+    { field_name: '创建日期', type: 5 }, { field_name: '截止日期', type: 5 },
+    { field_name: '问题描述', type: 1 }, { field_name: '整改回复', type: 1 },
+    { field_name: '报告索引', type: 1 },
+    { field_name: '整改前照片', type: 17 }, { field_name: '整改后照片', type: 17 }
   ],
   assess: [
     { field_name: '项目名称', type: 1 }, { field_name: '考核日期', type: 5 },
@@ -1714,8 +1729,13 @@ app.post('/api/todo/list', async (req, res) => {
     const token = await getTenantAccessToken();
     if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
     const pageSize = req.body.pageSize || 100;
-    const result = await feishuRequest('GET',
-      `/bitable/v1/apps/${config.bitableAppToken}/tables/${TABLE_IDS.todo}/records?page_size=${pageSize}`);
+    const projectName = req.body.projectName || '';
+    let todoUrl = `/bitable/v1/apps/${config.bitableAppToken}/tables/${TABLE_IDS.todo}/records?page_size=${pageSize}`;
+    if (projectName) {
+      const filter = { conjunction: 'and', conditions: [{ field_name: '项目名称', operator: 'is', value: [projectName] }] };
+      todoUrl += `&filter=${encodeURIComponent(JSON.stringify(filter))}`;
+    }
+    const result = await feishuRequest('GET', todoUrl);
     if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
     const records = (result.data?.items || []).map(r => {
       const f = r.fields || {};
@@ -1732,7 +1752,8 @@ app.post('/api/todo/list', async (req, res) => {
         _reportIdx: reportIndex.reportIdx,
         _reportName: reportIndex.reportName || '',
         creator: f['创建人'] || '',
-        createdAt: f['创建时间'] || f['日期'] || 0,
+        createdAt: f['创建日期'] || f['创建时间'] || f['日期'] || 0,
+        dueDate: f['截止日期'] || 0,
         projectName: f['项目名称'] || ''
       };
     });
@@ -1761,8 +1782,12 @@ app.post('/api/todo/create', async (req, res) => {
       '整改回复': rectifyReply || '',
       '报告索引': JSON.stringify(reportIndex),
       '创建人': creator || '',
-      '项目名称': projectName || ''
+      '项目名称': projectName || '',
+      '创建日期': Date.now()
     };
+    if (req.body.dueDate) {
+      fields['截止日期'] = req.body.dueDate;
+    }
     if (beforePhotoTokens && beforePhotoTokens.length > 0) {
       fields['整改前照片'] = beforePhotoTokens.map(t => ({ file_token: t }));
     }
@@ -1843,8 +1868,13 @@ app.post('/api/report-cache/list', async (req, res) => {
     const token = await getTenantAccessToken();
     if (!token) return res.status(401).json({ code: -1, msg: '无法获取令牌' });
     const pageSize = req.body.pageSize || 50;
-    const result = await feishuRequest('GET',
-      `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records?page_size=${pageSize}`);
+    const projectName = req.body.projectName || '';
+    let cacheUrl = `/bitable/v1/apps/${config.bitableAppToken}/tables/${REPORT_CACHE_TABLE}/records?page_size=${pageSize}`;
+    if (projectName) {
+      const filter = { conjunction: 'and', conditions: [{ field_name: '项目名称', operator: 'is', value: [projectName] }] };
+      cacheUrl += `&filter=${encodeURIComponent(JSON.stringify(filter))}`;
+    }
+    const result = await feishuRequest('GET', cacheUrl);
     if (result.code !== 0) return res.json({ code: -1, msg: result.msg });
     const records = (result.data?.items || []).map(r => {
       const f = r.fields || {};
