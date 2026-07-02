@@ -391,6 +391,17 @@
   <div class="sub" id="pageSub">质量巡查 · 高效管理</div>
 </div>
 <div class="page active" id="page-home">
+    <!-- 管理者看板入口 -->
+    <div style="margin: 12px; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 14px; color: #fff; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3); cursor: pointer;" onclick="showPage('admin')">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">📊 管理者看板</div>
+          <div style="font-size: 12px; opacity: 0.9;">查看所有项目数据汇总</div>
+        </div>
+        <div style="font-size: 24px;">→</div>
+      </div>
+    </div>
+
   <div class="info-bar" id="homeInfoBar">
     <div><div class="info-project" id="homeProjectName">未设置项目</div><div class="info-hint" id="homeProjectHint">当前身份：<span id="homeUserRole">未设置</span></div></div>
     <span class="info-set" onclick="switchProject()">切换 ›</span>
@@ -4025,6 +4036,143 @@ if('serviceWorker' in navigator){
   // 清除所有缓存
   if(caches){caches.keys().then(function(names){names.forEach(function(n){caches.delete(n);});});}
 }
+</script>
+
+    <!-- 管理者看板页面 -->
+    <div class="page" id="page-admin">
+      <div class="topbar">
+        <div class="topbar-row">
+          <div class="topbar-back" onclick="goBack()"></div>
+          <div>
+            <h1>管理者看板</h1>
+            <div class="sub">所有项目数据汇总</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 数据概览 -->
+      <div style="margin: 12px; padding: 16px; background: #fff; border-radius: 14px;">
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">📈 数据概览</div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
+          <div style="padding: 12px; background: #e8f5e9; border-radius: 10px;">
+            <div style="font-size: 24px; font-weight: 700; color: #34a853;" id="admin-total-projects">--</div>
+            <div style="font-size: 12px; color: #666;">项目总数</div>
+          </div>
+          <div style="padding: 12px; background: #e3f2fd; border-radius: 10px;">
+            <div style="font-size: 24px; font-weight: 700; color: #1a73e8;" id="admin-total-todos">--</div>
+            <div style="font-size: 12px; color: #666;">待办总数</div>
+          </div>
+          <div style="padding: 12px; background: #fce8e6; border-radius: 10px;">
+            <div style="font-size: 24px; font-weight: 700; color: #e74c3c;" id="admin-total-issues">--</div>
+            <div style="font-size: 12px; color: #666;">问题总数</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 项目列表 -->
+      <div style="margin: 12px;">
+        <div style="padding: 16px; background: #fff; border-radius: 14px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">📋 项目列表</div>
+          <div id="admin-project-list" style="max-height: 500px; overflow-y: auto;">
+            <div style="text-align: center; color: #999; padding: 20px;">加载中...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<script>
+// ===== 管理者看板 =====
+async function loadAdminDashboard() {
+  try {
+    // 获取所有项目
+    const projects = await API.getProjects();
+    
+    // 获取所有待办（不按项目过滤）
+    const todos = await API.listTodos();
+    
+    // 获取所有考核记录（不按项目过滤）
+    const records = await API.listRecords();
+    
+    // 统计数据
+    const totalProjects = projects.length;
+    const totalTodos = todos.length;
+    const totalIssues = records.length;
+    
+    // 更新概览数据
+    document.getElementById('admin-total-projects').textContent = totalProjects;
+    document.getElementById('admin-total-todos').textContent = totalTodos;
+    document.getElementById('admin-total-issues').textContent = totalIssues;
+    
+    // 渲染项目列表
+    renderAdminProjectList(projects, todos, records);
+    
+  } catch (err) {
+    console.error('加载管理者看板失败:', err);
+    showToast('加载失败，请刷新重试');
+  }
+}
+
+function renderAdminProjectList(projects, todos, records) {
+  const container = document.getElementById('admin-project-list');
+  
+  if (!projects || projects.length === 0) {
+    container.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无项目数据</div>';
+    return;
+  }
+  
+  // 为每个项目统计数据
+  const projectStats = projects.map(p => {
+    const projectTodos = todos.filter(t => t.fields && t.fields['项目名称'] === p.fields['项目名称']);
+    const projectRecords = records.filter(r => r.fields && r.fields['项目名称'] === p.fields['项目名称']);
+    
+    // 计算平均分数
+    let avgScore = '--';
+    if (projectRecords.length > 0) {
+      const scores = projectRecords.map(r => parseFloat(r.fields['总分']) || 0);
+      avgScore = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+    }
+    
+    return {
+      name: p.fields['项目名称'],
+      todos: projectTodos.length,
+      records: projectRecords.length,
+      avgScore: avgScore
+    };
+  });
+  
+  // 按项目名称排序
+  projectStats.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+  
+  // 渲染列表
+  container.innerHTML = projectStats.map(p => `
+    <div style="padding: 14px; background: #f8f9fb; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="flex: 1;">
+        <div style="font-size: 15px; font-weight: 500; margin-bottom: 6px;">${p.name}</div>
+        <div style="font-size: 12px; color: #666;">
+          待办: ${p.todos} | 考核: ${p.records}次
+          ${p.avgScore !== '--' ? ` | 平均分: ${p.avgScore}` : ''}
+        </div>
+      </div>
+      <div style="font-size: 20px; color: #ccc;">→</div>
+    </div>
+  `).join('');
+}
+
+// 监听管理者看板页面显示
+document.addEventListener('DOMContentLoaded', function() {
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.target.id === 'page-admin' && mutation.target.classList.contains('active')) {
+        loadAdminDashboard();
+      }
+    });
+  });
+  
+  const adminPage = document.getElementById('page-admin');
+  if (adminPage) {
+    observer.observe(adminPage, { attributes: true, attributeFilter: ['class'] });
+  }
+});
 </script>
 </body>
 </html>
