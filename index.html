@@ -412,7 +412,14 @@
   </div>
 </div>
 <div class="page" id="page-todo">
-  <div class="todo-input-row"><input id="todoInput" placeholder="添加待办事项..." onkeydown="if(event.key==='Enter')addTodo()" /><button class="todo-add" onclick="addTodo()">添加</button></div>
+  <div style="padding:0 0 8px;">
+  <input id="todoInput" placeholder="添加待办事项..." style="width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:6px;" onkeydown="if(event.key==='Enter')addTodo()" />
+  <div style="display:flex;gap:6px;align-items:center;">
+    <label style="font-size:12px;color:#666;white-space:nowrap;">截止日期</label>
+    <input id="todoDueDate" type="date" style="flex:1;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:13px;" />
+    <button class="todo-add" onclick="addTodo()" style="white-space:nowrap;">添加</button>
+  </div>
+</div>
   <div class="todo-list" id="todoList"></div>
   <div class="empty" id="todoEmpty"><div class="empty-icon">📝</div><p>暂无待办，点击上方添加</p></div>
 </div>
@@ -760,7 +767,7 @@ var API = {
       return data;
     } catch(e) { this.online = false; updateSyncBar(); return {code:-1, msg:'网络错误：'+e.message}; }
   },
-  async listRecords(t,n) { return this.request('/api/records/list', {tableKey:t, pageSize:n||100}); },
+  async listRecords(t,n,pn) { return this.request('/api/records/list', {tableKey:t, pageSize:n||100, projectName: pn||''}); },
   async createRecord(t,f) { return this.request('/api/records/create', {tableKey:t, fields:f}); },
   async updateRecord(t,r,f) { return this.request('/api/records/update', {tableKey:t, recordId:r, fields:f}); },
   async deleteRecord(t,r) { return this.request('/api/records/delete', {tableKey:t, recordId:r}); },
@@ -1162,54 +1169,86 @@ function updateHomeProjectBar() { document.getElementById('homeProjectName').tex
 function fillProjectFields() { if(project.name){var el=document.getElementById('a_project');if(el)el.value=project.name;} }
 
 // ===== 待办 =====
+function getTodoDateGroup(t) {
+  var now = new Date();
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+  var weekEnd = new Date(today); weekEnd.setDate(today.getDate()+7);
+  var dueTs = t.dueDate || t.createdAt || 0;
+  if (!dueTs) return {label:'📋 未设日期',order:5,overdue:false};
+  var dueDate = new Date(typeof dueTs === 'number' && dueTs < 8640000000 ? dueTs*1000 : dueTs);
+  var dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+  if (dueDay < today) return {label:'⚠️ 已过期',order:0,overdue:true};
+  if (dueDay.getTime() === today.getTime()) return {label:'📌 今天',order:1,overdue:false};
+  if (dueDay.getTime() === tomorrow.getTime()) return {label:'📅 明天',order:2,overdue:false};
+  if (dueDay < weekEnd) return {label:'📅 本周',order:3,overdue:false};
+  return {label:'📅 更晚',order:4,overdue:false};
+}
 function renderTodos() { 
   var list=document.getElementById('todoList'),empty=document.getElementById('todoEmpty'); 
   if(todos.length===0){list.innerHTML='';empty.style.display='';return;} 
-  empty.style.display='none'; 
-  list.innerHTML=todos.map(function(t,i){
+  empty.style.display='none';
+  // Sort: incomplete first, then by date group
+  var sorted = todos.map(function(t,i){return {t:t,origIdx:i};});
+  sorted.sort(function(a,b){
+    if(a.t.done !== b.t.done) return a.t.done ? 1 : -1;
+    var ga = getTodoDateGroup(a.t), gb = getTodoDateGroup(b.t);
+    return ga.order - gb.order;
+  });
+  var html = '';
+  var lastGroup = '';
+  sorted.forEach(function(item){
+    var i = item.origIdx;
+    var t = item.t;
+    var group = getTodoDateGroup(t);
+    if(group.label !== lastGroup){
+      lastGroup = group.label;
+      var groupStyle = group.overdue ? 'color:#e74c3c;' : 'color:#666;';
+      html += '<div style="font-size:12px;font-weight:600;padding:8px 0 4px;margin-top:8px;border-bottom:1px solid #eee;'+groupStyle+'">'+group.label+'</div>';
+    }
     var isReport = typeof t._reportIdx === 'number';
     if (isReport) {
-      // 报告整改待办 - 增强样式
-      var h = '<div class="todo-item" style="flex-direction:column;align-items:stretch;gap:8px;">';
-      // 标题行
+      var borderStyle = group.overdue && !t.done ? 'border-left:3px solid #e74c3c;padding-left:10px;' : '';
+      var h = '<div class="todo-item" style="flex-direction:column;align-items:stretch;gap:8px;'+borderStyle+'">';
       h += '<div style="display:flex;align-items:center;gap:8px;">';
       h += '<div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div>';
       h += '<span class="todo-text'+(t.done?' done':'')+'" style="font-weight:600;">'+t.text+'</span>';
       h += '<span class="todo-del" onclick="delTodo('+i+')">✕</span>';
       h += '</div>';
-      // 问题描述
       if (t._problemDesc) h += '<div style="font-size:11px;color:#888;padding-left:30px;">'+t._problemDesc+'</div>';
-      // 整改回复
       h += '<div style="padding-left:30px;"><label style="font-size:10px;color:#999;">整改回复</label>';
       h += '<textarea id="todo_reply_'+i+'" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px;min-height:36px;resize:vertical;" placeholder="填写整改措施..." onchange="saveTodoReply('+i+',this.value)">'+(t._rectifyReply||'')+'</textarea></div>';
-      // 整改前照片
       h += '<div style="padding-left:30px;"><div style="font-size:10px;color:#999;margin-bottom:4px;">📷 整改前</div>';
       h += '<div id="todo_before_'+i+'" style="display:flex;flex-wrap:wrap;gap:4px;">'+renderTodoPhotos(t._beforePhotos||[],i,'before')+'</div>';
       h += '<label style="display:inline-flex;align-items:center;gap:2px;padding:3px 8px;border:1px dashed #e74c3c;border-radius:4px;font-size:10px;color:#e74c3c;cursor:pointer;margin-top:4px;">+ 照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addTodoPhoto('+i+',\'before\',this)" /></label>';
       h += '</div>';
-      // 整改后照片
       h += '<div style="padding-left:30px;"><div style="font-size:10px;color:#999;margin-bottom:4px;">✅ 整改后</div>';
       h += '<div id="todo_after_'+i+'" style="display:flex;flex-wrap:wrap;gap:4px;">'+renderTodoPhotos(t._afterPhotos||[],i,'after')+'</div>';
       h += '<label style="display:inline-flex;align-items:center;gap:2px;padding:3px 8px;border:1px dashed #4caf50;border-radius:4px;font-size:10px;color:#4caf50;cursor:pointer;margin-top:4px;">+ 照片<input type="file" accept="image/*" multiple style="display:none;" onchange="addTodoPhoto('+i+',\'after\',this)" /></label>';
       h += '</div>';
-      // 同步到报告按钮
       if (t.done && (t._afterPhotos||[]).length > 0) {
         h += '<div style="padding-left:30px;"><button onclick="syncTodoToReport('+i+')" style="padding:4px 10px;border:1px solid #1a73e8;border-radius:4px;background:#1a73e8;color:#fff;font-size:10px;cursor:pointer;">📤 同步照片到报告</button></div>';
       }
       h += '</div>';
-      return h;
+      html += h;
+    } else {
+      var itemStyle = group.overdue && !t.done ? ' style="border-left:3px solid #e74c3c;padding-left:10px;"' : '';
+      html += '<div class="todo-item"'+itemStyle+'><div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div><span class="todo-text'+(t.done?' done':'')+'">'+t.text+'</span><span class="todo-del" onclick="delTodo('+i+')">✕</span></div>';
     }
-    return '<div class="todo-item"><div class="todo-check'+(t.done?' done':'')+'" onclick="toggleTodo('+i+')">'+(t.done?'✓':'')+'</div><span class="todo-text'+(t.done?' done':'')+'">'+t.text+'</span><span class="todo-del" onclick="delTodo('+i+')">✕</span></div>';
-  }).join(''); 
+  });
+  list.innerHTML = html;
 }
+
 async function addTodo() {
   var input=document.getElementById('todoInput'),text=input.value.trim(); if(!text)return;
-  var todo={text:text,done:false,id:Date.now(),_problemDesc:'',_rectifyReply:'',_beforePhotos:[],_afterPhotos:[],_recordId:null};
-  todos.unshift(todo); input.value=''; renderTodos(); updateHomeStats();
+  var dueDateInput=document.getElementById('todoDueDate');
+  var dueDateTs = dueDateInput && dueDateInput.value ? new Date(dueDateInput.value).getTime() : 0;
+  var todo={text:text,done:false,id:Date.now(),_problemDesc:'',_rectifyReply:'',_beforePhotos:[],_afterPhotos:[],_recordId:null,dueDate:dueDateTs,createdAt:Date.now()};
+  todos.unshift(todo); input.value=''; if(dueDateInput)dueDateInput.value=''; renderTodos(); updateHomeStats();
   try {
     var res = await fetch('/api/todo/create', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({text:text,done:false,creator:profile.name||'',projectName:project.name||''})
+      body: JSON.stringify({text:text,done:false,creator:profile.name||'',projectName:project.name||'',dueDate:dueDateTs||undefined})
     });
     var data = await res.json();
     if(data.code===0 && data.data) { todo._recordId = data.data.recordId; }
@@ -1308,7 +1347,7 @@ function saveTodoReply(todoIdx, value) {
 // ===== 从服务端加载待办列表 =====
 async function loadTodos() {
   try {
-    var res = await fetch('/api/todo/list', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({})});
+    var res = await fetch('/api/todo/list', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({projectName: project.name||''})});
     var data = await res.json();
     if (data.code !== 0) { console.error('加载待办失败:', data.msg); return; }
     var serverTodos = data.data || [];
@@ -1332,7 +1371,9 @@ async function loadTodos() {
         _beforePhotoTokens: (item._beforePhotoTokens || []).map(function(p) { return p.file_token; }),
         _afterPhotoTokens: (item._afterPhotoTokens || []).map(function(p) { return p.file_token; }),
         _reportIdx: item._reportIdx,
-        _reportName: item._reportName || ''
+        _reportName: item._reportName || '',
+        dueDate: item.dueDate || 0,
+        createdAt: item.createdAt || 0
       };
     });
     renderTodos();
@@ -2006,7 +2047,7 @@ async function loadReportCacheList() {
     var res = await fetch('/api/report-cache/list', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({})
+      body: JSON.stringify({projectName: project.name||''})
     });
     var data = await res.json();
     if (data.code !== 0) return;
@@ -3325,7 +3366,7 @@ async function saveCurrentForm() {
 async function loadRecordList(type) {
   var el=document.getElementById(type+'RecordList');
   if(!el)return;el.innerHTML='<div class="loading">加载中...</div>';
-  var res=await API.listRecords(type,50);
+  var res=await API.listRecords(type,50,project.name||'');
   if(res.code!==0||!res.data||!res.data.items){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>暂无记录</p></div>';return;}
   var items=res.data.items;
   if(items.length===0){el.innerHTML='<div class="empty"><div class="empty-icon">📭</div><p>暂无记录，点击下方新增</p></div>';return;}
