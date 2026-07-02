@@ -309,6 +309,7 @@
     .report-edit-signature .sig-line { border-bottom:1px solid #333; height:30px; margin-bottom:6px; }
     .report-edit-signature .sig-label { font-size:13px; color:#666; }
   </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="toast" id="toast"></div>
@@ -4079,6 +4080,30 @@ if('serviceWorker' in navigator){
         </div>
       </div>
     </div>
+      <!-- 数据图表 -->
+      <div style="margin: 12px;">
+        <div style="padding: 16px; background: #fff; border-radius: 14px; margin-bottom: 12px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">📊 项目分数排名</div>
+          <div style="height: 300px;">
+            <canvas id="chart-score-rank"></canvas>
+          </div>
+        </div>
+        
+        <div style="padding: 16px; background: #fff; border-radius: 14px; margin-bottom: 12px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">📈 考核记录分布</div>
+          <div style="height: 250px;">
+            <canvas id="chart-record-dist"></canvas>
+          </div>
+        </div>
+        
+        <div style="padding: 16px; background: #fff; border-radius: 14px;">
+          <div style="font-size: 15px; font-weight: 600; margin-bottom: 12px;">✅ 待办完成情况</div>
+          <div style="height: 250px;">
+            <canvas id="chart-todo-status"></canvas>
+          </div>
+        </div>
+      </div>
+
 
 <script>
 // ===== 管理者看板 =====
@@ -4105,6 +4130,7 @@ async function loadAdminDashboard() {
     
     // 渲染项目列表
     renderAdminProjectList(projects, todos, records);
+    renderAdminCharts(projects, todos, records);
     
   } catch (err) {
     console.error('加载管理者看板失败:', err);
@@ -4173,6 +4199,116 @@ document.addEventListener('DOMContentLoaded', function() {
     observer.observe(adminPage, { attributes: true, attributeFilter: ['class'] });
   }
 });
+</script>
+
+<script>
+
+// 全局图表实例
+let scoreRankChart = null;
+let recordDistChart = null;
+let todoStatusChart = null;
+
+function renderAdminCharts(projects, todos, records) {
+  // 销毁旧图表
+  if (scoreRankChart) scoreRankChart.destroy();
+  if (recordDistChart) recordDistChart.destroy();
+  if (todoStatusChart) todoStatusChart.destroy();
+  
+  // 1. 项目分数排名柱状图
+  const projectScores = projects.map(p => {
+    const projectRecords = records.filter(r => r.fields && r.fields['项目名称'] === p.fields['项目名称']);
+    let avgScore = 0;
+    if (projectRecords.length > 0) {
+      const scores = projectRecords.map(r => parseFloat(r.fields['总分']) || 0);
+      avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+    }
+    return { name: p.fields['项目名称'], score: avgScore, count: projectRecords.length };
+  }).filter(p => p.count > 0).sort((a, b) => b.score - a.score);
+  
+  const scoreCanvas = document.getElementById('chart-score-rank');
+  if (scoreCanvas && projectScores.length > 0) {
+    scoreRankChart = new Chart(scoreCanvas, {
+      type: 'bar',
+      data: {
+        labels: projectScores.map(p => p.name.length > 8 ? p.name.substring(0, 8) + '...' : p.name),
+        datasets: [{
+          label: '平均分数',
+          data: projectScores.map(p => p.score.toFixed(1)),
+          backgroundColor: projectScores.map(p => p.score >= 90 ? '#34a853' : p.score >= 80 ? '#1a73e8' : p.score >= 60 ? '#fbbc04' : '#e74c3c'),
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, max: 100, ticks: { stepSize: 20 } },
+          x: { ticks: { maxRotation: 45, minRotation: 45 } }
+        }
+      }
+    });
+  }
+  
+  // 2. 考核记录分布饼图
+  const recordDist = {};
+  records.forEach(r => {
+    const name = r.fields && r.fields['项目名称'] || '未知项目';
+    recordDist[name] = (recordDist[name] || 0) + 1;
+  });
+  
+  const distCanvas = document.getElementById('chart-record-dist');
+  if (distCanvas && Object.keys(recordDist).length > 0) {
+    const colors = ['#1a73e8', '#34a853', '#fbbc04', '#e74c3c', '#9c27b0', '#00bcd4', '#ff5722', '#607d8b'];
+    recordDistChart = new Chart(distCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(recordDist),
+        datasets: [{
+          data: Object.values(recordDist),
+          backgroundColor: colors.slice(0, Object.keys(recordDist).length),
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } }
+        }
+      }
+    });
+  }
+  
+  // 3. 待办完成情况饼图
+  const todoCompleted = todos.filter(t => t.fields && (t.fields['是否完成'] === true || t.fields['是否完成'] === '是')).length;
+  const todoPending = todos.length - todoCompleted;
+  
+  const todoCanvas = document.getElementById('chart-todo-status');
+  if (todoCanvas && todos.length > 0) {
+    todoStatusChart = new Chart(todoCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['已完成', '未完成'],
+        datasets: [{
+          data: [todoCompleted, todoPending],
+          backgroundColor: ['#34a853', '#fbbc04'],
+          borderWidth: 2,
+          borderColor: '#fff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'right', labels: { boxWidth: 12, padding: 10 } }
+        }
+      }
+    });
+  }
+}
+
 </script>
 </body>
 </html>
